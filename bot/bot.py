@@ -325,7 +325,8 @@ def main() -> None:
     app.run_webhook(
         listen='0.0.0.0',
         port=PORT,
-        webhook_url=WEBHOOK_URL,
+        url_path='webhook',
+        webhook_url=f'{WEBHOOK_URL}/webhook',
     )
 
 
