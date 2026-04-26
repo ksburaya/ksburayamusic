@@ -195,11 +195,15 @@ async def cmd_start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
         context.user_data['token'] = auth['token']
         context.user_data['has_practices'] = auth.get('has_entries', False)
     has_practices = context.user_data.get('has_practices', False)
+    buttons = [[InlineKeyboardButton('🎧 Начать практику', callback_data='new_practice')]]
+    if has_practices:
+        url = journal_url(user.id, user.full_name)
+        buttons.append([InlineKeyboardButton('📖 Открыть дневник', web_app=WebAppInfo(url=url))])
     await update.message.reply_text(
         '🎧 <b>Квантовое Ухо</b>\n\n'
         'Практика глубокого слушания пространства.',
         parse_mode='HTML',
-        reply_markup=kb_home(has_practices),
+        reply_markup=InlineKeyboardMarkup(buttons),
     )
     return HOME
 
@@ -401,7 +405,10 @@ def main() -> None:
             CallbackQueryHandler(on_new_practice, pattern='^new_practice$'),
         ],
         states={
-            HOME: [MessageHandler(filters.TEXT & ~filters.COMMAND, on_home)],
+            HOME: [
+                CallbackQueryHandler(on_new_practice, pattern='^new_practice$'),
+                MessageHandler(filters.TEXT & ~filters.COMMAND, on_home),
+            ],
             CHOOSE_DURATION: [CallbackQueryHandler(on_choose_duration, pattern='^dur_')],
             WAITING_DONE:    [MessageHandler(filters.TEXT & ~filters.COMMAND, on_waiting_done)],
             ASK_PLACE:       [MessageHandler(filters.TEXT & ~filters.COMMAND, on_ask_place)],
