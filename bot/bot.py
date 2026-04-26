@@ -375,10 +375,40 @@ async def on_new_practice(update: Update, context: ContextTypes.DEFAULT_TYPE) ->
 
 async def on_receive_photo(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     context.user_data['photo_file_id'] = update.message.photo[-1].file_id
-    await update.message.reply_text(
-        '💾 Сохраните фото на телефон, если хотите оставить его у себя.',
-        reply_markup=ReplyKeyboardRemove(),
-    )
+    data = context.user_data
+
+    # Generate card with session overlay
+    card_sent = False
+    try:
+        r = requests.post(
+            f'{API_BASE}/generate_card.php',
+            json={
+                'photo_file_id': data['photo_file_id'],
+                'sounds': {
+                    'front': data.get('front', ''),
+                    'right': data.get('right', ''),
+                    'back':  data.get('back',  ''),
+                    'left':  data.get('left',  ''),
+                },
+                'place':    data.get('place', ''),
+                'liked':    data.get('liked', ''),
+                'duration': data.get('duration', 0),
+            },
+            timeout=30,
+        )
+        result = r.json()
+        if result.get('url') and not result.get('error'):
+            card_url = f'https://ksburayamusic.ru/deeplistening/{result["url"]}'
+            await update.message.reply_photo(photo=card_url)
+            card_sent = True
+        if result.get('error'):
+            logger.error('generate_card: %s', result['error'])
+    except Exception as e:
+        logger.error('generate_card: %s', e)
+
+    if not card_sent:
+        await update.message.reply_text('💾 Фото сохранено.')
+
     return await finish(update, context)
 
 # ── Main ──────────────────────────────────────────────────────────────────────
