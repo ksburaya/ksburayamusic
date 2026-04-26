@@ -2557,9 +2557,13 @@
       }
 
       // Telegram WebApp auto-login
-      // platform === 'unknown' означает обычный браузер (SDK загружен, но не внутри Telegram)
+      // Надёжная проверка: есть реальный пользователь в initDataUnsafe
+      // ИЛИ platform явно не 'unknown' (iOS/android/tdesktop и т.д.)
       const twa = window.Telegram?.WebApp;
-      const isInTelegram = twa && twa.platform !== 'unknown';
+      const isInTelegram = twa && (
+        twa.initDataUnsafe?.user?.id ||
+        (twa.platform && twa.platform !== 'unknown')
+      );
       if (isInTelegram) {
         document.body.classList.add('tg-mode');
         twa.ready(); // must always be called — without it iOS shows infinite loading overlay
