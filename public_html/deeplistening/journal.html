@@ -2557,8 +2557,10 @@
       }
 
       // Telegram WebApp auto-login
+      // platform === 'unknown' означает обычный браузер (SDK загружен, но не внутри Telegram)
       const twa = window.Telegram?.WebApp;
-      if (twa) {
+      const isInTelegram = twa && twa.platform !== 'unknown';
+      if (isInTelegram) {
         document.body.classList.add('tg-mode');
         twa.ready(); // must always be called — without it iOS shows infinite loading overlay
         twa.expand();
@@ -2574,6 +2576,7 @@
         return;
       }
 
+      // Обычный браузер — восстанавливаем сессию из localStorage
       const s = localStorage.getItem('qs_session'); if (!s) return;
       try { const u = JSON.parse(s); if (u.token && u.name) { currentUser = u; document.getElementById('nav-username').textContent = u.name; document.getElementById('btn-logout').style.display = 'inline-block'; showPage('page-timeline'); } } catch { }
     })();
