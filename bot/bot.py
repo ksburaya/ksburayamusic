@@ -360,8 +360,19 @@ async def on_receive_photo(update: Update, context: ContextTypes.DEFAULT_TYPE) -
 
 # ── Main ──────────────────────────────────────────────────────────────────────
 
+async def post_init(app: Application) -> None:
+    await app.bot.set_my_description(
+        description=(
+            'Привет! Добро пожаловать в Звуковые Опыты. '
+            'Это бот, который помогает вести дневник звуковых практик '
+            'и развивать навык слухового восприятия. '
+            'Жми /start чтобы начать.'
+        ),
+        language_code='ru',
+    )
+
 def main() -> None:
-    app = Application.builder().token(BOT_TOKEN).build()
+    app = Application.builder().token(BOT_TOKEN).post_init(post_init).build()
 
     conv = ConversationHandler(
         entry_points=[
