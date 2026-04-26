@@ -162,22 +162,27 @@ async def finish(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     if data.get('story'):
         text += f'\n\n📖 {data["story"]}'
 
-    url = journal_url(user.id, user.full_name)
+    # Саммари — убираем клавиатуру практики
     await context.bot.send_message(
         chat_id,
         text,
         parse_mode='HTML',
-        reply_markup=kb_journal(url),
+        reply_markup=ReplyKeyboardRemove(),
     )
-    # сохраняем флаг, очищаем только данные практики
+    # Очищаем данные практики
     for key in ('duration', 'place', 'front', 'right', 'back', 'left',
                 'liked', 'disliked', 'story', 'photo_file_id'):
         context.user_data.pop(key, None)
     context.user_data['has_practices'] = True
+    # «Что дальше?» с инлайн-кнопками
+    url = journal_url(user.id, user.full_name)
     await context.bot.send_message(
         chat_id,
         'Что дальше?',
-        reply_markup=kb_home(has_practices=True),
+        reply_markup=InlineKeyboardMarkup([[
+            InlineKeyboardButton('📖 Перейти в дневник', web_app=WebAppInfo(url=url)),
+            InlineKeyboardButton('🎧 Новая практика', callback_data='new_practice'),
+        ]]),
     )
     return ConversationHandler.END
 
@@ -350,6 +355,20 @@ async def on_photo_skip(update: Update, context: ContextTypes.DEFAULT_TYPE) -> i
     return await finish(update, context)
 
 
+async def on_new_practice(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
+    query = update.callback_query
+    await query.answer()
+    await query.message.reply_text(
+        '🎧 <b>Слушание пространства</b>\n\n'
+        'Займите удобное положение, сделайте три глубоких вдоха и закройте глаза.\n'
+        'Слушайте пространство без попытки оценить происходящее.\n\n'
+        'Выберите длительность практики:',
+        parse_mode='HTML',
+        reply_markup=kb_durations(),
+    )
+    return CHOOSE_DURATION
+
+
 async def on_receive_photo(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     context.user_data['photo_file_id'] = update.message.photo[-1].file_id
     await update.message.reply_text(
@@ -379,6 +398,7 @@ def main() -> None:
             CommandHandler('start', cmd_start),
             MessageHandler(filters.Regex('^📖 Открыть дневник$'), on_home),
             MessageHandler(filters.Regex('^🎧 Начать практику$'), on_home),
+            CallbackQueryHandler(on_new_practice, pattern='^new_practice$'),
         ],
         states={
             HOME: [MessageHandler(filters.TEXT & ~filters.COMMAND, on_home)],
