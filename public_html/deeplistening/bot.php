@@ -72,8 +72,6 @@ function setSession(int $tgId, string $step, array $data): void {
 
 function findOrCreateUser(int $tgId, string $name): int {
     $db = getDB();
-    try { $db->exec('ALTER TABLE users ADD COLUMN telegram_id BIGINT NULL UNIQUE'); } catch (PDOException $e) {}
-
     $stmt = $db->prepare('SELECT id FROM users WHERE telegram_id = ?');
     $stmt->execute([$tgId]);
     $user = $stmt->fetch();

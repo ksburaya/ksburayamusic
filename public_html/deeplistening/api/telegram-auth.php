@@ -73,13 +73,6 @@ if (!$tgName) $tgName = $user['username'] ?? ('tg_' . $tgId);
 try {
     $db = getDB();
 
-    // Ensure telegram_id column exists (idempotent migration)
-    try {
-        $db->exec('ALTER TABLE users ADD COLUMN telegram_id BIGINT NULL UNIQUE');
-    } catch (PDOException $e) {
-        // Column already exists — ignore
-    }
-
     // Find existing user by telegram_id
     $stmt = $db->prepare('SELECT * FROM users WHERE telegram_id = ?');
     $stmt->execute([$tgId]);
