@@ -2556,9 +2556,18 @@
         return;
       }
 
-      // Telegram WebApp auto-login
-      // Надёжная проверка: есть реальный пользователь в initDataUnsafe
-      // ИЛИ platform явно не 'unknown' (iOS/android/tdesktop и т.д.)
+      // 1. Сначала проверяем веб-сессию (приоритет — не зависит от платформы)
+      try {
+        const s = localStorage.getItem('qs_session');
+        const u = s ? JSON.parse(s) : null;
+        if (u?.token && u?.name) {
+          loginAs(u.token, u.name, u.email);
+          showPage('page-timeline');
+          return;
+        }
+      } catch {}
+
+      // 2. Нет веб-сессии — проверяем Telegram Mini App
       const twa = window.Telegram?.WebApp;
       const isInTelegram = twa && (
         twa.initDataUnsafe?.user?.id ||
@@ -2566,23 +2575,21 @@
       );
       if (isInTelegram) {
         document.body.classList.add('tg-mode');
-        twa.ready(); // must always be called — without it iOS shows infinite loading overlay
+        twa.ready();
         twa.expand();
         document.getElementById('tg-auth-btn-wrap').style.display = 'block';
         if (twa.initData) {
           doTelegramAuth();
           return;
         }
-        // On iOS initData is sometimes empty on first tick — retry after a short delay
+        // На iOS initData иногда пуст на первом тике — повторяем через 300мс
         setTimeout(function () {
           if (window.Telegram?.WebApp?.initData && !currentUser) doTelegramAuth();
         }, 300);
         return;
       }
 
-      // Обычный браузер — восстанавливаем сессию из localStorage
-      const s = localStorage.getItem('qs_session'); if (!s) return;
-      try { const u = JSON.parse(s); if (u.token && u.name) { currentUser = u; document.getElementById('nav-username').textContent = u.name; document.getElementById('btn-logout').style.display = 'inline-block'; showPage('page-timeline'); } } catch { }
+      // 3. Нет ни сессии, ни Telegram — показываем форму логина (видна по умолчанию)
     })();
 
     async function renderTimeline() {
