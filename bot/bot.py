@@ -346,7 +346,11 @@ def main() -> None:
     app = Application.builder().token(BOT_TOKEN).build()
 
     conv = ConversationHandler(
-        entry_points=[CommandHandler('start', cmd_start)],
+        entry_points=[
+            CommandHandler('start', cmd_start),
+            MessageHandler(filters.Regex('^📖 Открыть дневник$'), on_home),
+            MessageHandler(filters.Regex('^🎧 Начать практику$'), on_home),
+        ],
         states={
             HOME: [MessageHandler(filters.TEXT & ~filters.COMMAND, on_home)],
             CHOOSE_DURATION: [CallbackQueryHandler(on_choose_duration, pattern='^dur_')],
