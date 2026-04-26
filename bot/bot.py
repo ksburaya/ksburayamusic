@@ -8,7 +8,7 @@ from dotenv import load_dotenv
 load_dotenv()
 from telegram import (
     Update, InlineKeyboardButton, InlineKeyboardMarkup,
-    ReplyKeyboardMarkup, ReplyKeyboardRemove,
+    ReplyKeyboardMarkup, ReplyKeyboardRemove, WebAppInfo,
 )
 from telegram.ext import (
     Application, CommandHandler, MessageHandler,
@@ -66,7 +66,7 @@ def kb_photo() -> InlineKeyboardMarkup:
 
 def kb_journal(url: str) -> InlineKeyboardMarkup:
     return InlineKeyboardMarkup([[
-        InlineKeyboardButton('Открыть дневник 📖', url=url)
+        InlineKeyboardButton('Открыть дневник 📖', web_app=WebAppInfo(url=url))
     ]])
 
 def is_skip(text: str) -> bool:
@@ -200,7 +200,7 @@ async def on_home(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
         await update.message.reply_text(
             'Открывайте дневник:',
             reply_markup=InlineKeyboardMarkup([[
-                InlineKeyboardButton('Открыть дневник 📖', url=url)
+                InlineKeyboardButton('Открыть дневник 📖', web_app=WebAppInfo(url=url))
             ]]),
         )
         return HOME
