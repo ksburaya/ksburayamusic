@@ -2528,9 +2528,17 @@
     async function doTelegramAuth() {
       const twa = window.Telegram?.WebApp;
       const initData = twa?.initData;
-      if (!initData) return; // SDK not ready yet — silent exit; retry handles it
+      if (!initData) {
+        // SDK not ready yet — schedule one retry after 500 ms
+        setTimeout(function() {
+          if (!currentUser) doTelegramAuth();
+        }, 500);
+        return;
+      }
       setAuthLoading(true);
       document.getElementById('auth-error').textContent = '';
+      var tgBtn = document.getElementById('tg-login-btn');
+      if (tgBtn) { tgBtn.textContent = 'Подключение к Telegram…'; }
       const ctrl = new AbortController();
       const tid = setTimeout(() => ctrl.abort(), 15000);
       try {
@@ -2541,11 +2549,20 @@
           signal: ctrl.signal
         });
         const data = await res.json();
-        if (!res.ok) { document.getElementById('auth-error').textContent = data.error || 'Ошибка Telegram-входа'; return; }
+        if (!res.ok) {
+          document.getElementById('auth-error').textContent = data.error || 'Ошибка Telegram-входа';
+          if (tgBtn) { tgBtn.textContent = 'Повторить вход через Telegram'; }
+          return;
+        }
         loginAs(data.token, data.name, data.email ?? '');
         showPage('page-timeline');
-      } catch { document.getElementById('auth-error').textContent = 'Нет соединения с сервером'; }
-      finally { clearTimeout(tid); setAuthLoading(false); }
+      } catch {
+        document.getElementById('auth-error').textContent = 'Нет соединения с сервером';
+        if (tgBtn) { tgBtn.textContent = 'Повторить вход через Telegram'; }
+      } finally {
+        clearTimeout(tid);
+        setAuthLoading(false);
+      }
     }
     function logout() {
       currentUser = null; localStorage.removeItem('qs_session');
@@ -2553,6 +2570,10 @@
       document.getElementById('btn-logout').style.display = 'none';
       if (window.Telegram?.WebApp?.initData) {
         document.body.classList.add('tg-mode');
+        document.getElementById('tg-auth-btn-wrap').style.display = 'block';
+        var btn = document.getElementById('tg-login-btn');
+        if (btn) { btn.textContent = 'Подключение к Telegram…'; btn.disabled = true; }
+        showPage('page-auth');
         doTelegramAuth();
         return;
       }
@@ -2573,21 +2594,42 @@
         return;
       }
 
+      // Helper: enter Telegram mode — hide login form, show loading message, kick off auth
+      function enterTgMode() {
+        document.body.classList.add('tg-mode');
+        // Show the TG section (button + error area); hide login/pass tabs via CSS tg-mode
+        document.getElementById('tg-auth-btn-wrap').style.display = 'block';
+        // Replace button text with loading indicator so user knows something is happening
+        var btn = document.getElementById('tg-login-btn');
+        if (btn) { btn.textContent = 'Подключение к Telegram…'; btn.disabled = true; }
+        doTelegramAuth();
+      }
+
       // 1. Telegram Mini App с initData — авторизуем через Telegram
       if (twa?.initData) {
-        document.body.classList.add('tg-mode');
-        document.getElementById('tg-auth-btn-wrap').style.display = 'block';
-        doTelegramAuth();
+        enterTgMode();
         return;
       }
 
       // 2. Telegram SDK есть, но initData ещё не готов (iOS — задержка первого тика)
+      //    Ждём до 5 секунд, проверяя каждые 500 мс
       if (twa && (twa.initDataUnsafe?.user?.id || (twa.platform && twa.platform !== 'unknown'))) {
         document.body.classList.add('tg-mode');
         document.getElementById('tg-auth-btn-wrap').style.display = 'block';
-        setTimeout(function () {
-          if (window.Telegram?.WebApp?.initData && !currentUser) doTelegramAuth();
-        }, 1000);
+        var btn2 = document.getElementById('tg-login-btn');
+        if (btn2) { btn2.textContent = 'Подключение к Telegram…'; btn2.disabled = true; }
+        var attempts = 0;
+        var poll = setInterval(function () {
+          attempts++;
+          if (window.Telegram?.WebApp?.initData && !currentUser) {
+            clearInterval(poll);
+            doTelegramAuth();
+          } else if (attempts >= 10) {
+            // 5 seconds elapsed — re-enable button so user can retry manually
+            clearInterval(poll);
+            if (btn2) { btn2.textContent = 'Войти через Telegram'; btn2.disabled = false; }
+          }
+        }, 500);
         return;
       }
 
