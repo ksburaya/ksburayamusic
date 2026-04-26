@@ -20,7 +20,7 @@ jobs:
 
       - name: Sync files to Beget
         run: |
-          rsync -avz \
+          rsync -avz --omit-dir-times \
             -e "ssh -o StrictHostKeyChecking=no" \
             --exclude '.git*' \
             --exclude '.github*' \
