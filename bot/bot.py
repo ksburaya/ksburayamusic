@@ -73,25 +73,22 @@ def is_skip(text: str) -> bool:
 
 # ── API helpers ───────────────────────────────────────────────────────────────
 
-def get_user_token(telegram_id: int, tg_name: str) -> Optional[str]:
-    """POST /telegram-auth.php → {'token': '...'}
-    Ожидает на сервере эндпоинт, принимающий telegram_id + bot_secret.
-    """
+def bot_auth(telegram_id: int, tg_name: str) -> dict:
+    """POST /bot-auth.php → {'token': '...', 'has_entries': bool}"""
     try:
         r = requests.post(
-            f'{API_BASE}/telegram-auth.php',
+            f'{API_BASE}/bot-auth.php',
             json={'telegram_id': telegram_id, 'name': tg_name, 'bot_secret': BOT_SECRET},
             timeout=10,
         )
-        return r.json().get('token')
+        return r.json()
     except Exception as e:
-        logger.error('get_user_token: %s', e)
-        return None
+        logger.error('bot_auth: %s', e)
+        return {}
 
-def save_entry(telegram_id: int, tg_name: str, data: dict) -> bool:
-    token = get_user_token(telegram_id, tg_name)
+def save_entry(token: str, data: dict) -> bool:
     if not token:
-        logger.error('save_entry: не удалось получить токен для %d', telegram_id)
+        logger.error('save_entry: токен отсутствует')
         return False
     try:
         payload = {
@@ -126,7 +123,7 @@ async def finish(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     chat_id = update.effective_chat.id
     data    = context.user_data
 
-    save_entry(user.id, user.full_name, data)
+    save_entry(context.user_data.get('token', ''), data)
 
     d      = data.get('duration', '?')
     place  = data.get('place', '')
@@ -170,6 +167,11 @@ async def finish(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
 # ── Handlers ──────────────────────────────────────────────────────────────────
 
 async def cmd_start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
+    user = update.effective_user
+    auth = bot_auth(user.id, user.full_name)
+    if auth.get('token'):
+        context.user_data['token'] = auth['token']
+        context.user_data['has_practices'] = auth.get('has_entries', False)
     has_practices = context.user_data.get('has_practices', False)
     await update.message.reply_text(
         '🎧 <b>Квантовое Ухо</b>\n\n'

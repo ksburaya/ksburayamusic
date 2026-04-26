@@ -1,6 +1,7 @@
 <?php
 // Скопируйте этот файл в config.php и заполните значения
 define('TELEGRAM_BOT_TOKEN', '');
+define('BOT_SECRET', '');          // совпадает с BOT_SECRET в Railway
 define('DB_HOST',    'localhost');
 define('DB_NAME',    '');
 define('DB_USER',    '');
