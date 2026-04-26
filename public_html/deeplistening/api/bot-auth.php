@@ -35,10 +35,6 @@ if (!$telegram_id) {
 try {
     $db = getDB();
 
-    // Добавляем колонку telegram_id если ещё нет
-    try { $db->exec('ALTER TABLE users ADD COLUMN telegram_id BIGINT NULL UNIQUE'); }
-    catch (PDOException $e) {}
-
     // Находим или создаём пользователя
     $stmt = $db->prepare('SELECT id, name FROM users WHERE telegram_id = ?');
     $stmt->execute([$telegram_id]);
