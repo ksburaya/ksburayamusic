@@ -92,9 +92,16 @@ try {
         $userEmail = $dbUser['email'];
     }
 
-    $token = bin2hex(random_bytes(32));
-    $stmt = $db->prepare('INSERT INTO sessions (user_id, token, expires_at) VALUES (?, ?, DATE_ADD(NOW(), INTERVAL 90 DAY))');
-    $stmt->execute([$userId, $token]);
+    $stmt = $db->prepare('SELECT token FROM sessions WHERE user_id = ? AND expires_at > NOW() ORDER BY expires_at DESC LIMIT 1');
+    $stmt->execute([$userId]);
+    $existing = $stmt->fetch();
+    if ($existing) {
+        $token = $existing['token'];
+    } else {
+        $token = bin2hex(random_bytes(32));
+        $stmt = $db->prepare('INSERT INTO sessions (user_id, token, expires_at) VALUES (?, ?, DATE_ADD(NOW(), INTERVAL 90 DAY))');
+        $stmt->execute([$userId, $token]);
+    }
 
     echo json_encode(['token' => $token, 'name' => $userName, 'email' => $userEmail]);
 } catch (Throwable $e) {
