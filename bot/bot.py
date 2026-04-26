@@ -29,9 +29,9 @@ JOURNAL_URL = 'https://t.me/deeplistening_journal_bot/Journal'
 
 # ── FSM states ────────────────────────────────────────────────────────────────
 
-(CHOOSE_DURATION, WAITING_DONE, ASK_PLACE,
+(HOME, CHOOSE_DURATION, WAITING_DONE, ASK_PLACE,
  ASK_FRONT, ASK_RIGHT, ASK_BACK, ASK_LEFT,
- ASK_LIKED, ASK_DISLIKED, ASK_STORY, ASK_PHOTO) = range(11)
+ ASK_LIKED, ASK_DISLIKED, ASK_STORY, ASK_PHOTO) = range(12)
 
 # ── Keyboards ─────────────────────────────────────────────────────────────────
 
@@ -51,8 +51,11 @@ def kb_skip() -> ReplyKeyboardMarkup:
         [['⏭ Пропустить']], resize_keyboard=True, one_time_keyboard=True
     )
 
-def kb_new_practice() -> ReplyKeyboardMarkup:
-    return ReplyKeyboardMarkup([['🎧 Начать практику']], resize_keyboard=True)
+def kb_home(has_practices: bool) -> ReplyKeyboardMarkup:
+    buttons = [['🎧 Начать практику']]
+    if has_practices:
+        buttons.append(['📖 Открыть дневник'])
+    return ReplyKeyboardMarkup(buttons, resize_keyboard=True)
 
 def kb_photo() -> InlineKeyboardMarkup:
     return InlineKeyboardMarkup([[
@@ -152,18 +155,42 @@ async def finish(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
         parse_mode='HTML',
         reply_markup=kb_journal(),
     )
+    # сохраняем флаг, очищаем только данные практики
+    for key in ('duration', 'place', 'front', 'right', 'back', 'left',
+                'liked', 'disliked', 'story', 'photo_file_id'):
+        context.user_data.pop(key, None)
+    context.user_data['has_practices'] = True
     await context.bot.send_message(
         chat_id,
-        'Начать новую практику?',
-        reply_markup=kb_new_practice(),
+        'Что дальше?',
+        reply_markup=kb_home(has_practices=True),
     )
-    context.user_data.clear()
     return ConversationHandler.END
 
 # ── Handlers ──────────────────────────────────────────────────────────────────
 
 async def cmd_start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
-    context.user_data.clear()
+    has_practices = context.user_data.get('has_practices', False)
+    await update.message.reply_text(
+        '🎧 <b>Квантовое Ухо</b>\n\n'
+        'Практика глубокого слушания пространства.',
+        parse_mode='HTML',
+        reply_markup=kb_home(has_practices),
+    )
+    return HOME
+
+
+async def on_home(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
+    text = update.message.text
+    if text == '📖 Открыть дневник':
+        await update.message.reply_text(
+            'Открывайте дневник:',
+            reply_markup=InlineKeyboardMarkup([[
+                InlineKeyboardButton('Открыть дневник 📖', url=JOURNAL_URL)
+            ]]),
+        )
+        return HOME
+    # "🎧 Начать практику"
     await update.message.reply_text(
         '🎧 <b>Слушание пространства</b>\n\n'
         'Займите удобное положение, сделайте три глубоких вдоха и закройте глаза.\n'
@@ -317,11 +344,9 @@ def main() -> None:
     app = Application.builder().token(BOT_TOKEN).build()
 
     conv = ConversationHandler(
-        entry_points=[
-            CommandHandler('start', cmd_start),
-            MessageHandler(filters.Regex('^🎧 Начать практику$'), cmd_start),
-        ],
+        entry_points=[CommandHandler('start', cmd_start)],
         states={
+            HOME: [MessageHandler(filters.TEXT & ~filters.COMMAND, on_home)],
             CHOOSE_DURATION: [CallbackQueryHandler(on_choose_duration, pattern='^dur_')],
             WAITING_DONE:    [MessageHandler(filters.TEXT & ~filters.COMMAND, on_waiting_done)],
             ASK_PLACE:       [MessageHandler(filters.TEXT & ~filters.COMMAND, on_ask_place)],
