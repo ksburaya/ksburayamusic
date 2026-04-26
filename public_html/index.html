@@ -1,0 +1,1108 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+	<!DOCTYPE html>
+<html lang="ru">
+<head>
+	<!-- Yandex.Metrika counter -->
+<script type="text/javascript">
+    (function(m,e,t,r,i,k,a){
+        m[i]=m[i]||function(){(m[i].a=m[i].a||[]).push(arguments)};
+        m[i].l=1*new Date();
+        for (var j = 0; j < document.scripts.length; j++) {if (document.scripts[j].src === r) { return; }}
+        k=e.createElement(t),a=e.getElementsByTagName(t)[0],k.async=1,k.src=r,a.parentNode.insertBefore(k,a)
+    })(window, document,'script','https://mc.yandex.ru/metrika/tag.js?id=108376390', 'ym');
+
+    ym(108376390, 'init', {ssr:true, webvisor:true, clickmap:true, ecommerce:"dataLayer", referrer: document.referrer, url: location.href, accurateTrackBounce:true, trackLinks:true});
+</script>
+<noscript><div><img src="https://mc.yandex.ru/watch/108376390" style="position:absolute; left:-9999px;" alt="" /></div></noscript>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ксюша Бурая — ambient-музыка, ткачество, глубокое слушание</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Raleway:wght@200;300;400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg-deep: #0a0a0c; --bg-surface: #111114; --bg-card: #17171c; --bg-card-hover: #1e1e25;
+  --text-primary: #e8e4df; --text-secondary: #9a9590; --text-muted: #5a5550;
+  --accent: #c4a882; --accent-dim: #8a7560; --accent-glow: rgba(196,168,130,0.15);
+  --border: rgba(196,168,130,0.08); --border-hover: rgba(196,168,130,0.2);
+  --font-display: 'Cormorant Garamond', Georgia, serif; --font-body: 'Raleway', sans-serif;
+  --ease-out: cubic-bezier(0.22,1,0.36,1); --ease-in-out: cubic-bezier(0.65,0,0.35,1);
+}
+*,*::before,*::after { margin:0;padding:0;box-sizing:border-box; }
+html { scroll-behavior:smooth;scrollbar-width:thin;scrollbar-color:var(--accent-dim) var(--bg-deep); }
+body { font-family:var(--font-body);background:var(--bg-deep);color:var(--text-primary);font-weight:300;line-height:1.7;overflow-x:hidden;-webkit-font-smoothing:antialiased; }
+::selection { background:var(--accent);color:var(--bg-deep); }
+#bg-canvas { position:fixed;top:0;left:0;width:100%;height:100%;z-index:0;pointer-events:none;opacity:0.4; }
+
+nav { position:fixed;top:0;left:0;right:0;z-index:100;padding:1.2rem 2.5rem;display:flex;justify-content:space-between;align-items:center;background:linear-gradient(to bottom,var(--bg-deep),transparent);transition:background 0.6s var(--ease-out); }
+nav.scrolled { background:rgba(10,10,12,0.92);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border-bottom:1px solid var(--border); }
+.nav-logo { font-family:var(--font-display);font-size:1.3rem;font-weight:300;letter-spacing:0.15em;color:var(--text-primary);text-decoration:none; }
+.nav-logo span { color:var(--accent); }
+.nav-links { display:flex;gap:1.5rem;list-style:none; }
+.nav-links a { font-size:0.68rem;font-weight:400;letter-spacing:0.14em;text-transform:uppercase;color:var(--text-secondary);text-decoration:none;position:relative;transition:color 0.3s; }
+.nav-links a::after { content:'';position:absolute;bottom:-4px;left:0;width:0;height:1px;background:var(--accent);transition:width 0.4s var(--ease-out); }
+.nav-links a:hover { color:var(--text-primary); }
+.nav-links a:hover::after { width:100%; }
+.nav-burger { display:none;flex-direction:column;gap:5px;background:none;border:none;cursor:pointer;padding:4px; }
+.nav-burger span { display:block;width:24px;height:1px;background:var(--text-primary); }
+
+.hero { position:relative;min-height:100vh;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;padding:2rem;z-index:1; }
+.hero-ornament { width:120px;height:1px;background:linear-gradient(90deg,transparent,var(--accent-dim),transparent);margin-bottom:2.5rem;opacity:0;animation:fadeSlideUp 1.2s var(--ease-out) 0.3s forwards; }
+.hero h1 { font-family:var(--font-display);font-size:clamp(3rem,8vw,7rem);font-weight:300;letter-spacing:0.06em;line-height:1.1;color:var(--text-primary);opacity:0;animation:fadeSlideUp 1.2s var(--ease-out) 0.5s forwards; }
+.hero-project { font-family:var(--font-display);font-size:clamp(1.1rem,2.5vw,1.6rem);font-weight:300;font-style:italic;color:var(--accent);margin-top:1.2rem;letter-spacing:0.12em;opacity:0;animation:fadeSlideUp 1.2s var(--ease-out) 0.7s forwards; }
+.hero-subtitle { font-family:var(--font-body);font-size:0.78rem;font-weight:300;letter-spacing:0.3em;color:var(--text-secondary);margin-top:1.5rem;opacity:0;animation:fadeSlideUp 1.2s var(--ease-out) 0.9s forwards; }
+.hero-scroll { position:absolute;bottom:3rem;display:flex;flex-direction:column;align-items:center;gap:0.8rem;opacity:0;animation:fadeSlideUp 1.2s var(--ease-out) 1.3s forwards; }
+.hero-scroll span { font-size:0.65rem;letter-spacing:0.3em;text-transform:uppercase;color:var(--text-muted); }
+.scroll-line { width:1px;height:40px;background:linear-gradient(to bottom,var(--accent-dim),transparent);animation:scrollPulse 2s var(--ease-in-out) infinite; }
+
+section { position:relative;z-index:1;padding:7rem 2rem;max-width:1100px;margin:0 auto; }
+.section-label { font-size:0.65rem;font-weight:400;letter-spacing:0.35em;text-transform:uppercase;color:var(--accent-dim);margin-bottom:1rem; }
+.section-title { font-family:var(--font-display);font-size:clamp(2rem,4vw,3.2rem);font-weight:300;color:var(--text-primary);margin-bottom:2.5rem;line-height:1.2; }
+.section-divider { width:60px;height:1px;background:linear-gradient(90deg,var(--accent-dim),transparent);margin-bottom:3rem; }
+.fade-in { opacity:0;transform:translateY(30px);transition:opacity 0.9s var(--ease-out),transform 0.9s var(--ease-out); }
+.fade-in.visible { opacity:1;transform:translateY(0); }
+.wave-divider { position:relative;z-index:1;width:100%;height:80px;overflow:hidden;opacity:0.3; }
+.wave-divider svg { width:100%;height:100%; }
+
+.about-grid { display:grid;grid-template-columns:1fr 1fr;gap:4rem;align-items:start; }
+.about-video { aspect-ratio:16/9;border-radius:2px;overflow:hidden;border:1px solid var(--border); }
+.about-video iframe { width:100%;height:100%;border:none; }
+.about-text p { color:var(--text-secondary);font-size:0.95rem;margin-bottom:1.5rem;font-weight:300; }
+.about-text p:first-of-type::first-letter { font-family:var(--font-display);font-size:3.2rem;float:left;line-height:1;margin-right:0.5rem;margin-top:0.1rem;color:var(--accent); }
+.about-tags { display:flex;flex-wrap:wrap;gap:0.6rem;margin-top:2rem; }
+.about-tag { font-size:0.7rem;letter-spacing:0.12em;text-transform:uppercase;padding:0.4rem 1rem;border:1px solid var(--border);border-radius:2px;color:var(--text-muted);transition:all 0.3s; }
+.about-tag:hover { border-color:var(--accent-dim);color:var(--accent);background:var(--accent-glow); }
+
+.projects-grid { display:grid;grid-template-columns:1fr 1fr;gap:2rem; }
+.project-card { background:var(--bg-card);border:1px solid var(--border);border-radius:2px;padding:2.5rem;transition:all 0.4s var(--ease-out);position:relative;overflow:hidden; }
+.project-card:hover { background:var(--bg-card-hover);border-color:var(--border-hover);transform:translateY(-3px); }
+.project-card::before { content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--accent),transparent);opacity:0;transition:opacity 0.4s; }
+.project-card:hover::before { opacity:1; }
+.project-badge { display:inline-block;font-size:0.6rem;letter-spacing:0.25em;text-transform:uppercase;color:var(--accent-dim);border:1px solid var(--border);padding:0.25rem 0.8rem;border-radius:2px;margin-bottom:1.2rem; }
+.project-name { font-family:var(--font-display);font-size:1.8rem;font-weight:300;color:var(--text-primary);margin-bottom:0.8rem;line-height:1.2; }
+.project-name em { font-style:italic;color:var(--accent); }
+.project-desc { color:var(--text-secondary);font-size:0.88rem;font-weight:300;line-height:1.7;margin-bottom:1.5rem; }
+.project-tags { display:flex;flex-wrap:wrap;gap:0.5rem; }
+.project-tag { font-size:0.62rem;letter-spacing:0.1em;text-transform:uppercase;padding:0.3rem 0.7rem;border:1px solid rgba(196,168,130,0.06);border-radius:2px;color:var(--text-muted); }
+.project-link { display:inline-flex;align-items:center;gap:0.5rem;margin-top:1.2rem;color:var(--accent-dim);font-size:0.75rem;letter-spacing:0.12em;text-transform:uppercase;text-decoration:none;transition:color 0.3s; }
+.project-link:hover { color:var(--accent); }
+
+.player-section-intro { color:var(--text-secondary);font-size:0.95rem;max-width:650px;margin-bottom:3rem;font-weight:300; }
+.audio-player-wrap { background:var(--bg-card);border:1px solid var(--border);border-radius:2px;overflow:hidden;margin-bottom:2rem; }
+.player-header { padding:1.5rem 2rem 0; }
+.player-now-label { font-size:0.6rem;letter-spacing:0.25em;text-transform:uppercase;color:var(--accent-dim); }
+.player-track-title { font-family:var(--font-display);font-size:1.4rem;color:var(--text-primary);padding:0.5rem 2rem 0; }
+.player-track-desc { font-size:0.8rem;color:var(--text-muted);padding:0.2rem 2rem 0; }
+.player-controls { display:flex;align-items:center;gap:1.2rem;padding:1.2rem 2rem; }
+.player-btn { background:none;border:none;color:var(--text-secondary);cursor:pointer;transition:color 0.3s,transform 0.2s;display:flex;align-items:center;justify-content:center; }
+.player-btn:hover { color:var(--accent); }
+.player-btn:active { transform:scale(0.92); }
+.player-btn-play { width:44px;height:44px;border-radius:50%;border:1px solid var(--border-hover);color:var(--accent); }
+.player-btn-play:hover { background:var(--accent-glow);border-color:var(--accent); }
+.player-progress-wrap { flex:1;display:flex;align-items:center;gap:0.8rem; }
+.player-time { font-size:0.7rem;color:var(--text-muted);font-variant-numeric:tabular-nums;min-width:36px; }
+.player-progress { flex:1;height:3px;background:rgba(196,168,130,0.1);border-radius:2px;cursor:pointer; }
+.player-progress-fill { height:100%;background:var(--accent);border-radius:2px;width:0%;position:relative;transition:width 0.1s linear; }
+.player-progress-fill::after { content:'';position:absolute;right:-4px;top:50%;transform:translateY(-50%);width:10px;height:10px;border-radius:50%;background:var(--accent);opacity:0;transition:opacity 0.2s; }
+.player-progress:hover .player-progress-fill::after { opacity:1; }
+.player-volume-wrap { display:flex;align-items:center;gap:0.5rem; }
+.player-volume { width:60px;height:3px;background:rgba(196,168,130,0.1);border-radius:2px;cursor:pointer; }
+.player-volume-fill { height:100%;background:var(--accent-dim);border-radius:2px;width:80%; }
+.tracklist { border-top:1px solid var(--border); }
+.track-item { display:grid;grid-template-columns:2.5rem 1fr auto;align-items:center;gap:1rem;padding:0.9rem 2rem;cursor:pointer;transition:background 0.2s;border-bottom:1px solid rgba(196,168,130,0.04); }
+.track-item:hover { background:var(--bg-card-hover); }
+.track-item.active { background:rgba(196,168,130,0.06); }
+.track-num { font-family:var(--font-display);font-size:1rem;color:var(--text-muted);text-align:center; }
+.track-item.active .track-num { color:var(--accent); }
+.track-info { display:flex;flex-direction:column;gap:0.15rem; }
+.track-name { font-size:0.88rem;color:var(--text-primary);font-weight:300; }
+.track-item.active .track-name { color:var(--accent); }
+.track-meta { font-size:0.72rem;color:var(--text-muted); }
+.track-duration { font-size:0.75rem;color:var(--text-muted);font-variant-numeric:tabular-nums; }
+.yandex-embed-section { margin-top:2.5rem; }
+.yandex-embed-label { font-size:0.65rem;letter-spacing:0.25em;text-transform:uppercase;color:var(--text-muted);margin-bottom:1rem; }
+.yandex-embed-placeholder { background:var(--bg-card);border:1px solid var(--border);border-radius:2px;padding:2.5rem;display:flex;align-items:center;justify-content:center;color:var(--text-muted);font-size:0.8rem;min-height:120px; }
+
+.video-intro { color:var(--text-secondary);font-size:0.95rem;max-width:650px;margin-bottom:3rem;font-weight:300; }
+.video-grid { display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:1.5rem; }
+.video-card { background:var(--bg-card);border:1px solid var(--border);border-radius:2px;padding:1.5rem;transition:all 0.4s var(--ease-out); }
+.video-card:hover { background:var(--bg-card-hover);border-color:var(--border-hover);transform:translateY(-2px); }
+.video-embed { width:100%;aspect-ratio:16/9;border-radius:2px;overflow:hidden;margin-bottom:1rem; }
+.video-embed iframe { width:100%;height:100%;border:none; }
+.video-card-title { font-family:var(--font-display);font-size:1.2rem;color:var(--text-primary);margin-bottom:0.4rem; }
+.video-card-desc { font-size:0.8rem;color:var(--text-muted);font-weight:300; }
+
+.tapestries-intro { color:var(--text-secondary);font-size:0.95rem;max-width:700px;margin-bottom:3rem;font-weight:300; }
+.tapestries-gallery { display:grid;grid-template-columns:repeat(3,1fr);gap:1rem; }
+.tapestry-item { aspect-ratio:1;background:var(--bg-card);border:1px solid var(--border);border-radius:2px;overflow:hidden;position:relative;cursor:pointer;transition:all 0.4s var(--ease-out); }
+.tapestry-item:hover { border-color:var(--border-hover);transform:scale(1.02); }
+.tapestry-item:nth-child(1) { grid-column:span 2;grid-row:span 2; }
+.tapestry-placeholder { width:100%;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:0.8rem;color:var(--text-muted);font-size:0.7rem;letter-spacing:0.15em;text-transform:uppercase;background:repeating-conic-gradient(var(--bg-card) 0% 25%,var(--bg-surface) 0% 50%) 0 0/20px 20px; }
+.tapestry-overlay { position:absolute;bottom:0;left:0;right:0;padding:1.2rem;background:linear-gradient(to top,rgba(10,10,12,0.9),transparent);opacity:0;transform:translateY(10px);transition:all 0.4s var(--ease-out); }
+.tapestry-item:hover .tapestry-overlay { opacity:1;transform:translateY(0); }
+.tapestry-overlay-title { font-family:var(--font-display);font-size:1.1rem;color:var(--text-primary); }
+.tapestry-overlay-desc { font-size:0.75rem;color:var(--text-secondary);margin-top:0.3rem; }
+
+.articles-list { display:flex;flex-direction:column;gap:0.5rem; }
+.article-item { display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:2rem;padding:1.8rem 1.5rem;background:var(--bg-card);border:1px solid var(--border);border-radius:2px;cursor:pointer;transition:all 0.3s var(--ease-out);text-decoration:none;color:inherit; }
+.article-item:hover { background:var(--bg-card-hover);border-color:var(--border-hover);transform:translateX(4px); }
+.article-num { font-family:var(--font-display);font-size:2rem;font-weight:300;color:var(--accent-dim);min-width:3rem;text-align:center; }
+.article-content { display:flex;flex-direction:column;gap:0.3rem; }
+.article-title { font-family:var(--font-display);font-size:1.3rem;font-weight:400;color:var(--text-primary); }
+.article-excerpt { font-size:0.82rem;color:var(--text-muted);font-weight:300; }
+.article-arrow { color:var(--accent-dim);transition:transform 0.3s,color 0.3s; }
+.article-item:hover .article-arrow { transform:translateX(5px);color:var(--accent); }
+.articles-more { display:inline-flex;align-items:center;gap:0.6rem;margin-top:2rem;padding:0.8rem 1.6rem;border:1px solid var(--border);border-radius:2px;color:var(--text-secondary);text-decoration:none;font-family:var(--font-body);font-size:0.75rem;letter-spacing:0.15em;text-transform:uppercase;transition:all 0.3s;cursor:pointer;background:none; }
+.articles-more:hover { border-color:var(--accent);color:var(--accent);background:var(--accent-glow); }
+.blog-article--draft {
+  opacity: 0.4;
+  pointer-events: none;
+}
+
+.contact-section { text-align:center;padding-bottom:5rem; }
+.contact-quote { font-family:var(--font-display);font-size:clamp(1.4rem,3vw,2.2rem);font-weight:300;font-style:italic;color:var(--text-secondary);max-width:700px;margin:0 auto 1rem;line-height:1.5; }
+.contact-quote-author { font-size:0.75rem;letter-spacing:0.2em;text-transform:uppercase;color:var(--text-muted);margin-bottom:4rem; }
+.social-links { display:flex;justify-content:center;gap:1.5rem;margin-bottom:3rem;flex-wrap:wrap; }
+.social-link { width:52px;height:52px;display:flex;align-items:center;justify-content:center;border:1px solid var(--border);border-radius:50%;color:var(--text-secondary);text-decoration:none;transition:all 0.4s var(--ease-out); }
+.social-link:hover { border-color:var(--accent);color:var(--accent);background:var(--accent-glow);transform:translateY(-3px); }
+.social-link svg { width:20px;height:20px; }
+.contact-email { font-family:var(--font-display);font-size:1.1rem;color:var(--text-secondary); }
+.contact-email a { color:var(--accent);text-decoration:none;border-bottom:1px solid transparent;transition:border-color 0.3s; }
+.contact-email a:hover { border-bottom-color:var(--accent); }
+
+footer { position:relative;z-index:1;text-align:center;padding:2.5rem 2rem;border-top:1px solid var(--border); }
+.footer-content { display:flex;flex-direction:column;align-items:center;gap:1.2rem; }
+.footer-presskit { display:inline-flex;align-items:center;gap:0.6rem;padding:0.6rem 1.4rem;border:1px solid var(--border);border-radius:2px;color:var(--text-secondary);font-size:0.7rem;letter-spacing:0.15em;text-transform:uppercase;text-decoration:none;background:none;cursor:pointer;font-family:var(--font-body);transition:all 0.3s; }
+.footer-presskit:hover { border-color:var(--accent);color:var(--accent);background:var(--accent-glow); }
+.footer-copy { font-size:0.7rem;letter-spacing:0.15em;text-transform:uppercase;color:var(--text-muted); }
+
+.overlay-page { display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:var(--bg-deep);z-index:200;overflow-y:auto; }
+.overlay-page.active { display:block; }
+.overlay-header { padding:2rem 2.5rem;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--border);position:sticky;top:0;background:rgba(10,10,12,0.95);backdrop-filter:blur(20px);z-index:10; }
+.overlay-back { display:flex;align-items:center;gap:0.6rem;background:none;border:none;color:var(--text-secondary);cursor:pointer;font-family:var(--font-body);font-size:0.75rem;letter-spacing:0.12em;text-transform:uppercase;transition:color 0.3s; }
+.overlay-back:hover { color:var(--accent); }
+.overlay-title { font-family:var(--font-display);font-size:1.3rem;color:var(--text-primary);font-weight:300; }
+.overlay-content { max-width:750px;margin:0 auto;padding:4rem 2rem; }
+.blog-article { margin-bottom:4rem;padding-bottom:4rem;border-bottom:1px solid var(--border); }
+.blog-article:last-child { border-bottom:none; }
+.blog-article-date { font-size:0.65rem;letter-spacing:0.25em;text-transform:uppercase;color:var(--accent-dim);margin-bottom:0.8rem; }
+.blog-article-title { font-family:var(--font-display);font-size:2rem;font-weight:300;color:var(--text-primary);margin-bottom:1.5rem;line-height:1.3; }
+.blog-article-body { color:var(--text-secondary);font-size:0.95rem;font-weight:300;line-height:1.8; }
+.blog-article-body p { margin-bottom:1.2rem; }
+
+.pk-section { margin-bottom:4rem; }
+.pk-section-title { font-family:var(--font-display);font-size:1.6rem;font-weight:300;color:var(--text-primary);margin-bottom:1.5rem; }
+.pk-text { color:var(--text-secondary);font-size:0.95rem;font-weight:300;line-height:1.8;margin-bottom:1rem; }
+.pk-text strong { color:var(--text-primary);font-weight:400; }
+.pk-photos-grid { display:grid;grid-template-columns:repeat(3,1fr);gap:1rem;margin-bottom:1.5rem; }
+.pk-photo { border-radius:2px;overflow:hidden;border:1px solid var(--border); }
+.pk-photo img { width:100%;height:100%;object-fit:cover;display:block; }
+.pk-download { display:inline-flex;align-items:center;gap:0.6rem;padding:0.7rem 1.4rem;border:1px solid var(--border);border-radius:2px;color:var(--text-secondary);text-decoration:none;font-size:0.75rem;letter-spacing:0.12em;text-transform:uppercase;transition:all 0.3s;margin-top:1rem; }
+.pk-download:hover { border-color:var(--accent);color:var(--accent);background:var(--accent-glow); }
+.pk-rider { background:var(--bg-card);border:1px solid var(--border);border-radius:2px;padding:2rem; }
+.pk-rider h4 { font-family:var(--font-display);font-size:1.1rem;color:var(--text-primary);font-weight:400;margin-bottom:1rem; }
+.pk-rider ul { list-style:none;padding:0; }
+.pk-rider li { color:var(--text-secondary);font-size:0.88rem;font-weight:300;padding:0.4rem 0;border-bottom:1px solid rgba(196,168,130,0.04);display:flex;align-items:center;gap:0.6rem; }
+.pk-rider li::before { content:'—';color:var(--accent-dim); }
+
+@keyframes fadeSlideUp { from { opacity:0;transform:translateY(25px); } to { opacity:1;transform:translateY(0); } }
+@keyframes scrollPulse { 0%,100% { opacity:0.3;transform:scaleY(1); } 50% { opacity:0.8;transform:scaleY(1.3); } }
+@keyframes eqBar { 0%,100% { height:3px; } 50% { height:14px; } }
+.eq-bars { display:none;align-items:flex-end;gap:2px;height:16px; }
+.track-item.active.playing .eq-bars { display:flex; }
+.track-item.active.playing .track-num-text { display:none; }
+.eq-bar { width:2px;background:var(--accent);border-radius:1px;animation:eqBar 0.8s ease-in-out infinite; }
+.eq-bar:nth-child(2) { animation-delay:0.15s; }
+.eq-bar:nth-child(3) { animation-delay:0.3s; }
+
+.mobile-menu { display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(10,10,12,0.97);z-index:99;flex-direction:column;align-items:center;justify-content:center;gap:2rem;backdrop-filter:blur(30px); }
+.mobile-menu.active { display:flex; }
+.mobile-menu a { font-family:var(--font-display);font-size:1.8rem;font-weight:300;color:var(--text-secondary);text-decoration:none;transition:color 0.3s; }
+.mobile-menu a:hover { color:var(--accent); }
+.mobile-close { position:absolute;top:1.5rem;right:2rem;background:none;border:none;color:var(--text-primary);font-size:1.5rem;cursor:pointer; }
+.article-item.draft {
+  opacity: 0.35;
+  pointer-events: none;
+  cursor: default;
+  filter: grayscale(0.3);
+}
+.article-item.draft .article-arrow {
+  display: none;
+}
+/* ── Форма подписки ── */
+.subscribe-section { position:relative;z-index:1;padding:4rem 2rem;max-width:1100px;margin:0 auto; }
+.subscribe-wrap { background:var(--bg-card);border:1px solid var(--border);border-radius:2px;padding:3.5rem;display:grid;grid-template-columns:1fr 1fr;gap:4rem;align-items:center; }
+.subscribe-text {}
+.subscribe-label { font-size:0.65rem;font-weight:400;letter-spacing:0.35em;text-transform:uppercase;color:var(--accent-dim);margin-bottom:1rem; }
+.subscribe-title { font-family:var(--font-display);font-size:clamp(1.6rem,3vw,2.4rem);font-weight:300;color:var(--text-primary);line-height:1.2;margin-bottom:1.2rem; }
+.subscribe-desc { color:var(--text-secondary);font-size:0.88rem;font-weight:300;line-height:1.7; }
+.subscribe-form { display:flex;flex-direction:column;gap:1rem; }
+.subscribe-field { display:flex;flex-direction:column;gap:0.4rem; }
+.subscribe-field label { font-size:0.65rem;letter-spacing:0.2em;text-transform:uppercase;color:var(--text-muted); }
+.subscribe-field input {
+  background:var(--bg-surface);
+  border:1px solid var(--border);
+  border-radius:2px;
+  padding:0.8rem 1.1rem;
+  color:var(--text-primary);
+  font-family:var(--font-body);
+  font-size:0.88rem;
+  font-weight:300;
+  outline:none;
+  transition:border-color 0.3s,background 0.3s;
+  width:100%;
+}
+.subscribe-field input:focus { border-color:var(--accent-dim);background:var(--bg-card-hover); }
+.subscribe-field input::placeholder { color:var(--text-muted); }
+.subscribe-btn {
+  margin-top:0.5rem;
+  padding:0.9rem 1.6rem;
+  background:transparent;
+  border:1px solid var(--accent-dim);
+  border-radius:2px;
+  color:var(--accent);
+  font-family:var(--font-body);
+  font-size:0.75rem;
+  font-weight:400;
+  letter-spacing:0.18em;
+  text-transform:uppercase;
+  cursor:pointer;
+  transition:all 0.3s var(--ease-out);
+  display:flex;align-items:center;justify-content:center;gap:0.6rem;
+}
+.subscribe-btn:hover { background:var(--accent-glow);border-color:var(--accent); }
+.subscribe-btn:disabled { opacity:0.5;cursor:not-allowed; }
+.subscribe-note { font-size:0.68rem;color:var(--text-muted);margin-top:0.5rem;line-height:1.5; }
+.subscribe-success { display:none;text-align:center;padding:2rem; }
+.subscribe-success-icon { font-family:var(--font-display);font-size:2.5rem;color:var(--accent);margin-bottom:1rem; }
+.subscribe-success-text { font-family:var(--font-display);font-size:1.3rem;font-weight:300;color:var(--text-primary);margin-bottom:0.5rem; }
+.subscribe-success-sub { font-size:0.82rem;color:var(--text-muted); }
+/* EVENTS */
+.events-grid { display:grid; grid-template-columns:repeat(auto-fit, minmax(300px,1fr)); gap:1.5rem; }
+.event-card { background:var(--bg-card); border:1px solid var(--border); border-radius:2px; padding:2rem; transition:all 0.4s var(--ease-out); position:relative; overflow:hidden; }
+.event-card:hover { background:var(--bg-card-hover); border-color:var(--border-hover); transform:translateY(-3px); }
+.event-card::before { content:''; position:absolute; top:0; left:0; right:0; height:2px; background:linear-gradient(90deg,var(--accent),transparent); opacity:0; transition:opacity 0.4s; }
+.event-card:hover::before { opacity:1; }
+.event-date { font-size:0.6rem; letter-spacing:0.25em; text-transform:uppercase; color:var(--accent); margin-bottom:0.8rem; }
+.event-name { font-family:var(--font-display); font-size:1.4rem; font-weight:300; color:var(--text-primary); margin-bottom:0.5rem; line-height:1.3; }
+.event-venue { font-size:0.82rem; color:var(--text-muted); font-weight:300; margin-bottom:1.5rem; }
+.event-btn { display:inline-flex; align-items:center; gap:0.5rem; padding:0.6rem 1.2rem; border:1px solid var(--border); border-radius:2px; color:var(--text-secondary); text-decoration:none; font-family:var(--font-body); font-size:0.72rem; letter-spacing:0.12em; text-transform:uppercase; transition:all 0.3s; }
+.event-btn:hover { border-color:var(--accent); color:var(--accent); background:var(--accent-glow); }
+.event-past { opacity:0.5; }
+.event-past .event-btn { display:none; }
+
+<style id="carousel-css-snippet">
+/* ── Карусель гобеленов ── */
+/* ── Карусель гобеленов ── */
+.tapestries-carousel-wrap { position:relative; }
+
+.carousel-track-outer {
+  overflow:hidden;
+  border-radius:2px;
+  position:relative;
+  /* обрезаем, но оставляем видимым край следующего слайда */
+  margin:0 -2rem;
+  padding:0 2rem;
+}
+
+.carousel-track {
+  display:flex;
+  gap:1.2rem;
+  transition:transform 0.6s cubic-bezier(0.22,1,0.36,1);
+  will-change:transform;
+}
+
+.carousel-slide {
+  /* 3 слайда + виден край 4-го */
+  flex: 0 0 calc(30% - 0.4rem);
+  min-width:0;
+  position:relative;
+  border-radius:2px;
+  overflow:hidden;
+  border:1px solid var(--border);
+  transition:border-color 0.4s;
+  cursor:pointer;
+}
+.carousel-slide:hover { border-color:var(--border-hover); }
+.carousel-slide a { display:block;text-decoration:none;color:inherit; }
+.carousel-slide-img { aspect-ratio:3/4;overflow:hidden;position:relative; }
+.carousel-slide-img img { width:100%;height:100%;object-fit:cover;transition:transform 0.6s cubic-bezier(0.22,1,0.36,1);display:block; }
+.carousel-slide:hover .carousel-slide-img img { transform:scale(1.04); }
+.carousel-slide-body { padding:1.1rem 1.2rem 1.3rem;background:var(--bg-card); }
+.carousel-slide-series { font-size:0.58rem;letter-spacing:0.22em;text-transform:uppercase;color:var(--accent-dim);margin-bottom:0.4rem; }
+.carousel-slide-name { font-family:var(--font-display);font-size:1.15rem;font-weight:300;color:var(--text-primary); }
+
+/* Стрелки — большие, над каруселью */
+.carousel-nav {
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  margin-bottom:1.2rem;
+}
+.carousel-dots { display:flex;gap:0.5rem;align-items:center; }
+.carousel-dot {
+  width:24px;height:2px;
+  background:var(--border);
+  border-radius:1px;
+  cursor:pointer;
+  transition:all 0.3s;
+  border:none;padding:0;
+}
+.carousel-dot.active { background:var(--accent);width:40px; }
+
+.carousel-arrows { display:flex;gap:0.6rem; }
+.carousel-arrow {
+  width:44px;height:44px;
+  border:1px solid var(--border-hover);
+  border-radius:2px;
+  background:var(--bg-card);
+  color:var(--text-secondary);
+  cursor:pointer;
+  display:flex;align-items:center;justify-content:center;
+  transition:all 0.3s;
+  flex-shrink:0;
+}
+.carousel-arrow:hover { border-color:var(--accent);color:var(--accent);background:var(--accent-glow); }
+.carousel-arrow:disabled { opacity:0.25;cursor:default;pointer-events:none; }
+
+/* Кнопка "Все гобелены" */
+.tapestries-cta-row {
+  display:flex;align-items:center;justify-content:space-between;
+  margin-bottom:1.5rem;flex-wrap:wrap;gap:1rem;
+}
+.tapestries-all-btn {
+  display:inline-flex;align-items:center;gap:0.6rem;
+  padding:0.7rem 1.4rem;border:1px solid var(--border);border-radius:2px;
+  color:var(--text-secondary);text-decoration:none;font-family:var(--font-body);
+  font-size:0.72rem;letter-spacing:0.15em;text-transform:uppercase;
+  transition:all 0.3s var(--ease-out);
+}
+.tapestries-all-btn:hover { border-color:var(--accent);color:var(--accent);background:var(--accent-glow); }
+
+@media(max-width:768px){
+  .carousel-slide { flex:0 0 72%; }
+  .tapestries-cta-row { flex-direction:column;align-items:flex-start; }
+  .carousel-track-outer { margin:0 -1.5rem; padding:0 1.5rem; }
+}
+@media(max-width:480px){
+  .carousel-slide { flex:0 0 82%; }
+}
+
+
+@media (max-width:1024px) {
+  nav { padding:1rem 1.5rem; } .nav-links { display:none; } .nav-burger { display:flex; }
+  section { padding:4rem 1.5rem; } .about-grid { grid-template-columns:1fr;gap:2rem; }
+  .projects-grid { grid-template-columns:1fr; } .tapestries-gallery { grid-template-columns:1fr 1fr; }
+  .tapestry-item:nth-child(1) { grid-column:span 2;grid-row:span 1; }
+  .article-item { grid-template-columns:1fr auto;gap:1rem;padding:1.2rem; } .article-num { display:none; }
+  .video-grid { grid-template-columns:1fr; }
+  .player-controls { flex-wrap:wrap;gap:0.8rem;padding:1rem 1.2rem; } .player-volume-wrap { display:none; }
+  .player-header,.player-track-title,.player-track-desc { padding-left:1.2rem;padding-right:1.2rem; }
+  .track-item { padding:0.9rem 1.2rem; } .pk-photos-grid { grid-template-columns:1fr 1fr; 
+  }
+  .subscribe-wrap { grid-template-columns:1fr; gap:2rem; padding:2rem; }
+}
+.project-card {
+  display: flex;
+  flex-direction: column;
+}
+.project-card .project-badge {
+  align-self: flex-start;
+}
+.project-card .event-btn {
+  align-self: flex-start;
+  margin-top: auto;
+}
+.project-card > div:last-child {
+  margin-top: auto;
+}
+.projects-grid {
+  align-items: stretch;
+}
+</style>
+</head>
+<body>
+<canvas id="bg-canvas"></canvas>
+
+<nav id="navbar">
+  <a href="#hero" class="nav-logo">Ксюша <span>Бурая</span></a>
+  <ul class="nav-links">
+    <li><a href="#about">Обо мне</a></li>
+    <li><a href="#projects">Проекты</a></li>
+	<li><a href="#events">События</a></li>
+    <li><a href="#music">Музыка</a></li>
+    <li><a href="#tapestries">Гобелены</a></li>
+    <li><a href="#articles">Статьи</a></li>
+	<li><a href="#video">Коллаборации</a></li>
+    <li><a href="#contact">Контакт</a></li>
+  </ul>
+  <button class="nav-burger" onclick="toggleMobile()" aria-label="Меню"><span></span><span></span><span></span></button>
+</nav>
+<div class="mobile-menu" id="mobileMenu">
+  <button class="mobile-close" onclick="toggleMobile()">&times;</button>
+  <a href="#about" onclick="toggleMobile()">Обо мне</a>
+  <a href="#projects" onclick="toggleMobile()">Проекты</a>
+  <a href="#events" onclick="toggleMobile()">События</a>
+  <a href="#music" onclick="toggleMobile()">Музыка</a>
+  <a href="#tapestries" onclick="toggleMobile()">Гобелены</a>
+  <a href="#articles" onclick="toggleMobile()">Статьи</a>
+  <a href="#video" onclick="toggleMobile()">Коллаборации</a>
+  <a href="#contact" onclick="toggleMobile()">Контакт</a>
+</div>
+
+<section class="hero" id="hero">
+  <div class="hero-ornament"></div>
+  <h1>Ксюша Бурая</h1>
+  <p class="hero-project">Квантовое Ухо</p>
+  <p class="hero-subtitle">ambient-музыка · ткачество · глубокое слушание</p>
+  <div class="hero-scroll"><span>Слушать глубже</span><div class="scroll-line"></div></div>
+</section>
+
+<div class="wave-divider"><svg viewBox="0 0 1440 80" preserveAspectRatio="none"><path d="M0,40 C240,80 480,0 720,40 C960,80 1200,0 1440,40 L1440,80 L0,80 Z" fill="rgba(196,168,130,0.05)"/></svg></div>
+
+<section id="about">
+  <div class="fade-in">
+    <p class="section-label">Обо мне</p>
+    <h2 class="section-title">Ксюша Бурая</h2>
+    <div class="section-divider"></div>
+  </div>
+  <div class="about-grid fade-in">
+	 <div class="about-video">
+	  <video controls preload="none" poster="images/poster_1.jpeg" style="width:100%;height:100%;object-fit:cover;background:#000;">
+	    <source src="video/main_video.mp4" type="video/mp4">
+	  </video>
+	</div>
+    <div class="about-text">
+      <p>Меня зовут Ксюша Бурая. Я — ambient-композитор, художница по текстилю и исследовательница звука. Моя практика живёт на пересечении электронной музыки, науки о слушании и созерцательных традиций.</p>
+      <p>Я выступаю с электронными лайвами и перфолекциями, создаю ambient-музыку с помощью инструментов SOMA, голоса, модульного и гранулярного синтеза, и тку гобелены, в которых глубокое изучение орнаментов народов мира переплетается в авторских паттернах.</p>
+      <div class="about-tags">
+        <span class="about-tag">Ambient</span><span class="about-tag">EIS</span>
+        <span class="about-tag">Глубокое слушание</span><span class="about-tag">Текстиль</span>
+        <span class="about-tag">Sound Art</span><span class="about-tag">SOMA</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="wave-divider"><svg viewBox="0 0 1440 80" preserveAspectRatio="none"><path d="M0,40 C360,0 720,80 1080,40 C1260,20 1380,60 1440,40 L1440,80 L0,80 Z" fill="rgba(196,168,130,0.04)"/></svg></div>
+
+<section id="projects">
+  <div class="fade-in">
+    <p class="section-label">Проекты</p>
+    <h2 class="section-title">Мои проекты</h2>
+    <div class="section-divider"></div>
+  </div>
+  <div class="projects-grid fade-in">
+
+    <div class="project-card" style="border-color:rgba(196,168,130,0.3);cursor:pointer;" onclick="window.location.href='https://ksburayamusic.ru/deeplistening/practice'">
+      <div style="position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--accent),transparent);"></div>
+      <span class="project-badge" style="color:var(--accent);border-color:rgba(196,168,130,0.3);background:rgba(196,168,130,0.08);">Новое</span>
+      <h3 class="project-name"><em>Дневник</em> звуковых практик</h3>
+      <p class="project-desc">Интерактивный дневник для занятий практиками глубокого слушания. Упражнения на исследование внешних и внутренних звуковых пространств.</p>
+      <a href="https://ksburayamusic.ru/deeplistening/practice" class="event-btn" style="margin-top:1.5rem;">
+        Перейти
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+      </a>
+    </div>
+
+    <div class="project-card">
+      <span class="project-badge">Music</span>
+      <h3 class="project-name">KS <em>BURAYA</em></h3>
+      <p class="project-desc">Сольный музыкальный проект. Ambient с помощью инструментов SOMA, голоса, модульного и гранулярного синтеза.</p>
+      <a href="#music" class="event-btn" style="margin-top:1.5rem;">
+        Послушать
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+      </a>
+    </div>
+
+    <div class="project-card">
+      <span class="project-badge">Art&amp;Science</span>
+      <h3 class="project-name">Квантовое <em>Ухо</em></h3>
+      <p class="project-desc">Проект на пересечении электронной музыки и философии Deep Listening. Перфолекции, мастер-классы, исследование слушания как практики.</p>
+      <div style="display:flex;gap:0.6rem;margin-top:1.5rem;flex-wrap:wrap;">
+        <a href="https://t.me/ksburayamusic" target="_blank" class="event-btn">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.479.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z"/></svg>
+          Telegram
+        </a>
+        <a href="https://vk.com/ksburayamusic" target="_blank" class="event-btn">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M15.684 0H8.316C1.592 0 0 1.592 0 8.316v7.368C0 22.408 1.592 24 8.316 24h7.368C22.408 24 24 22.408 24 15.684V8.316C24 1.592 22.391 0 15.684 0zm3.692 17.123h-1.744c-.66 0-.864-.525-2.05-1.727-1.033-1-1.49-1.135-1.744-1.135-.356 0-.458.102-.458.593v1.575c0 .424-.135.678-1.253.678-1.846 0-3.896-1.12-5.339-3.202-2.17-3.042-2.763-5.32-2.763-5.778 0-.254.102-.491.593-.491h1.744c.44 0 .61.203.78.678.864 2.491 2.303 4.675 2.896 4.675.22 0 .322-.102.322-.66V9.721c-.068-1.186-.695-1.287-.695-1.71 0-.203.17-.407.44-.407h2.744c.373 0 .508.203.508.643v3.473c0 .372.17.508.271.508.22 0 .407-.136.813-.542 1.253-1.406 2.153-3.574 2.153-3.574.119-.254.322-.491.763-.491h1.744c.525 0 .644.27.525.643-.22 1.017-2.354 4.031-2.354 4.031-.186.305-.254.44 0 .78.186.254.796.779 1.203 1.253.745.847 1.32 1.558 1.473 2.05.17.49-.085.744-.576.744z"/></svg>
+          VK
+        </a>
+      </div>
+    </div>
+
+    <div class="project-card">
+      <span class="project-badge">Music</span>
+      <h3 class="project-name">Крабс</h3>
+      <p class="project-desc">Импровизационный дуэт на синтезаторах SOMA. Каждая сессия — диалог двух голосов, нащупывающих общую историю в реальном времени.</p>
+      <a href="#music" class="event-btn" style="margin-top:1.5rem;">
+        Послушать
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+      </a>
+    </div>
+
+  </div>
+</section>
+
+
+<div class="wave-divider"><svg viewBox="0 0 1440 80" preserveAspectRatio="none"><path d="M0,50 C180,20 360,70 540,40 C720,10 900,60 1080,35 C1260,10 1380,55 1440,40 L1440,80 L0,80 Z" fill="rgba(196,168,130,0.03)"/></svg></div>
+
+<section id="events">
+  <div class="fade-in">
+    <p class="section-label">События</p>
+    <h2 class="section-title">Ближайшие выступления</h2>
+    <div class="section-divider"></div>
+  </div>
+	<!-- <div class="event-card">
+      <p class="event-date">1 апреля  2026 · 19:00</p>
+      <h3 class="event-name">Фестиваль ambient музыки "ИНО"</h3>
+      <p class="event-venue">Новая Сцена Александринки, Питер</p>
+      <a href="https://alexandrinsky.ru/afisha-i-bilety/ino-festival-embient-muzyki" class="event-btn">Программа и билеты <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg></a>
+    </div> -->
+	<div class="events-grid fade-in">
+  <div style="grid-column:1/-1; text-align:center; padding:4rem 2rem;">
+    <p style="font-family:var(--font-display); font-size:2.5rem; font-weight:300; color:var(--accent-dim); letter-spacing:0.1em; margin-bottom:1rem;">Новые даты скоро</p>
+    <p style="color:var(--text-muted); font-size:0.85rem; font-weight:300; letter-spacing:0.05em;">Следите за обновлениями в <a href="https://t.me/ksburayamusic" style="color:var(--accent); text-decoration:none; border-bottom:1px solid transparent; transition:border-color 0.3s;" onmouseover="this.style.borderBottomColor='var(--accent)'" onmouseout="this.style.borderBottomColor='transparent'">Telegram</a></p>
+  </div>
+</div>
+
+  </div>
+</section>
+
+<div class="wave-divider"><svg viewBox="0 0 1440 80" preserveAspectRatio="none"><path d="M0,40 C240,80 480,0 720,40 C960,80 1200,0 1440,40 L1440,80 L0,80 Z" fill="rgba(196,168,130,0.03)"/></svg></div>
+
+<section id="music">
+  <div class="fade-in">
+    <p class="section-label">Слушать</p>
+    <h2 class="section-title">Музыка</h2>
+    <div class="section-divider"></div>
+    <p class="player-section-intro">Ambient-композиции, созданные с помощью инструментов SOMA, голоса, модульного и гранулярного синтеза. Орнаментальные ландшафты из live-лупинга и задержек.</p>
+  </div>
+  <div class="audio-player-wrap fade-in" id="audioPlayer">
+    <div class="player-header"><span class="player-now-label">Сейчас играет</span></div>
+    <div class="player-track-title" id="playerTitle">Выберите трек</div>
+    <div class="player-track-desc" id="playerDesc">—</div>
+    <div class="player-controls">
+      <button class="player-btn" onclick="prevTrack()"><svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M6 6h2v12H6zm3.5 6l8.5 6V6z"/></svg></button>
+      <button class="player-btn player-btn-play" id="playBtn" onclick="togglePlay()">
+        <svg id="iconPlay" width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><polygon points="6,3 20,12 6,21"/></svg>
+        <svg id="iconPause" width="20" height="20" viewBox="0 0 24 24" fill="currentColor" style="display:none"><rect x="5" y="3" width="4" height="18"/><rect x="15" y="3" width="4" height="18"/></svg>
+      </button>
+      <button class="player-btn" onclick="nextTrack()"><svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M6 18l8.5-6L6 6v12zM16 6v12h2V6h-2z"/></svg></button>
+      <div class="player-progress-wrap">
+        <span class="player-time" id="timeCurrent">0:00</span>
+        <div class="player-progress" id="progressBar" onclick="seekTrack(event)"><div class="player-progress-fill" id="progressFill"></div></div>
+        <span class="player-time" id="timeTotal">0:00</span>
+      </div>
+      <div class="player-volume-wrap">
+        <button class="player-btn" onclick="toggleMute()"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02z"/></svg></button>
+        <div class="player-volume" onclick="setVolume(event)"><div class="player-volume-fill" id="volumeFill"></div></div>
+      </div>
+    </div>
+    <div class="tracklist" id="tracklist">
+      <div class="track-item" data-index="0" onclick="playTrackByIndex(0)"><div class="track-num"><span class="track-num-text">1</span><div class="eq-bars"><div class="eq-bar"></div><div class="eq-bar"></div><div class="eq-bar"></div></div></div><div class="track-info"><span class="track-name">Ладога Эхос</span><span class="track-meta">KS BURAYA</span></div><span class="track-duration">59:50</span></div>
+    </div>
+	<div class="tracklist" id="tracklist">
+      <div class="track-item" data-index="0" onclick="playTrackByIndex(1)"><div class="track-num"><span class="track-num-text">2</span><div class="eq-bars"><div class="eq-bar"></div><div class="eq-bar"></div><div class="eq-bar"></div></div></div><div class="track-info"><span class="track-name">6 ветвей</span><span class="track-meta">KS BURAYA </span></div><span class="track-duration">24:17</span></div>
+    </div>
+	<div class="tracklist" id="tracklist">
+      <div class="track-item" data-index="0" onclick="playTrackByIndex(2)"><div class="track-num"><span class="track-num-text">3</span><div class="eq-bars"><div class="eq-bar"></div><div class="eq-bar"></div><div class="eq-bar"></div></div></div><div class="track-info"><span class="track-name">Ambience</span><span class="track-meta">KS BURAYA</span></div><span class="track-duration">39:07</span></div>
+    </div>
+	<div class="tracklist" id="tracklist">
+      <div class="track-item" data-index="0" onclick="playTrackByIndex(3)"><div class="track-num"><span class="track-num-text">4</span><div class="eq-bars"><div class="eq-bar"></div><div class="eq-bar"></div><div class="eq-bar"></div></div></div><div class="track-info"><span class="track-name">Лес и Разум</span><span class="track-meta">KS BURAYA</span></div><span class="track-duration">30:01</span></div>
+    </div>
+	<div class="tracklist" id="tracklist">
+      <div class="track-item" data-index="0" onclick="playTrackByIndex(4)"><div class="track-num"><span class="track-num-text">4</span><div class="eq-bars"><div class="eq-bar"></div><div class="eq-bar"></div><div class="eq-bar"></div></div></div><div class="track-info"><span class="track-name">За полчаса до полуночи</span><span class="track-meta">КРАБС</span></div><span class="track-duration">48:00</span></div>
+    </div>
+	<div class="tracklist" id="tracklist">
+      <div class="track-item" data-index="0" onclick="playTrackByIndex(5)"><div class="track-num"><span class="track-num-text">4</span><div class="eq-bars"><div class="eq-bar"></div><div class="eq-bar"></div><div class="eq-bar"></div></div></div><div class="track-info"><span class="track-name">Пространства</span><span class="track-meta">KS BURAYA</span></div><span class="track-duration">19:37</span></div>
+    </div>
+	<div class="tracklist" id="tracklist">
+      <div class="track-item" data-index="0" onclick="playTrackByIndex(6)"><div class="track-num"><span class="track-num-text">4</span><div class="eq-bars"><div class="eq-bar"></div><div class="eq-bar"></div><div class="eq-bar"></div></div></div><div class="track-info"><span class="track-name">Космос прощай</span><span class="track-meta">KS BURAYA</span></div><span class="track-duration">14:05</span></div>
+    </div>
+  </div>
+  <!-- неясно как сделать виджет ниже темным, а белый он выглядит супер уродско! -->
+  <!-- <div class="yandex-embed-section fade-in">
+    <p class="yandex-embed-label">Также на Яндекс.Музыке</p>
+    <iframe frameborder="0" allow="clipboard-write" style="border:none;width:100%;height:350px;" width="614" height="556" src="https://music.yandex.ru/iframe/album/39427274?theme=dark">Слушайте <a href="https://music.yandex.ru/album/39427274?theme=dark">Ornament Fluctuations</a> — <a href="https://music.yandex.ru/artist/24721121?theme=dark">KS BURAYA</a> на Яндекс Музыке</iframe>
+  </div> -->
+</section>
+
+<div class="wave-divider"><svg viewBox="0 0 1440 80" preserveAspectRatio="none"><path d="M0,30 C240,70 480,10 720,50 C960,20 1200,60 1440,30 L1440,80 L0,80 Z" fill="rgba(196,168,130,0.04)"/></svg></div>
+
+<!-- Гобелены -->
+<section id="tapestries">
+  <div class="fade-in">
+    <p class="section-label">Гобелены</p>
+    <h2 class="section-title">Тканые паттерны</h2>
+    <div class="section-divider"></div>
+  </div>
+ 
+  <div class="tapestries-cta-row fade-in">
+    <p class="tapestries-intro" style="margin-bottom:0;max-width:580px;">Ручное ткачество как параллельная практика к звуковому искусству. Глубокое изучение орнаментов народов мира, переплетённых в авторских паттернах.</p>
+    <a href="tapestries.html" class="tapestries-all-btn">
+      Все работы
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+    </a>
+  </div>
+  
+  <!-- навигация СВЕРХУ -->
+  <div class="carousel-nav">
+    <div class="carousel-dots" id="carouselDots"></div>
+    <div class="carousel-arrows">
+      <button class="carousel-arrow" id="carouselPrev" aria-label="Назад">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M15 18l-6-6 6-6"/></svg>
+      </button>
+      <button class="carousel-arrow" id="carouselNext" aria-label="Вперёд">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M9 18l6-6-6-6"/></svg>
+      </button>
+    </div>
+  </div>
+ 
+  <div class="tapestries-carousel-wrap fade-in">
+    <div class="carousel-track-outer">
+      <div class="carousel-track" id="carouselTrack">
+ 
+        <div class="carousel-slide">
+          <a href="works/tapesty_1.html">
+            <div class="carousel-slide-img">
+              <img src="images/tapesty_3.jpeg" alt="Пространство I">
+            </div>
+            <div class="carousel-slide-body">
+              <p class="carousel-slide-series">Серия «Пространства»</p>
+              <p class="carousel-slide-name">Пространство I</p>
+            </div>
+          </a>
+        </div>
+ 
+        <div class="carousel-slide">
+          <a href="works/tapesty_2.html">
+            <div class="carousel-slide-img">
+              <img src="images/tapesty_2.jpeg" alt="Пространство II">
+            </div>
+            <div class="carousel-slide-body">
+              <p class="carousel-slide-series">Серия «Пространства»</p>
+              <p class="carousel-slide-name">Пространство II</p>
+            </div>
+          </a>
+        </div>
+ 
+        <div class="carousel-slide">
+          <a href="works/tapesty_3.html">
+            <div class="carousel-slide-img">
+              <img src="images/tapesty_1.jpeg" alt="Пространство III">
+            </div>
+            <div class="carousel-slide-body">
+              <p class="carousel-slide-series">Серия «Пространства»</p>
+              <p class="carousel-slide-name">Пространство III</p>
+            </div>
+          </a>
+        </div>
+ 
+        <div class="carousel-slide">
+          <a href="works/tapesty_4.html">
+            <div class="carousel-slide-img">
+              <img src="images/tapesty_4.jpeg" alt="Пространство IV">
+            </div>
+            <div class="carousel-slide-body">
+              <p class="carousel-slide-series">Серия «Пространства»</p>
+              <p class="carousel-slide-name">Пространство IV</p>
+            </div>
+          </a>
+        </div>
+ 
+        <div class="carousel-slide">
+          <a href="works/tapesty_5.html">
+            <div class="carousel-slide-img">
+              <img src="images/tapesty_5.jpeg" alt="Пространство V">
+            </div>
+            <div class="carousel-slide-body">
+              <p class="carousel-slide-series">Серия «Пространства»</p>
+              <p class="carousel-slide-name">Пространство V</p>
+            </div>
+          </a>
+        </div>
+ 
+      </div><!-- /carousel-track -->
+    </div><!-- /carousel-track-outer -->
+  </div>
+</section>
+
+<div class="wave-divider"><svg viewBox="0 0 1440 80" preserveAspectRatio="none"><path d="M0,40 C360,70 720,10 1080,50 C1260,30 1380,60 1440,40 L1440,80 L0,80 Z" fill="rgba(196,168,130,0.03)"/></svg></div>
+
+
+
+<section id="articles">
+  <div class="fade-in">
+    <p class="section-label">Тексты</p>
+    <h2 class="section-title">Статьи и заметки</h2>
+    <div class="section-divider"></div>
+  </div>
+  <div class="articles-list fade-in">
+  <a class="article-item" href="articles/deep_listening.html">
+    <span class="article-num">01</span>
+    <div class="article-content">
+      <h3 class="article-title">Глубокое Слушание: практика и философия</h3>
+      <p class="article-excerpt">О том, как Полин Оливерос изменила моё восприятие звука и тишины</p>
+    </div>
+    <svg class="article-arrow" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+  </a>
+  <a class="article-item draft" href="articles/eis-coauthor.html">
+    <span class="article-num">02</span>
+    <div class="article-content">
+      <h3 class="article-title">EIS: технология как со-автор</h3>
+      <p class="article-excerpt">Expanded Instrument System и новая роль инструмента в творческом процессе</p>
+    </div>
+    <svg class="article-arrow" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+  </a>
+  <a class="article-item draft" href="#">
+    <span class="article-num">03</span>
+    <div class="article-content">
+      <h3 class="article-title">Орнамент и звук: параллели ткачества и музыки</h3>
+      <p class="article-excerpt">Как паттерны гобеленов отражают структуру звуковых ландшафтов</p>
+    </div>
+    <svg class="article-arrow" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+  </a>
+</div>
+  <!-- <button class="articles-more fade-in" onclick="openBlog(event,-1)">Все статьи <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg></button> -->
+</section>
+
+<div class="wave-divider"><svg viewBox="0 0 1440 80" preserveAspectRatio="none"><path d="M0,40 C240,80 480,0 720,40 C960,80 1200,0 1440,40 L1440,80 L0,80 Z" fill="rgba(196,168,130,0.03)"/></svg></div>
+
+<section id="video">
+  <div class="fade-in">
+    <p class="section-label">Коллаборации</p>
+    <h2 class="section-title">Видео и коллаборации</h2>
+    <div class="section-divider"></div>
+    <p class="video-intro">Совместные проекты — музыка для видеоработ, аудиоперформансы и другие.</p>
+  </div>
+
+  <!-- Проект 1: В поисках высшего -->
+  <div class="fade-in" style="margin-bottom:4rem;">
+    <div style="display:flex; align-items:baseline; gap:1rem; margin-bottom:0.5rem;">
+      <h3 style="font-family:var(--font-display); font-size:1.6rem; font-weight:300; color:var(--text-primary);">В поисках высшего</h3>
+      <span style="font-size:0.6rem; letter-spacing:0.2em; text-transform:uppercase; color:var(--accent-dim); border:1px solid var(--border); padding:0.2rem 0.7rem; border-radius:2px;">KS BURAYA · Видео</span>
+    </div>
+    <p style="color:var(--text-muted); font-size:0.85rem; font-weight:300; margin-bottom:1.5rem;">Три видеоработы по мотивам фильма "В Поисках Высшего". В кадре Ника Клецки. Видеохудожница Ольга Перегудова. Звук Ксюша Бурая.</p>
+    <div class="video-grid">
+      <div class="video-embed">
+	  <video controls preload="none" poster="images/canon_poster.png" style="width:100%;height:100%;object-fit:cover;background:#000;">
+	    <source src="video/канон.mp4" type="video/mp4">
+	  </video>
+	</div>
+	<div class="video-embed">
+	  <video controls preload="none" poster="images/cub_poster.png" style="width:100%;height:100%;object-fit:cover;background:#000;">
+	    <source src="video/куб.mp4" type="video/mp4">
+	  </video>
+	</div>
+	<div class="video-embed">
+	  <video controls preload="none" poster="images/dom_poster.png" style="width:100%;height:100%;object-fit:cover;background:#000;">
+	    <source src="video/домдомдом.mp4" type="video/mp4">
+	  </video>
+	</div>
+    </div>
+  </div>
+
+  <!-- Проект 2: Подмога уже в пути -->
+  <!-- <div class="fade-in" style="opacity:0.45;">
+    <div style="display:flex; align-items:baseline; gap:1rem; margin-bottom:0.5rem;">
+      <h3 style="font-family:var(--font-display); font-size:1.6rem; font-weight:300; color:var(--text-primary);">Аудиоперфоманс "Подмога уже в пути"</h3>
+      <span style="font-size:0.6rem; letter-spacing:0.2em; text-transform:uppercase; color:var(--accent-dim); border:1px solid var(--border); padding:0.2rem 0.7rem; border-radius:2px;">Скоро</span>
+    </div>
+    <p style="color:var(--text-muted); font-size:0.85rem; font-weight:300; margin-bottom:1.5rem;">Аудиоперформанс с Никой Клецки</p>
+    <div style="background:var(--bg-card); border:1px solid var(--border); border-radius:2px; padding:3rem; display:flex; align-items:center; justify-content:center; max-width:400px;">
+      <!-- Когда будет обложка: -->
+      <!-- <img src="images/podmoga_main.jpeg" style="width:100%;border-radius:2px;">
+      <span style="font-size:0.7rem; letter-spacing:0.15em; text-transform:uppercase; color:var(--text-muted);">Скоро</span>
+    </div> -->
+  <!-- </div> -->
+</section>
+
+
+<div class="wave-divider"><svg viewBox="0 0 1440 80" preserveAspectRatio="none"><path d="M0,50 C180,20 360,70 540,40 C720,10 900,60 1080,35 C1260,10 1380,55 1440,40 L1440,80 L0,80 Z" fill="rgba(196,168,130,0.03)"/></svg></div>
+
+<section id="contact" class="contact-section">
+  <div class="fade-in">
+    <p class="section-label">Связаться</p>
+    <h2 class="section-title">Контакты</h2>
+    <div class="section-divider" style="margin-left:auto;margin-right:auto;"></div>
+    <!-- <p class="contact-quote">«Слушание — это направление внимания к звучащему и тому, что вот-вот прозвучит»</p>
+    <p class="contact-quote-author">Полин Оливерос</p> -->
+    <div class="social-links">
+      <a href="https://t.me/ksburayamusic" class="social-link" title="Telegram" target="_blank"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.479.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z"/></svg></a>
+      <a href="https://instagram.com/ksburaya" class="social-link" title="Instagram" target="_blank"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 1 0 0 12.324 6.162 6.162 0 0 0 0-12.324zM12 16a4 4 0 1 1 0-8 4 4 0 0 1 0 8zm6.406-11.845a1.44 1.44 0 1 0 0 2.881 1.44 1.44 0 0 0 0-2.881z"/></svg></a>
+      <a href="https://youtube.com/@ksburaya" class="social-link" title="YouTube" target="_blank"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814z"/><polygon points="9.545,15.568 15.818,12 9.545,8.432" fill="#0a0a0c"/></svg></a>
+      <a href="https://vk.com/ksburayamusic" class="social-link" title="ВКонтакте" target="_blank"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M15.684 0H8.316C1.592 0 0 1.592 0 8.316v7.368C0 22.408 1.592 24 8.316 24h7.368C22.408 24 24 22.408 24 15.684V8.316C24 1.592 22.391 0 15.684 0zm3.692 17.123h-1.744c-.66 0-.864-.525-2.05-1.727-1.033-1-1.49-1.135-1.744-1.135-.356 0-.458.102-.458.593v1.575c0 .424-.135.678-1.253.678-1.846 0-3.896-1.12-5.339-3.202-2.17-3.042-2.763-5.32-2.763-5.778 0-.254.102-.491.593-.491h1.744c.44 0 .61.203.78.678.864 2.491 2.303 4.675 2.896 4.675.22 0 .322-.102.322-.66V9.721c-.068-1.186-.695-1.287-.695-1.71 0-.203.17-.407.44-.407h2.744c.373 0 .508.203.508.643v3.473c0 .372.17.508.271.508.22 0 .407-.136.813-.542 1.253-1.406 2.153-3.574 2.153-3.574.119-.254.322-.491.763-.491h1.744c.525 0 .644.27.525.643-.22 1.017-2.354 4.031-2.354 4.031-.186.305-.254.44 0 .78.186.254.796.779 1.203 1.253.745.847 1.32 1.558 1.473 2.05.17.49-.085.744-.576.744z"/></svg></a>
+    </div>
+    <p class="contact-email">Написать: <a href="mailto:ks.buraya@gmail.com">kseniya.buraya@ya.ru</a></p>
+  </div>
+</section>
+
+<!-- ── Подписка на рассылку ── -->
+<div class="subscribe-section fade-in" id="subscribe">
+  <div class="subscribe-wrap">
+    <div class="subscribe-text">
+      <p class="subscribe-label">Рассылка</p>
+      <h2 class="subscribe-title">Оставаться на связи</h2>
+      <p class="subscribe-desc">Анонсы выступлений, новые записи, редкие тексты о звуке и созерцании.</p>
+    </div>
+    <div id="subscribeFormWrap">
+      <div class="subscribe-form">
+        <div class="subscribe-field">
+          <label for="subName">Как вас зовут</label>
+          <input type="text" id="subName" placeholder="Имя" autocomplete="given-name">
+        </div>
+        <div class="subscribe-field">
+          <label for="subEmail">Email</label>
+          <input type="email" id="subEmail" placeholder="your@email.com" autocomplete="email">
+        </div>
+        <button class="subscribe-btn" id="subBtn" onclick="handleSubscribe()">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M22 2L11 13M22 2L15 22l-4-9-9-4 20-7z"/></svg>
+          Подписаться
+        </button>
+        <p class="subscribe-note">Нажимая кнопку, вы соглашаетесь получать письма от Ксюши Бурой. Отписаться можно в любой момент.</p>
+      </div>
+    </div>
+    <div class="subscribe-success" id="subscribeSuccess">
+      <div class="subscribe-success-icon">✦</div>
+      <p class="subscribe-success-text">Спасибо, вы в списке</p>
+      <p class="subscribe-success-sub">Напишу, когда будет что-то важное.</p>
+    </div>
+  </div>
+</div>
+
+<footer>
+  <div class="footer-content">
+    <button class="footer-presskit" onclick="openOverlay('pressKitPage')">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
+      Для организаторов / Press Kit
+    </button>
+    <p class="footer-copy">© 2026 Ксюша Бурая · Квантовое Ухо</p>
+  </div>
+</footer>
+
+<div class="overlay-page" id="blogPage">
+  <div class="overlay-header">
+    <button class="overlay-back" onclick="closeOverlay('blogPage')"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M19 12H5M12 19l-7-7 7-7"/></svg> Назад</button>
+    <span class="overlay-title">Статьи и заметки</span><div style="width:60px"></div>
+  </div>
+  <div class="overlay-content" id="blogContent"></div>
+</div>
+
+<div class="overlay-page" id="pressKitPage">
+  <div class="overlay-header">
+    <button class="overlay-back" onclick="closeOverlay('pressKitPage')"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M19 12H5M12 19l-7-7 7-7"/></svg> Назад</button>
+    <span class="overlay-title">Press Kit</span><div style="width:60px"></div>
+  </div>
+  <div class="overlay-content">
+    <div class="pk-section">
+      <h3 class="pk-section-title">Биография</h3>
+      <p class="pk-text"><strong>Короткая (для афиш):</strong></p>
+      <p class="pk-text">Ксюша Бурая — ambient-композитор и художница по текстилю. Создаёт звуковые пространства с помощью инструментов SOMA, голоса, модульного и гранулярного синтеза. Выступает с электронными лайвами и перфолекциями о глубоком слушании.</p>
+      <p class="pk-text"><strong>Полная:</strong></p>
+      <p class="pk-text">Ксюша Бурая — ambient-композитор, художница по текстилю и исследователь звука из Санкт-Петербурга. В своих творческих проектах исследует состояния спокойствия и созерцания через звук, орнаментальные структуры и практики глубокого слушания. Для создания музыкальных пространств использует инструменты SOMA и голос в связке с модульным и гранулярным синтезом, выстраивая орнаментальные ландшафты из live-лупинга и модулированных задержек. Параллельно со звуковой практикой создает тканые гобелены, в которых авторские паттерны рождаются из глубокого изучения математических структур и орнаментов народов мира. Выступает с электронными лайвами и перфолекциями о глубоком слушании, автор Telegram-канала "Квантовое Ухо" о звуке и созерцательных практиках.</p>
+    </div>
+    <div class="pk-section">
+      <h3 class="pk-section-title">Фотографии</h3>
+      <div class="pk-photos-grid">
+        <div class="pk-photo"><img src="images/promo-1.jpg" alt="Промо фото 1"></div>
+        <div class="pk-photo"><img src="images/promo-2.jpg" alt="Промо фото 2 — перфолекция"></div>
+        <div class="pk-photo"><img src="images/promo-3.jpg" alt="Промо фото 3 — лайв"></div>
+      </div>
+      <a href="#" class="pk-download"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>Скачать всё (Яндекс.Диск)</a>
+    </div>
+    <div class="pk-section">
+      <h3 class="pk-section-title">Технический райдер</h3>
+      <div class="pk-rider">
+        <h4>Сольный ambient сет</h4>
+        <ul>
+          <li>Рабочая поверхность: стол или клавишная стойка c доской, минимум 50×70 см</li>
+          <li>Микшерный пульт со стереопарой jack (L/R)</li>
+          <li>Мониторинг: 1 мониторная линия на сцене</li>
+          <li>Электропитание: пилот на 5 розеток рядом с рабочим местом</li>
+          <li>Время на саундчек: 60 минут</li>
+        </ul>
+      </div>
+    </div>
+    <div class="pk-section">
+      <h3 class="pk-section-title">Видео-визитка</h3>
+	      <div style="aspect-ratio:16/9;border-radius:2px;overflow:hidden;border:1px solid var(--border);max-width:560px;">
+	        <video controls preload="none" poster="images/poster_1.jpeg" style="width:100%;height:100%;background:#000;">
+	  	<source src="video/main_video.mp4" type="video/mp4">
+		</video>
+	      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+(function(){const c=document.getElementById('bg-canvas'),x=c.getContext('2d');let p=[],w,h;function r(){w=c.width=innerWidth;h=c.height=innerHeight;}function i(){p=[];const n=Math.floor(w*h/18000);for(let j=0;j<n;j++)p.push({x:Math.random()*w,y:Math.random()*h,s:Math.random()*1.5+.3,sx:(Math.random()-.5)*.15,sy:(Math.random()-.5)*.1,o:Math.random()*.4+.1,p:Math.random()*Math.PI*2,ps:Math.random()*.005+.002});}function d(){x.clearRect(0,0,w,h);p.forEach(q=>{q.x+=q.sx;q.y+=q.sy;q.p+=q.ps;if(q.x<-10)q.x=w+10;if(q.x>w+10)q.x=-10;if(q.y<-10)q.y=h+10;if(q.y>h+10)q.y=-10;x.beginPath();x.arc(q.x,q.y,q.s,0,Math.PI*2);x.fillStyle=`rgba(196,168,130,${q.o*(.7+.3*Math.sin(q.p))})`;x.fill();});for(let i=0;i<p.length;i++)for(let j=i+1;j<p.length;j++){const dx=p[i].x-p[j].x,dy=p[i].y-p[j].y,dt=Math.sqrt(dx*dx+dy*dy);if(dt<100){x.beginPath();x.moveTo(p[i].x,p[i].y);x.lineTo(p[j].x,p[j].y);x.strokeStyle=`rgba(196,168,130,${.03*(1-dt/100)})`;x.lineWidth=.5;x.stroke();}}requestAnimationFrame(d);}r();i();d();addEventListener('resize',()=>{r();i();});})();
+addEventListener('scroll',()=>document.getElementById('navbar').classList.toggle('scrolled',scrollY>60));
+const obs=new IntersectionObserver(e=>e.forEach(x=>{if(x.isIntersecting)x.target.classList.add('visible');}),{threshold:.1,rootMargin:'0px 0px -50px 0px'});document.querySelectorAll('.fade-in').forEach(e=>obs.observe(e));
+function toggleMobile(){document.getElementById('mobileMenu').classList.toggle('active');}
+document.querySelectorAll('a[href^="#"]').forEach(a=>a.addEventListener('click',function(e){if(this.getAttribute('onclick'))return;e.preventDefault();const t=document.querySelector(this.getAttribute('href'));if(t)t.scrollIntoView({behavior:'smooth',block:'start'});}));
+
+const tracks=[
+  {title:'Ладога Эхос', desc:'KS BURAYA', src:'audio/ladoga_echoes.mp3', duration:'57:18'},
+  {title:'Шесть ветвей', desc:'KS BURAYA', src:'audio/6_branches.mp3', duration:'24:19'},
+  {title:'Ambience', desc:'KS BURAYA', src:'audio/ambience.mp3', duration:'39:07'},
+  {title:'Лес и Разум', desc:'KS BURAYA', src:'audio/forest and mind.mp3', duration:'30:01'},
+  {title:'За полчаса до полуночи', desc:'KS BURAYA', src:'audio/Krabs New Year.mp3', duration:'48:00'},
+  {title:'Пространства', desc:'KS BURAYA', src:'audio/Areas.mp3', duration:'19:37'},
+  {title:'Космос прощай', desc:'KS BURAYA', src:'audio/Bye-bye cosmos.mp3', duration:'14:05'},
+];
+let ct=0,ip=false;const au=new Audio();au.volume=.8;
+const pt=document.getElementById('playerTitle'),pd=document.getElementById('playerDesc'),ip2=document.getElementById('iconPlay'),ip3=document.getElementById('iconPause'),pf=document.getElementById('progressFill'),tc=document.getElementById('timeCurrent'),tt=document.getElementById('timeTotal'),vf=document.getElementById('volumeFill');
+function fmt(s){if(!s||isNaN(s))return'0:00';return Math.floor(s/60)+':'+(Math.floor(s%60)<10?'0':'')+Math.floor(s%60);}
+function uui(){pt.textContent=tracks[ct].title;pd.textContent=tracks[ct].desc;document.querySelectorAll('.track-item').forEach((e,i)=>{e.classList.toggle('active',i===ct);e.classList.toggle('playing',i===ct&&ip);});}
+function lt(i){ct=i;if(tracks[i].src){au.src=tracks[i].src;au.load();}uui();pf.style.width='0%';tc.textContent='0:00';tt.textContent=tracks[i].duration;}
+function togglePlay(){if(!tracks[ct].src){pt.textContent='Добавьте mp3-файлы в массив tracks';return;}if(ip){au.pause();ip=false;}else{au.play();ip=true;}ip2.style.display=ip?'none':'block';ip3.style.display=ip?'block':'none';uui();}
+function playTrackByIndex(i){if(ip)au.pause();lt(i);if(tracks[i].src){au.play();ip=true;ip2.style.display='none';ip3.style.display='block';}else{ip=false;ip2.style.display='block';ip3.style.display='none';}uui();}
+function nextTrack(){playTrackByIndex((ct+1)%tracks.length);}
+function prevTrack(){playTrackByIndex((ct-1+tracks.length)%tracks.length);}
+function seekTrack(e){const r=e.currentTarget.getBoundingClientRect();if(au.duration)au.currentTime=((e.clientX-r.left)/r.width)*au.duration;}
+function setVolume(e){const r=e.currentTarget.getBoundingClientRect();const v=Math.max(0,Math.min(1,(e.clientX-r.left)/r.width));au.volume=v;vf.style.width=(v*100)+'%';}
+function toggleMute(){au.muted=!au.muted;vf.style.width=au.muted?'0%':(au.volume*100)+'%';}
+au.addEventListener('timeupdate',()=>{if(au.duration){pf.style.width=(au.currentTime/au.duration*100)+'%';tc.textContent=fmt(au.currentTime);tt.textContent=fmt(au.duration);}});
+au.addEventListener('ended',nextTrack);lt(0);
+
+const articles = [
+  {date:'2025', title:'Глубокое Слушание: практика и философия', body:'<p>Текст статьи.</p>'},
+  {date:'2025', title:'EIS: технология как со-автор', body:'<p>Текст статьи.</p>', draft: true},
+  {date:'2025', title:'Орнамент и звук: параллели ткачества и музыки', body:'<p>Текст статьи.</p>', draft: true},
+];
+function openBlog(e, idx) {
+  e.preventDefault();
+  const c = document.getElementById('blogContent');
+  if (idx >= 0) {
+    const a = articles[idx];
+    if (a.draft) return;
+    c.innerHTML = `<article class="blog-article"><p class="blog-article-date">${a.date}</p><h1 class="blog-article-title">${a.title}</h1><div class="blog-article-body">${a.body}</div></article>`;
+  } else {
+    c.innerHTML = articles.map((a, i) =>
+      a.draft
+        ? `<article class="blog-article blog-article--draft"><h1 class="blog-article-title">${a.title}</h1></article>`
+        : `<article class="blog-article" onclick="openBlog(event,${i})" style="cursor:pointer"><p class="blog-article-date">${a.date}</p><h1 class="blog-article-title">${a.title}</h1><div class="blog-article-body">${a.body}</div></article>`
+    ).join('');
+  }
+  openOverlay('blogPage');
+}
+function openOverlay(id){document.getElementById(id).classList.add('active');document.getElementById(id).scrollTop=0;document.body.style.overflow='hidden';}
+function closeOverlay(id){document.getElementById(id).classList.remove('active');document.body.style.overflow='';}
+document.addEventListener('keydown',e=>{if(e.key==='Escape'){closeOverlay('blogPage');closeOverlay('pressKitPage');}})
+// ── Подписка ──
+function handleSubscribe() {
+  const name = document.getElementById('subName').value.trim();
+  const email = document.getElementById('subEmail').value.trim();
+  
+  if (!email || !email.includes('@')) {
+    document.getElementById('subEmail').style.borderColor = 'rgba(196,100,100,0.5)';
+    document.getElementById('subEmail').focus();
+    return;
+  }
+
+  const btn = document.getElementById('subBtn');
+  btn.disabled = true;
+  btn.textContent = 'Отправляю...';
+
+  const form = document.createElement('form');
+  form.method = 'POST';
+  form.action = 'https://cp.unisender.com/ru/subscribe?hash=6fct9kgbru99y3martstoahabcwew8hg8pwi5qn4pomzbmangxz3y';
+  form.target = '_blank'; // открывает в новой вкладке, не уводя со страницы
+
+  const fields = {
+    email: email,
+    'fields[Name]': name,
+    charset: 'UTF-8',
+    default_list_id: '1',
+    overwrite: '2',
+    is_v5: '1'
+  };
+
+  Object.entries(fields).forEach(([key, val]) => {
+    const input = document.createElement('input');
+    input.type = 'hidden';
+    input.name = key;
+    input.value = val;
+    form.appendChild(input);
+  });
+
+  document.body.appendChild(form);
+  form.submit();
+  document.body.removeChild(form);
+
+  // Показываем успех на нашей странице
+  setTimeout(() => {
+    document.getElementById('subscribeFormWrap').style.display = 'none';
+    document.getElementById('subscribeSuccess').style.display = 'block';
+  }, 500);
+};
+
+// ── Карусель гобеленов ──
+(function() {
+  const track = document.getElementById('carouselTrack');
+  const dotsWrap = document.getElementById('carouselDots');
+  if (!track) return;
+ 
+  const slides = track.querySelectorAll('.carousel-slide');
+  const total = slides.length;
+  let current = 0;
+ 
+  // Считаем, сколько слайдов видно
+  function visibleCount() {
+    return window.innerWidth <= 480 ? 1 : window.innerWidth <= 768 ? 1 : 3;
+  }
+ 
+  const maxIndex = () => Math.max(0, total - visibleCount());
+ 
+  // Создаём точки
+  function buildDots() {
+    dotsWrap.innerHTML = '';
+    const count = maxIndex() + 1;
+    for (let i = 0; i < count; i++) {
+      const dot = document.createElement('button');
+      dot.className = 'carousel-dot' + (i === current ? ' active' : '');
+      dot.addEventListener('click', () => goTo(i));
+      dotsWrap.appendChild(dot);
+    }
+  }
+ 
+  function updateDots() {
+    dotsWrap.querySelectorAll('.carousel-dot').forEach((d, i) => {
+      d.classList.toggle('active', i === current);
+    });
+  }
+ 
+  function goTo(idx) {
+    current = Math.max(0, Math.min(idx, maxIndex()));
+    const slideWidth = slides[0].offsetWidth + 16; // gap=1.2rem≈16px  
+    // точнее — берём реальный gap
+    const gap = parseFloat(getComputedStyle(track).gap) || 16;
+    track.style.transform = `translateX(-${current * (slides[0].offsetWidth + gap)}px)`;
+    updateDots();
+    document.getElementById('carouselPrev').disabled = current === 0;
+    document.getElementById('carouselNext').disabled = current >= maxIndex();
+  }
+ 
+  document.getElementById('carouselPrev').addEventListener('click', () => goTo(current - 1));
+  document.getElementById('carouselNext').addEventListener('click', () => goTo(current + 1));
+ 
+  // Свайп на мобильном
+  let startX = 0;
+  track.addEventListener('touchstart', e => { startX = e.touches[0].clientX; }, { passive: true });
+  track.addEventListener('touchend', e => {
+    const diff = startX - e.changedTouches[0].clientX;
+    if (Math.abs(diff) > 40) goTo(diff > 0 ? current + 1 : current - 1);
+  });
+ 
+  window.addEventListener('resize', () => { buildDots(); goTo(current); });
+  buildDots();
+  goTo(0);
+})();
+
+</script>
+</body>
+</html>

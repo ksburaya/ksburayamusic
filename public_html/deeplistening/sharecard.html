@@ -1,0 +1,579 @@
+<!DOCTYPE html>
+<html lang="ru">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+    <title>Поделиться практикой · Квантовое Ухо</title>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&family=Raleway:wght@300;400;500&display=swap"
+        rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            background: #0a0a0a;
+            color: #f0ebe0;
+            font-family: 'Raleway', sans-serif;
+            font-weight: 300;
+            min-height: 100vh;
+            padding: 24px 20px 48px;
+        }
+
+        :root {
+            --gold: #c9a84c;
+            --gold-dim: #9a7a35;
+            --border: rgba(201, 168, 76, 0.2);
+            --bg2: #111;
+            --text: #f0ebe0;
+            --text-dim: #b0a898;
+            --text-muted: #7a7268;
+        }
+
+        .page-title {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 1.6rem;
+            font-weight: 300;
+            color: var(--text);
+            margin-bottom: 4px;
+        }
+
+        .page-title em {
+            color: var(--gold);
+            font-style: italic;
+        }
+
+        .page-sub {
+            font-size: 0.7rem;
+            letter-spacing: 0.14em;
+            text-transform: uppercase;
+            color: var(--text-muted);
+            margin-bottom: 28px;
+        }
+
+        /* Загрузка фото */
+        .upload-area {
+            border: 1px dashed var(--border);
+            padding: 24px;
+            text-align: center;
+            cursor: pointer;
+            margin-bottom: 20px;
+            transition: border-color 0.2s;
+            position: relative;
+        }
+
+        .upload-area:active {
+            border-color: var(--gold);
+        }
+
+        .upload-area input {
+            position: absolute;
+            inset: 0;
+            opacity: 0;
+            cursor: pointer;
+        }
+
+        .upload-icon {
+            font-size: 1.4rem;
+            color: var(--text-muted);
+            margin-bottom: 8px;
+        }
+
+        .upload-text {
+            font-size: 0.78rem;
+            color: var(--text-muted);
+            line-height: 1.6;
+        }
+
+        .upload-text em {
+            color: var(--gold-dim);
+            font-style: normal;
+        }
+
+        /* Превью карточки */
+        .card-preview-wrap {
+            position: relative;
+            width: 100%;
+            /* 9:16 aspect ratio */
+            padding-bottom: 177.78%;
+            margin-bottom: 20px;
+            overflow: hidden;
+            background: #111;
+        }
+
+        .card-preview-wrap canvas {
+            position: absolute;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+        }
+
+        /* Настройки */
+        .settings {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin-bottom: 24px;
+        }
+
+        .setting-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 14px 16px;
+            border: 1px solid var(--border);
+            background: var(--bg2);
+        }
+
+        .setting-label {
+            font-size: 0.72rem;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            color: var(--text-muted);
+        }
+
+        .setting-value {
+            font-size: 0.84rem;
+            color: var(--text-dim);
+        }
+
+        /* Переключатели элементов */
+        .toggles {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            margin-bottom: 20px;
+        }
+
+        .toggle-btn {
+            border: 1px solid var(--border);
+            padding: 8px 14px;
+            font-size: 0.68rem;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            color: var(--text-muted);
+            cursor: pointer;
+            transition: all 0.2s;
+            background: transparent;
+        }
+
+        .toggle-btn.on {
+            border-color: var(--gold);
+            color: var(--gold);
+            background: rgba(201, 168, 76, 0.08);
+        }
+
+        .feel-btn {
+            border: 1px solid var(--border);
+            padding: 8px 14px;
+            font-size: 0.72rem;
+            color: var(--text-muted);
+            cursor: pointer;
+            transition: all 0.2s;
+            background: transparent;
+        }
+
+        .feel-btn.active {
+            border-color: var(--gold);
+            color: var(--gold);
+            background: rgba(201, 168, 76, 0.08);
+        }
+
+        /* Кнопка скачать */
+        .btn-download {
+            width: 100%;
+            padding: 16px;
+            border: 1px solid var(--gold);
+            background: transparent;
+            color: var(--gold);
+            font-family: 'Raleway', sans-serif;
+            font-size: 0.8rem;
+            letter-spacing: 0.16em;
+            text-transform: uppercase;
+            cursor: pointer;
+            transition: all 0.25s;
+            -webkit-appearance: none;
+            border-radius: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .btn-download:active {
+            background: rgba(201, 168, 76, 0.1);
+        }
+
+        .btn-download:disabled {
+            opacity: 0.3;
+        }
+
+        .hint {
+            font-size: 0.7rem;
+            color: var(--text-muted);
+            text-align: center;
+            margin-top: 12px;
+            line-height: 1.6;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="page-title">Поделиться <em>практикой</em></div>
+    <div class="page-sub">Карточка для историй · 9:16</div>
+
+    <!-- Загрузка фото -->
+    <div class="upload-area" id="upload-area">
+        <input type="file" id="photo-input" accept="image/*">
+        <div class="upload-icon">◎</div>
+        <div class="upload-text">Нажмите чтобы выбрать фото<br><em>из библиотеки или камеры</em></div>
+    </div>
+
+    <!-- Превью -->
+    <div class="card-preview-wrap">
+        <canvas id="preview-canvas"></canvas>
+    </div>
+
+    <!-- Что показывать -->
+    <div class="toggles">
+        <button class="toggle-btn on" id="tog-map" onclick="toggleEl('map')">Схема звуков</button>
+        <button class="toggle-btn on" id="tog-place" onclick="toggleEl('place')">Место</button>
+        <button class="toggle-btn on" id="tog-logo" onclick="toggleEl('logo')">Логотип</button>
+    </div>
+
+    <!-- Переключатель впечатления -->
+    <div style="margin-bottom:20px">
+        <div
+            style="font-size:0.68rem;letter-spacing:0.14em;text-transform:uppercase;color:var(--text-muted);margin-bottom:10px">
+            Впечатление</div>
+        <div style="display:flex;gap:8px">
+            <button class="toggle-btn on" id="tog-feel" onclick="toggleEl('feel')">Показывать</button>
+            <button class="feel-btn active" id="feel-liked" onclick="setFeel('liked')">❤️ Понравилось</button>
+            <button class="feel-btn" id="feel-disliked" onclick="setFeel('disliked')">💔 Не понравилось</button>
+        </div>
+    </div>
+
+    <!-- Кнопка скачать -->
+    <button class="btn-download" id="btn-download" onclick="downloadCard()">
+        Скачать карточку →
+    </button>
+    <div class="hint">Сохранится как PNG · откройте в Фото и поделитесь в историях</div>
+
+    <script>
+        // Демо-данные (в реальной версии берутся из entry)
+        const ENTRY = {
+            place: 'Залив, Санкт-Петербург',
+            duration: '10 мин',
+            sounds: {
+                front: 'волны, чайки, ветер',
+                right: 'корабли, мотор, плеск',
+                back: 'шелест травы, тишина, листья',
+                left: 'голоса, шаги, велосипед',
+            },
+            liked: 'Волны. Ощущение что время замедлилось.',
+            disliked: 'Слишком громкий шум дороги за спиной.',
+        };
+
+        let photoImg = null;
+        let show = { map: true, place: true, feel: true, logo: true };
+        let feelMode = 'liked';
+
+        // Загрузка фото
+        document.getElementById('photo-input').addEventListener('change', e => {
+            const file = e.target.files[0]; if (!file) return;
+            const reader = new FileReader();
+            reader.onload = ev => {
+                const img = new Image();
+                img.onload = () => { photoImg = img; draw(); };
+                img.src = ev.target.result;
+                document.querySelector('.upload-text').innerHTML = `<em>Фото загружено ✦</em>`;
+            };
+            reader.readAsDataURL(file);
+        });
+
+        function toggleEl(key) {
+            if (key === 'feel') {
+                show.feel = !show.feel;
+                document.getElementById('tog-feel').classList.toggle('on', show.feel);
+            } else {
+                show[key] = !show[key];
+                document.getElementById('tog-' + key).classList.toggle('on', show[key]);
+            }
+            draw();
+        }
+
+        function setFeel(mode) {
+            feelMode = mode;
+            document.getElementById('feel-liked').classList.toggle('active', mode === 'liked');
+            document.getElementById('feel-disliked').classList.toggle('active', mode === 'disliked');
+            draw();
+        }
+
+        // Основная функция рисования
+        function draw() {
+            const canvas = document.getElementById('preview-canvas');
+            const W = 1080, H = 1920;
+            canvas.width = W; canvas.height = H;
+            const ctx = canvas.getContext('2d');
+
+            // Фон
+            ctx.fillStyle = '#0a0a0a';
+            ctx.fillRect(0, 0, W, H);
+
+            // Фото
+            if (photoImg) {
+                // Обрезаем по центру под 9:16
+                const imgRatio = photoImg.width / photoImg.height;
+                const canvasRatio = W / H;
+                let sx = 0, sy = 0, sw = photoImg.width, sh = photoImg.height;
+                if (imgRatio > canvasRatio) {
+                    sw = photoImg.height * canvasRatio;
+                    sx = (photoImg.width - sw) / 2;
+                } else {
+                    sh = photoImg.width / canvasRatio;
+                    sy = (photoImg.height - sh) / 2;
+                }
+                ctx.drawImage(photoImg, sx, sy, sw, sh, 0, 0, W, H);
+
+                // Общий тёмный оверлей — базовое затемнение всего фото
+                ctx.fillStyle = 'rgba(10,10,10,0.45)';
+                ctx.fillRect(0, 0, W, H);
+
+                // Градиентное затемнение снизу — сильное
+                const grad = ctx.createLinearGradient(0, H * 0.25, 0, H);
+                grad.addColorStop(0, 'rgba(10,10,10,0)');
+                grad.addColorStop(0.4, 'rgba(10,10,10,0.75)');
+                grad.addColorStop(1, 'rgba(10,10,10,0.97)');
+                ctx.fillStyle = grad;
+                ctx.fillRect(0, 0, W, H);
+
+                // Лёгкое затемнение сверху
+                const gradTop = ctx.createLinearGradient(0, 0, 0, H * 0.25);
+                gradTop.addColorStop(0, 'rgba(10,10,10,0.6)');
+                gradTop.addColorStop(1, 'rgba(10,10,10,0)');
+                ctx.fillStyle = gradTop;
+                ctx.fillRect(0, 0, W, H);
+            }
+
+            const GOLD = '#c9a84c';
+            const GOLD_DIM = 'rgba(201,168,76,0.5)';
+            const TEXT = '#f0ebe0';
+            const TEXT_DIM = '#b0a898';
+            const BORDER = 'rgba(201,168,76,0.25)';
+
+            const mapCY = H / 2 + 100;
+            const mapR = 440;
+
+            // Карта
+            if (show.map) {
+                drawSoundMap(ctx, W / 2, mapCY, mapR, ENTRY.sounds, GOLD, GOLD_DIM, BORDER, TEXT_DIM);
+            }
+
+            // Логотип — сверху по центру
+            if (show.logo) {
+                ctx.textAlign = 'center';
+                ctx.font = '300 36px "Raleway", sans-serif';
+                ctx.fillStyle = 'rgba(201,168,76,0.5)';
+                ctx.letterSpacing = '8px';
+                ctx.fillText('КВАНТОВОЕ УХО', W / 2, 100);
+                ctx.letterSpacing = '0px';
+            }
+
+            // Место — под логотипом, по центру
+            if (show.place && ENTRY.place) {
+                ctx.textAlign = 'center';
+                // Подпись практики
+                ctx.font = '300 26px "Raleway", sans-serif';
+                ctx.fillStyle = 'rgba(201,168,76,0.45)';
+                ctx.letterSpacing = '2px';
+                ctx.fillText('СЛУШАНИЕ ПРОСТРАНСТВА · ' + ENTRY.duration.toUpperCase(), W / 2, 168);
+                ctx.letterSpacing = '0px';
+                // Место крупно
+                ctx.font = 'italic 300 62px "Cormorant Garamond", serif';
+                ctx.fillStyle = GOLD;
+                ctx.fillText(ENTRY.place, W / 2, 248);
+                ctx.textAlign = 'left';
+            }
+
+            // Впечатление
+            if (show.feel) {
+                const isLiked = feelMode === 'liked';
+                const feelText = isLiked ? ENTRY.liked : ENTRY.disliked;
+                if (feelText) {
+                    const botY = mapCY + mapR + 100;
+
+                    // Разделитель
+                    ctx.strokeStyle = 'rgba(201,168,76,0.15)';
+                    ctx.lineWidth = 1;
+                    ctx.beginPath(); ctx.moveTo(200, botY); ctx.lineTo(W - 200, botY); ctx.stroke();
+
+                    // Эмодзи + текст в одну строку по центру
+                    const emoji = isLiked ? '❤️' : '💔';
+                    ctx.textAlign = 'center';
+                    ctx.font = '42px serif';
+                    ctx.fillText(emoji, W / 2, botY + 72);
+
+                    ctx.font = '300 italic 42px "Cormorant Garamond", serif';
+                    ctx.fillStyle = 'rgba(240,235,224,0.88)';
+                    wrapTextCenter(ctx, feelText, W / 2, botY + 136, W - 200, 54);
+                    ctx.textAlign = 'left';
+                }
+            }
+        }
+
+        function drawSoundMap(ctx, cx, cy, r, sounds, gold, goldDim, border, textDim) {
+            const DIRS = [
+                { key: 'front', arw: '↑', ax: 0, ay: -1 },
+                { key: 'right', arw: '→', ax: 1, ay: 0 },
+                { key: 'back', arw: '↓', ax: 0, ay: 1 },
+                { key: 'left', arw: '←', ax: -1, ay: 0 },
+            ];
+
+            // Внешний круг
+            ctx.strokeStyle = border;
+            ctx.lineWidth = 2;
+            ctx.beginPath(); ctx.arc(cx, cy, r, 0, Math.PI * 2); ctx.stroke();
+
+            // Внутренний пунктир
+            ctx.strokeStyle = 'rgba(201,168,76,0.08)';
+            ctx.lineWidth = 1;
+            ctx.setLineDash([6, 10]);
+            ctx.beginPath(); ctx.arc(cx, cy, r * 0.45, 0, Math.PI * 2); ctx.stroke();
+            ctx.setLineDash([]);
+
+            // Оси
+            ctx.strokeStyle = 'rgba(201,168,76,0.2)';
+            ctx.lineWidth = 1;
+            ctx.beginPath(); ctx.moveTo(cx, cy - r * 1.2); ctx.lineTo(cx, cy + r * 1.2); ctx.stroke();
+            ctx.beginPath(); ctx.moveTo(cx - r * 1.2, cy); ctx.lineTo(cx + r * 1.2, cy); ctx.stroke();
+
+            // Треугольные секторы — заливка если есть звуки
+            const corners = [
+                [cx, cy - r * 1.2],
+                [cx + r * 1.2, cy],
+                [cx, cy + r * 1.2],
+                [cx - r * 1.2, cy],
+            ];
+            DIRS.forEach((d, i) => {
+                const words = sounds[d.key] ? sounds[d.key].split(',').map(w => w.trim()).filter(Boolean) : [];
+                if (words.length > 0) {
+                    ctx.beginPath();
+                    ctx.moveTo(cx, cy);
+                    ctx.lineTo(corners[i][0], corners[i][1]);
+                    ctx.lineTo(corners[(i + 1) % 4][0], corners[(i + 1) % 4][1]);
+                    ctx.closePath();
+                    ctx.fillStyle = 'rgba(201,168,76,0.07)';
+                    ctx.fill();
+                    ctx.strokeStyle = 'rgba(201,168,76,0.22)';
+                    ctx.lineWidth = 1;
+                    ctx.stroke();
+                }
+            });
+
+            // Центр
+            ctx.beginPath(); ctx.arc(cx, cy, 36, 0, Math.PI * 2);
+            ctx.fillStyle = 'rgba(10,10,10,0.95)'; ctx.fill();
+            ctx.strokeStyle = gold; ctx.lineWidth = 2; ctx.stroke();
+            ctx.font = '300 24px "Raleway", sans-serif';
+            ctx.fillStyle = gold; ctx.textAlign = 'center';
+            ctx.fillText('я', cx, cy + 9);
+
+            // Только стрелки + крупные звуки
+            DIRS.forEach((d, i) => {
+                const words = sounds[d.key] ? sounds[d.key].split(',').map(w => w.trim()).filter(Boolean) : [];
+                const has = words.length > 0;
+
+                // Стрелка — у края круга
+                ctx.font = '400 44px "Raleway", sans-serif';
+                ctx.fillStyle = has ? gold : 'rgba(201,168,76,0.15)';
+                ctx.textAlign = 'center';
+                ctx.fillText(d.arw, cx + d.ax * (r + 56), cy + d.ay * (r + 56) + 16);
+
+                if (!has) return;
+
+                // Звуки — крупно, до 3 слов
+                const show = words.slice(0, 3);
+                ctx.font = '300 42px "Raleway", sans-serif';
+                ctx.fillStyle = 'rgba(240,235,224,0.92)';
+                const lineH = 52;
+
+                if (d.ax === 0) {
+                    // Верх / низ — центрировано внутри сектора
+                    const totalH = show.length * lineH;
+                    const zoneCenter = cy + d.ay * r * 0.58;
+                    const startY = zoneCenter - totalH / 2 + lineH * 0.5;
+                    ctx.textAlign = 'center';
+                    show.forEach((w, j) => {
+                        ctx.fillText(w, cx, startY + j * lineH);
+                    });
+                    if (words.length > 3) {
+                        ctx.font = '300 28px "Raleway", sans-serif';
+                        ctx.fillStyle = 'rgba(201,168,76,0.45)';
+                        ctx.fillText('+' + (words.length - 3), cx, startY + show.length * lineH);
+                    }
+                } else {
+                    // Лево / право — вертикально по центру
+                    const totalH = show.length * lineH;
+                    const zoneCenter = cx + d.ax * r * 0.58;
+                    const startY = cy - totalH / 2 + lineH * 0.5;
+                    ctx.textAlign = d.ax > 0 ? 'left' : 'right';
+                    const tagX = d.ax > 0 ? zoneCenter - 60 : zoneCenter + 60;
+                    show.forEach((w, j) => {
+                        ctx.fillText(w, tagX, startY + j * lineH);
+                    });
+                    if (words.length > 3) {
+                        ctx.font = '300 28px "Raleway", sans-serif';
+                        ctx.fillStyle = 'rgba(201,168,76,0.45)';
+                        ctx.fillText('+' + (words.length - 3), tagX, startY + show.length * lineH);
+                    }
+                }
+                ctx.textAlign = 'left';
+            });
+        }
+
+        function wrapTextCenter(ctx, text, x, y, maxW, lineH) {
+            const words = text.split(' ');
+            let line = '', currentY = y;
+            words.forEach((word, i) => {
+                const test = line + word + ' ';
+                if (ctx.measureText(test).width > maxW && i > 0) {
+                    ctx.fillText(line.trim(), x, currentY);
+                    line = word + ' '; currentY += lineH;
+                } else { line = test; }
+            });
+            ctx.fillText(line.trim(), x, currentY);
+        }
+
+        function wrapText(ctx, text, x, y, maxW, lineH) {
+            const words = text.split(' ');
+            let line = '', currentY = y;
+            words.forEach((word, i) => {
+                const test = line + word + ' ';
+                if (ctx.measureText(test).width > maxW && i > 0) {
+                    ctx.fillText(line.trim(), x, currentY);
+                    line = word + ' '; currentY += lineH;
+                } else { line = test; }
+            });
+            ctx.fillText(line.trim(), x, currentY);
+        }
+
+        function downloadCard() {
+            const canvas = document.getElementById('preview-canvas');
+            const link = document.createElement('a');
+            link.download = 'practice-' + Date.now() + '.png';
+            link.href = canvas.toDataURL('image/png');
+            link.click();
+        }
+
+        // Первоначальный рендер без фото
+        draw();
+    </script>
+</body>
+
+</html>

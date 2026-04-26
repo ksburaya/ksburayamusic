@@ -1,0 +1,716 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Глубокое Слушание: практика и философия — Ксюша Бурая</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400;1,500&family=Raleway:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+    --bg: #0a0a0c;
+    --bg-elevated: #111115;
+    --bg-card: #14141a;
+    --gold: #c9a84c;
+    --gold-dim: rgba(201, 168, 76, 0.15);
+    --gold-glow: rgba(201, 168, 76, 0.08);
+    --gold-glow-strong: rgba(201, 168, 76, 0.25);
+    --text: #e8e4dc;
+    --text-dim: #9a968e;
+    --text-muted: #6b6860;
+    --serif: 'Cormorant Garamond', Georgia, serif;
+    --sans: 'Raleway', sans-serif;
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+html { scroll-behavior: smooth; scrollbar-width: thin; scrollbar-color: var(--gold-dim) var(--bg); }
+body { background: var(--bg); color: var(--text); font-family: var(--sans); font-weight: 300; line-height: 1.8; font-size: 17px; overflow-x: hidden; }
+
+/* PROGRESS BAR */
+.progress-bar-wrap { position: fixed; top: 0; left: 0; right: 0; height: 3px; z-index: 1000; background: rgba(10,10,12,0.5); }
+.progress-bar-wave { height: 100%; width: 0%; position: relative; overflow: hidden; }
+.progress-bar-wave::before { content: ''; position: absolute; inset: 0; background: linear-gradient(90deg, var(--gold), #d4a853, var(--gold)); }
+.progress-bar-wave::after { content: ''; position: absolute; top: -3px; right: 0; width: 8px; height: 8px; border-radius: 50%; background: var(--gold); box-shadow: 0 0 12px var(--gold); opacity: 0; transition: opacity 0.3s; }
+.progress-bar-wave.active::after { opacity: 1; }
+
+/* NAV */
+.nav { position: fixed; top: 0; left: 0; right: 0; z-index: 100; padding: 1.2rem 2rem; display: flex; justify-content: space-between; align-items: center; font-family: var(--sans); font-size: 0.8rem; letter-spacing: 0.12em; text-transform: uppercase; transition: background 0.4s; }
+.nav.scrolled { background: rgba(10,10,12,0.85); backdrop-filter: blur(20px); }
+.nav a { color: var(--text-dim); text-decoration: none; transition: color 0.3s; }
+.nav a:hover { color: var(--gold); }
+
+/* HERO */
+.hero { min-height: 100vh; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; padding: 4rem 2rem; position: relative; overflow: hidden; }
+.hero::before { content: ''; position: absolute; top: 50%; left: 50%; width: 600px; height: 600px; transform: translate(-50%,-50%); background: radial-gradient(circle, var(--gold-glow) 0%, transparent 70%); animation: pulse-glow 8s ease-in-out infinite; pointer-events: none; }
+@keyframes pulse-glow { 0%,100%{opacity:.4;transform:translate(-50%,-50%) scale(1)} 50%{opacity:.7;transform:translate(-50%,-50%) scale(1.2)} }
+.hero-label { font-family: var(--sans); font-size: 0.75rem; letter-spacing: 0.25em; text-transform: uppercase; color: var(--gold); margin-bottom: 2rem; opacity: 0; animation: fade-up 1s .3s forwards; }
+.hero h1 { font-family: var(--serif); font-size: clamp(2.5rem,6vw,5rem); font-weight: 300; line-height: 1.15; max-width: 800px; margin-bottom: 1.5rem; opacity: 0; animation: fade-up 1.2s .5s forwards; }
+.hero h1 em { font-style: italic; color: var(--gold); }
+.hero-subtitle { font-family: var(--sans); font-size: 1rem; font-weight: 300; color: var(--text-dim); max-width: 600px; line-height: 1.7; opacity: 0; animation: fade-up 1.2s .8s forwards; }
+.hero-scroll { position: absolute; bottom: 3rem; left: 50%; transform: translateX(-50%); display: flex; flex-direction: column; align-items: center; gap: .5rem; opacity: 0; animation: fade-up 1s 1.5s forwards; }
+.hero-scroll span { font-family: var(--sans); font-size: .65rem; letter-spacing: .2em; text-transform: uppercase; color: var(--text-muted); }
+.scroll-line { width: 1px; height: 40px; background: linear-gradient(to bottom, var(--gold), transparent); animation: scroll-pulse 2s ease-in-out infinite; }
+@keyframes scroll-pulse { 0%,100%{opacity:.3} 50%{opacity:1} }
+@keyframes fade-up { from{opacity:0;transform:translateY(30px)} to{opacity:1;transform:translateY(0)} }
+
+/* TOC */
+.toc { max-width: 700px; margin: 0 auto; padding: 3rem 2rem; border-top: 1px solid var(--gold-dim); border-bottom: 1px solid var(--gold-dim); }
+.toc-title { font-family: var(--sans); font-size: .7rem; letter-spacing: .2em; text-transform: uppercase; color: var(--text-muted); margin-bottom: 1.5rem; }
+.toc-list { list-style: none; display: flex; flex-direction: column; gap: .6rem; }
+.toc-list a { font-family: var(--serif); font-size: 1.1rem; color: var(--text-dim); text-decoration: none; transition: color .3s, padding-left .3s; display: block; }
+.toc-list a:hover { color: var(--gold); padding-left: .5rem; }
+.toc-list .toc-num { font-family: var(--sans); font-size: .7rem; color: var(--text-muted); margin-right: .8rem; }
+
+/* ARTICLE */
+.article { max-width: 700px; margin: 0 auto; padding: 4rem 2rem 6rem; }
+.reveal { opacity: 0; transform: translateY(40px); transition: opacity .8s ease, transform .8s ease; }
+.reveal.visible { opacity: 1; transform: translateY(0); }
+.section-header { margin: 5rem 0 2.5rem; }
+.section-num { font-family: var(--sans); font-size: .65rem; letter-spacing: .25em; text-transform: uppercase; color: var(--gold); display: block; margin-bottom: .8rem; }
+.section-header h2 { font-family: var(--serif); font-size: clamp(1.8rem,4vw,2.5rem); font-weight: 400; line-height: 1.25; color: var(--text); }
+.section-header::after { content: ''; display: block; width: 60px; height: 1px; background: var(--gold); margin-top: 1.5rem; opacity: .5; }
+p { margin-bottom: 1.5rem; }
+.highlight { color: var(--gold); font-style: italic; }
+
+/* INTRO QUESTION — large */
+.intro-question { font-family: var(--serif); font-size: clamp(1.8rem, 4vw, 2.6rem); font-weight: 300; font-style: italic; color: var(--gold); text-align: center; margin: 3rem 0; line-height: 1.4; }
+
+/* BLOCKQUOTE */
+blockquote { margin: 3rem 0; padding: 2rem 2.5rem; position: relative; background: var(--bg-elevated); border-radius: 2px; }
+blockquote::before { content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 2px; background: linear-gradient(to bottom, var(--gold), transparent); }
+blockquote p { font-family: var(--serif); font-style: italic; font-size: 1.15rem; margin-bottom: .8rem !important; line-height: 1.7; }
+blockquote cite { display: block; font-family: var(--sans); font-size: .75rem; letter-spacing: .15em; text-transform: uppercase; color: var(--gold); font-style: normal; }
+
+/* TIMELINE */
+.timeline { margin: 3rem 0; position: relative; padding-left: 3rem; }
+.timeline::before { content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 1px; background: linear-gradient(to bottom, var(--gold-dim), transparent); }
+.timeline-item { position: relative; margin-bottom: 2rem; padding-bottom: 1rem; }
+.timeline-item::before { content: ''; position: absolute; left: -3rem; top: .5rem; width: 7px; height: 7px; border-radius: 50%; background: var(--gold); box-shadow: 0 0 10px var(--gold-dim); transform: translateX(-3px); }
+.timeline-year { font-family: var(--sans); font-size: .7rem; letter-spacing: .2em; color: var(--gold); margin-bottom: .4rem; }
+.timeline-item p { font-size: .95rem; color: var(--text-dim); }
+
+/* CONCEPT CARDS */
+.concept-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin: 2.5rem 0; }
+.concept-card { padding: 2rem; background: var(--bg-elevated); border-radius: 4px; border: 1px solid var(--gold-dim); transition: transform .3s, border-color .3s; }
+.concept-card:hover { transform: translateY(-4px); border-color: rgba(201,168,76,.4); }
+.concept-card .card-en { font-family: var(--sans); font-size: .65rem; letter-spacing: .2em; text-transform: uppercase; color: var(--gold); margin-bottom: .6rem; }
+.concept-card h3 { font-family: var(--serif); font-size: 1.5rem; font-weight: 400; margin-bottom: 1rem; }
+.concept-card p { font-size: .95rem; color: var(--text-dim); line-height: 1.7; }
+
+/* BREATHER QUOTES */
+.breather { min-height: 55vh; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; padding: 4rem 2rem; position: relative; margin: 2rem -2rem; }
+.breather::before { content: ''; position: absolute; inset: 0; background: radial-gradient(ellipse at center, var(--gold-glow) 0%, transparent 70%); pointer-events: none; }
+.breather-text { font-family: var(--serif); font-size: clamp(1.6rem, 4vw, 2.8rem); font-weight: 300; font-style: italic; color: var(--gold); max-width: 650px; line-height: 1.5; position: relative; }
+.breather-text::before, .breather-text::after { content: ''; display: block; width: 40px; height: 1px; background: var(--gold); opacity: .4; margin: 1.5rem auto; }
+.breather cite { font-family: var(--sans); font-size: .7rem; letter-spacing: .2em; text-transform: uppercase; color: var(--text-muted); font-style: normal; margin-top: .5rem; display: block; }
+
+/* LISTENING MODES */
+.listening-modes { margin: 3rem 0; }
+.listening-canvas { width: 100%; height: 280px; border-radius: 4px; border: 1px solid var(--gold-dim); background: var(--bg-elevated); display: block; }
+.listening-toggle { display: flex; justify-content: center; gap: 1rem; margin-top: 1rem; }
+.listening-btn { font-family: var(--sans); font-size: .7rem; letter-spacing: .15em; text-transform: uppercase; padding: .6rem 1.5rem; background: transparent; border: 1px solid var(--gold-dim); color: var(--text-dim); cursor: pointer; border-radius: 2px; transition: all .3s; }
+.listening-btn.active { border-color: var(--gold); color: var(--gold); background: var(--gold-glow); }
+.listening-label { text-align: center; font-family: var(--sans); font-size: .75rem; color: var(--text-muted); margin-top: .8rem; }
+
+/* SOUND DEMO */
+.sound-demo { margin: 3rem 0; text-align: center; padding: 2.5rem; background: var(--bg-elevated); border: 1px solid var(--gold-dim); border-radius: 4px; }
+.sound-demo-wave { width: 100%; height: 60px; margin-bottom: 1.5rem; }
+.sound-demo-labels { display: flex; justify-content: center; gap: .8rem; flex-wrap: wrap; }
+.sound-label { font-family: var(--sans); font-size: .75rem; letter-spacing: .1em; text-transform: uppercase; padding: .5rem 1.2rem; border: 1px solid var(--gold-dim); color: var(--text-dim); cursor: pointer; border-radius: 2px; transition: all .4s; }
+.sound-label.active { border-color: var(--gold); color: var(--gold); background: var(--gold-glow); }
+.sound-label:hover { border-color: rgba(201,168,76,.4); }
+.sound-demo-reveal { margin-top: 1.5rem; font-family: var(--serif); font-size: 1.1rem; font-style: italic; color: var(--text-dim); min-height: 1.6em; transition: opacity .4s; }
+
+/* VAGUS NERVE */
+.vagus-wrap { margin: 3rem 0; display: flex; align-items: flex-start; gap: 2.5rem; }
+.vagus-svg { flex-shrink: 0; width: 120px; }
+.vagus-svg svg { width: 100%; height: auto; }
+.vagus-text { flex: 1; }
+.vagus-label { font-family: var(--sans); fill: var(--text-muted); }
+.vagus-path { stroke: var(--gold); stroke-width: 1.5; fill: none; opacity: .6; }
+.vagus-path-glow { stroke: var(--gold); stroke-width: 4; fill: none; opacity: 0; filter: blur(3px); animation: vagus-pulse 3s ease-in-out infinite; }
+@keyframes vagus-pulse { 0%,100%{opacity:0} 50%{opacity:.4} }
+.vagus-dot { fill: var(--gold); opacity: .6; }
+
+/* NS DIAGRAM */
+.ns-diagram { margin: 3rem 0; display: grid; grid-template-columns: 1fr 1fr; border: 1px solid var(--gold-dim); border-radius: 4px; overflow: hidden; }
+.ns-side { padding: 2.5rem 2rem; transition: background .3s; }
+.ns-side:first-child { border-right: 1px solid var(--gold-dim); }
+.ns-side:hover { background: var(--gold-glow); }
+.ns-mode { font-family: var(--sans); font-size: .65rem; letter-spacing: .2em; text-transform: uppercase; color: var(--gold); margin-bottom: .5rem; }
+.ns-side h3 { font-family: var(--serif); font-size: 1.3rem; font-weight: 400; margin-bottom: 1rem; }
+.ns-effects { list-style: none; display: flex; flex-direction: column; gap: .4rem; }
+.ns-effects li { font-family: var(--sans); font-size: .8rem; color: var(--text-dim); padding-left: 1rem; position: relative; }
+.ns-effects li::before { content: '\00B7'; position: absolute; left: 0; color: var(--gold); }
+
+/* PRACTICE BLOCKS — open by default, full text */
+.practice-block { margin: 3rem 0; background: var(--bg-card); border: 1px solid rgba(201,168,76,0.1); border-radius: 12px; padding: 2.5rem; position: relative; overflow: hidden; transition: box-shadow .8s; }
+.practice-block::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px; background: linear-gradient(90deg, transparent, var(--gold), transparent); }
+.practice-label-top { font-family: var(--sans); font-size: .7rem; letter-spacing: .2em; text-transform: uppercase; color: var(--gold); margin-bottom: .8rem; }
+.practice-title-big { font-family: var(--serif); font-size: 1.4rem; color: var(--text); margin-bottom: 1.5rem; }
+.practice-text { color: var(--text-dim); line-height: 1.9; margin-bottom: 1rem; }
+.practice-timer { display: flex; align-items: center; gap: 1rem; margin-top: 1.5rem; padding-top: 1.5rem; border-top: 1px solid rgba(201,168,76,0.1); flex-wrap: wrap; }
+.timer-btn { font-family: var(--sans); font-size: .7rem; letter-spacing: .15em; text-transform: uppercase; padding: .6rem 1.5rem; background: transparent; border: 1px solid var(--gold); color: var(--gold); cursor: pointer; border-radius: 2px; transition: all .3s; display: inline-flex; align-items: center; gap: 8px; }
+.timer-btn:hover, .timer-btn.active { background: var(--gold); color: var(--bg); }
+.timer-display { font-family: var(--sans); font-size: 1.5rem; font-weight: 300; color: var(--text-dim); letter-spacing: .1em; }
+
+/* SECTION DIVIDER */
+.section-divider { margin: 4rem auto; display: flex; justify-content: center; gap: .5rem; }
+.section-divider span { width: 4px; height: 4px; border-radius: 50%; background: var(--gold); opacity: .4; }
+
+/* VIDEO BLOCK */
+.video-block { margin: 3rem 0; padding: 3rem 2rem; background: var(--bg-elevated); border: 1px solid var(--gold-dim); border-radius: 4px; text-align: center; }
+.video-block-label { font-family: var(--sans); font-size: .7rem; letter-spacing: .2em; text-transform: uppercase; color: var(--gold); margin-bottom: 1rem; }
+.video-block-title { font-family: var(--serif); font-size: 1.5rem; font-weight: 400; color: var(--text); margin-bottom: 1.5rem; }
+.video-embed { position: relative; width: 100%; padding-bottom: 56.25%; background: #000; border-radius: 4px; overflow: hidden; }
+.video-embed iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: none; }
+
+/* FOOTER */
+.article-footer { max-width: 700px; margin: 0 auto; padding: 3rem 2rem; border-top: 1px solid var(--gold-dim); display: flex; justify-content: space-between; align-items: center; font-family: var(--sans); font-size: .75rem; color: var(--text-muted); letter-spacing: .1em; }
+.article-footer a { color: var(--gold); text-decoration: none; text-transform: uppercase; letter-spacing: .15em; font-size: .7rem; transition: opacity .3s; }
+.article-footer a:hover { opacity: .7; }
+
+.ambient-canvas { position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: -1; opacity: .4; }
+
+@media (max-width: 768px) {
+    body { font-size: 15px; }
+    .hero { min-height: 90vh; padding: 3rem 1.5rem; }
+    .article { padding: 3rem 1.5rem 5rem; }
+    .toc { padding: 2rem 1.5rem; }
+    .concept-grid { grid-template-columns: 1fr; }
+    .ns-diagram { grid-template-columns: 1fr; }
+    .ns-side:first-child { border-right: none; border-bottom: 1px solid var(--gold-dim); }
+    .breather { min-height: 45vh; margin: 2rem -1.5rem; }
+    blockquote { padding: 1.5rem; }
+    .article-footer { flex-direction: column; gap: 1rem; text-align: center; }
+    .timeline { padding-left: 2rem; }
+    .timeline-item::before { left: -2rem; }
+    .vagus-wrap { flex-direction: column; align-items: center; }
+    .vagus-svg { width: 100px; }
+    .listening-canvas { height: 200px; }
+    .practice-block { padding: 1.5rem; }
+}
+</style>
+</head>
+<body>
+
+<canvas class="ambient-canvas" id="ambientCanvas"></canvas>
+<div class="progress-bar-wrap"><div class="progress-bar-wave" id="progressBar"></div></div>
+
+<nav class="nav" id="nav">
+    <a href="https://ksburayamusic.ru/index.html">Ксюша Бурая</a>
+    <a href="https://ksburayamusic.ru/index.html#articles">Все статьи</a>
+</nav>
+
+<header class="hero">
+    <div class="hero-label">Тексты · 2026</div>
+    <h1>Глубокое <em>Слушание</em>: практика и&nbsp;философия</h1>
+    <p class="hero-subtitle">О Полине Оливерос, об истории Глубокого Слушания, о разнице между «слышать» и «слушать», и о том, как внимание к звуку меняет тело и восприятие.</p>
+    <div class="hero-scroll"><span>Читать</span><div class="scroll-line"></div></div>
+	<div style="display:flex;gap:1rem;justify-content:center;flex-wrap:wrap;margin-top:2rem;opacity:0;animation:fade-up 1.2s 1s forwards;">
+  <a href="https://youtu.be/kOjgzuXnlLI?si=oImRZyc3wFqPU8SZ" target="_blank" style="display:inline-flex;align-items:center;gap:0.6rem;padding:0.7rem 1.5rem;border:1px solid rgba(201,168,76,0.35);border-radius:2px;color:var(--gold);font-family:var(--sans);font-size:0.72rem;letter-spacing:0.15em;text-transform:uppercase;text-decoration:none;background:rgba(201,168,76,0.06);transition:all 0.3s;" onmouseover="this.style.background='rgba(201,168,76,0.14)';this.style.borderColor='var(--gold)'" onmouseout="this.style.background='rgba(201,168,76,0.06)';this.style.borderColor='rgba(201,168,76,0.35)'">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814z"/><polygon points="9.545,15.568 15.818,12 9.545,8.432" fill="#0a0a0c"/></svg>
+    Смотреть на YouTube
+  </a>
+  <a href="https://m.vkvideo.ru/video9154716_456244720?sh=4&list=ln-2e8fUuCTYMk8GJjm17&t=18m33s" target="_blank" style="display:inline-flex;align-items:center;gap:0.6rem;padding:0.7rem 1.5rem;border:1px solid rgba(201,168,76,0.35);border-radius:2px;color:var(--gold);font-family:var(--sans);font-size:0.72rem;letter-spacing:0.15em;text-transform:uppercase;text-decoration:none;background:rgba(201,168,76,0.06);transition:all 0.3s;" onmouseover="this.style.background='rgba(201,168,76,0.14)';this.style.borderColor='var(--gold)'" onmouseout="this.style.background='rgba(201,168,76,0.06)';this.style.borderColor='rgba(201,168,76,0.35)'">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M15.684 0H8.316C1.592 0 0 1.592 0 8.316v7.368C0 22.408 1.592 24 8.316 24h7.368C22.408 24 24 22.408 24 15.684V8.316C24 1.592 22.391 0 15.684 0zm3.692 17.123h-1.744c-.66 0-.864-.525-2.05-1.727-1.033-1-1.49-1.135-1.744-1.135-.356 0-.458.102-.458.593v1.575c0 .424-.135.678-1.253.678-1.846 0-3.896-1.12-5.339-3.202-2.17-3.042-2.763-5.32-2.763-5.778 0-.254.102-.491.593-.491h1.744c.44 0 .61.203.78.678.864 2.491 2.303 4.675 2.896 4.675.22 0 .322-.102.322-.66V9.721c-.068-1.186-.695-1.287-.695-1.71 0-.203.17-.407.44-.407h2.744c.373 0 .508.203.508.643v3.473c0 .372.17.508.271.508.22 0 .407-.136.813-.542 1.253-1.406 2.153-3.574 2.153-3.574.119-.254.322-.491.763-.491h1.744c.525 0 .644.27.525.643-.22 1.017-2.354 4.031-2.354 4.031-.186.305-.254.44 0 .78.186.254.796.779 1.203 1.253.745.847 1.32 1.558 1.473 2.05.17.49-.085.744-.576.744z"/></svg>
+    Смотреть VK
+  </a>
+</div>
+</header>
+
+<nav class="toc reveal">
+    <div class="toc-title">Содержание</div>
+    <ul class="toc-list">
+        <li><a href="#s1"><span class="toc-num">01</span>Полина Оливерос: кто она?</a></li>
+        <li><a href="#s2"><span class="toc-num">02</span>Как появился термин</a></li>
+        <li><a href="#s3"><span class="toc-num">03</span>Слышать и слушать</a></li>
+        <li><a href="#s4"><span class="toc-num">04</span>Sonic Meditations</a></li>
+        <li><a href="#s5"><span class="toc-num">05</span>Что происходит с телом</a></li>
+        <li><a href="#s6"><span class="toc-num">06</span>Реальность без свойств</a></li>
+        <li><a href="#s7"><span class="toc-num">07</span>Слушание телом</a></li>
+        <li><a href="#s8"><span class="toc-num">08</span>EIS: система как философия</a></li>
+    </ul>
+</nav>
+
+<article class="article">
+
+    <!-- INTRO -->
+    <div class="reveal">
+        <p class="intro-question">Когда вы последний раз по-настоящему слушали?</p>
+    </div>
+
+    <div class="reveal">
+        <p>Не слышали — слышим мы всё время, это происходит само по себе, пока работают уши. Когда вы в последний раз именно <span class="highlight">слушали</span> — то есть намеренно направляли внимание на звук, оставались в нём, не убегали мыслями куда-то?</p>
+    </div>
+
+    <div class="reveal">
+        <p>Я сама долго не понимала разницы. Занимаясь музыкой с самого детства, я долгое время думала, что точно умею слушать. Но потом я столкнулась с практиками Глубокого Слушания и поняла, что слушание, которым я занималась всю жизнь, было чем-то другим: я анализировала, оценивала и навешивала ярлыки, но не слушала.</p>
+    </div>
+
+    <div class="reveal">
+        <p>В этой статье я приглашаю читателей познакомиться с историей Полины Оливерос, которая придумала Глубокое Слушание, попробовать первые практики, которые можно выполнять где и когда угодно, познакомиться с нейрофизиологией созерцания и узнать, как Глубокое Слушание связано с восточной философией.</p>
+    </div>
+
+    <div class="section-divider"><span></span><span></span><span></span></div>
+
+    <!-- 01 — OLIVEROS -->
+    <div class="reveal" id="s1"><div class="section-header"><span class="section-num">01</span><h2>Полина Оливерос: кто она?</h2></div></div>
+
+    <div class="reveal">
+        <p>Полина Оливерос родилась в 1932 году в Хьюстоне, штат Техас. Тогда это был ещё почти сельский район: фермы, ореховые сады, заросли. Вокруг был богатый звуковой пейзаж, наполненный птицами, лягушками и цикадами. Она потом говорила, что именно там, в детстве, стала слушателем.</p>
+    </div>
+
+    <div class="timeline reveal">
+        <div class="timeline-item"><div class="timeline-year">1932</div><p>Родилась в Хьюстоне, Техас. Детство среди звуков природы.</p></div>
+        <div class="timeline-item"><div class="timeline-year">1941</div><p>В девять лет начала учиться играть на аккордеоне.</p></div>
+        <div class="timeline-item"><div class="timeline-year">1949</div><p>Поступила в Хьюстонский университет — редкая специализация по аккордеону.</p></div>
+        <div class="timeline-item"><div class="timeline-year">1952</div><p>Уехала в Сан-Франциско. Познакомилась с Эриксоном, Райли, Демпстером, Сендером.</p></div>
+        <div class="timeline-item"><div class="timeline-year">1961</div><p>Основала San Francisco Tape Music Center. Там впервые прозвучало «In C» Терри Райли и создан первый аналоговый синтезатор Buchla.</p></div>
+    </div>
+
+    <div class="reveal">
+        <p>Оливерос работала со звуковыми петлями, задержкой, отражением звука в пространстве. И пока все вокруг спрашивали <span class="highlight">«Что такое музыка?»</span>, она спрашивала другое:</p>
+    </div>
+
+    <div class="breather reveal"><div class="breather-text">Что такое слушание?</div></div>
+
+    <div class="section-divider"><span></span><span></span><span></span></div>
+
+    <!-- 02 — TERM -->
+    <div class="reveal" id="s2"><div class="section-header"><span class="section-num">02</span><h2>Как появился термин "Глубокое Слушание"</h2></div></div>
+
+    <div class="reveal">
+        <p>К концу восьмидесятых Оливерос уже несколько лет жила в штате Нью-Йорк. Она ушла из университета, отказалась от постоянной академической позиции и стабильной карьеры, и вернулась к тому, с чего начинала: к импровизации и к звуку как среде обитания. Она искала пространства, которые сами становятся инструментами.</p>
+    </div>
+
+    <div class="reveal">
+        <p>В октябре 1988 года Оливерос вместе с тромбонистом Стюартом Демпстером и вокалистом Панаётисом пролезают через люк размером с канализационный колодец и спускаются по лестнице на четыре метра вниз. Там под землёй находилась огромная заброшенная военная цистерна, состоящая из восьмидесяти девяти бетонных колонн. В полной темноте у музыкантов не было ни партитуры, ни плана.</p>
+    </div>
+
+    <div class="reveal">
+        <p>Время реверберации в цистерне составляло <span class="highlight">сорок пять секунд</span>. Это значит, что звук угасает почти минуту после того, как вы его издали. Музыканты начали играть и обнаружили, что цистерна играет вместе с ними.</p>
+    </div>
+
+    <div class="reveal">
+        <p>Сыгранная музыка была записана на плёнку. Когда пришло время называть альбом, Оливерос в шутку предложила: <span class="highlight">Глубокое Слушание</span>. Все засмеялись — ведь они действительно играли и слушали, находясь глубоко под землёй. Но название прижилось. А из него впоследствии выросло нечто гораздо большее.</p>
+    </div>
+
+    <div class="section-divider"><span></span><span></span><span></span></div>
+
+    <!-- 03 — HEAR vs LISTEN -->
+    <div class="reveal" id="s3"><div class="section-header"><span class="section-num">03</span><h2>Слышать и слушать</h2></div></div>
+
+    <div class="reveal">
+        <p>Глубокое слушание — это не просто про «внимательно слушать». Это про различение двух вещей, которые в русском языке мы часто не разделяем.</p>
+    </div>
+
+    <div class="concept-grid reveal">
+        <div class="concept-card">
+            <div class="card-en">To hear</div>
+            <h3>Слышать</h3>
+            <p>Это то, что происходит само по себе. Звук есть и мы его слышим. Это простая физиология.</p>
+        </div>
+        <div class="concept-card">
+            <div class="card-en">To listen</div>
+            <h3>Слушать</h3>
+            <p>Это уже личный выбор. Акт направленного внимания. Мы решаем, что мы слушаем и как мы это слушаем.</p>
+        </div>
+    </div>
+
+    <div class="reveal">
+        <p>Глубокое слушание — это слушание всеми возможными способами всего, что только можно услышать, чем бы вы при этом ни занимались. Такое интенсивное слушание охватывает звуки повседневной жизни, природы или собственных мыслей так же, как и звуки музыки.</p>
+    </div>
+
+    <div class="reveal"><p>Нам доступны два режима. Попробуйте переключиться:</p></div>
+
+    <div class="listening-modes reveal">
+        <canvas class="listening-canvas" id="listeningCanvas"></canvas>
+        <div class="listening-toggle">
+            <button class="listening-btn active" onclick="setListeningMode('focused', this)">Сфокусированное</button>
+            <button class="listening-btn" onclick="setListeningMode('panoramic', this)">Панорамное</button>
+        </div>
+        <div class="listening-label" id="listeningLabel">Извлекает детали из любого звука</div>
+    </div>
+
+    <div class="section-divider"><span></span><span></span><span></span></div>
+
+    <!-- 04 — SONIC MEDITATIONS -->
+    <div class="reveal" id="s4"><div class="section-header"><span class="section-num">04</span><h2>Sonic Meditations</h2></div></div>
+
+    <div class="reveal">
+        <p>Однажды Полина Оливерос преподавала курс о природе музыки большому потоку студентов немузыкальных направлений. Ей хотелось вовлечь их в творческий звуковой опыт. Она начала писать произведения, в которых мог бы участвовать каждый, независимо от умения читать ноты. К 1970 году она приступила к созданию сборника пьес, основанных на структуре человеческого внимания — «Sonic Meditations» (Звуковые медитации).</p>
+    </div>
+
+    <div class="reveal">
+        <p>Сама она говорит, что развивает свой навык слушания с помощью одной очень простой медитации с 1953 года, когда мама подарила ей диктофон на двадцать первый день рождения. Она сразу же начала записывать из окна своей квартиры всё, что происходило снаружи. И заметила, что микрофон улавливал звуки, которых она сама не слышала во время записи.</p>
+    </div>
+
+    <div class="reveal">
+        <blockquote>
+            <p>Я сказала себе тогда: «Слушай всё и всегда, и напоминай себе об этом каждый раз, когда ловишь себя на том, что не слушаешь». С тех пор я практикую эту медитацию с переменным успехом. Даже спустя десятки лет мне всё ещё нужны напоминания. Моё слушание продолжает эволюционировать как практика длиною в жизнь.</p>
+            <cite>Полина Оливерос</cite>
+        </blockquote>
+    </div>
+
+    <!-- PRACTICE I — full, open -->
+    <div class="reveal">
+        <div class="practice-block" id="practice1">
+            <div class="practice-label-top">Практика из Sonic Meditations — I</div>
+            <p class="practice-text">Закройте глаза, если хотите. Или оставьте открытыми — это не важно. Начинайте слушать пространство вокруг.</p>
+            <p class="practice-text">Не анализируйте. Не называйте. Просто замечайте то, что есть. Звук собственного дыхания, может быть, что-то в ушах — тихий фон, который всегда там.</p>
+            <p class="practice-text">Первые опыты этой практики часто выглядят как инвентаризация реальности: это — машина, это — чей-то кашель, это — мои собственные шорохи. Но постепенно восприятие начинает сдвигаться, и звуки перестают быть отдельными предметами, которые нужно как-то назвать. Звук становится просто звуком, единым полем.</p>
+			<p class="practice-text">Попробуйте выполнить практику с таймером.</p>
+            <div class="practice-timer">
+                <button class="timer-btn" onclick="startTimer(this, 180)"><svg width="10" height="12" viewBox="0 0 10 12" style="fill:currentColor"><polygon points="0,0 10,6 0,12"/></svg>03:00</button>
+				<button class="timer-btn" onclick="startTimer(this, 300)"><svg width="10" height="12" viewBox="0 0 10 12" style="fill:currentColor"><polygon points="0,0 10,6 0,12"/></svg>05:00</button>
+				<button class="timer-btn" onclick="startTimer(this, 600)"><svg width="10" height="12" viewBox="0 0 10 12" style="fill:currentColor"><polygon points="0,0 10,6 0,12"/></svg>10:00</button>
+				
+                <span class="timer-display">—</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- PRACTICE II — full, open -->
+    <div class="reveal">
+        <div class="practice-block" id="practice2">
+            <div class="practice-label-top">Практика из Sonic Meditations — II</div>
+            <p class="practice-text">Слушайте всё, что звучит вокруг и внутри вас как один непрерывный звук. Сюда входят любые звуки внешней среды, внутренние звуки вашего тела, ваши мысли. Постарайтесь слушать звуки не как отдельные источники и события, а как единую ткань. Как один дрон, у которого много слоёв. Всё сливается воедино: звуки среды, ваши мысли, ваше тело.</p>
+            <p class="practice-text">В какой-то момент, не по счёту и не по команде, а когда внутри возникнет импульс — издайте при попощи голоса или дыхания длинный звук или серию коротких звуков. Здесь нет задачи попасть в определенный тон или издать правильный звук. Важно довериться моменту и своему слушанию.</p>
+            <p class="practice-text">Так может случиться, что никакого импульса издать звук не возникнет. Это нормально. Это тоже интересно поисследовать.</p>
+			<p class="practice-text">Попробуйте выполнить практику с таймером.</p>
+            <div class="practice-timer">
+                <button class="timer-btn" onclick="startTimer(this, 180)"><svg width="10" height="12" viewBox="0 0 10 12" style="fill:currentColor"><polygon points="0,0 10,6 0,12"/></svg>03:00</button>
+				<button class="timer-btn" onclick="startTimer(this, 300)"><svg width="10" height="12" viewBox="0 0 10 12" style="fill:currentColor"><polygon points="0,0 10,6 0,12"/></svg>05:00</button>
+				<button class="timer-btn" onclick="startTimer(this, 600)"><svg width="10" height="12" viewBox="0 0 10 12" style="fill:currentColor"><polygon points="0,0 10,6 0,12"/></svg>10:00</button>
+
+                <span class="timer-display">—</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="section-divider"><span></span><span></span><span></span></div>
+
+    <!-- 05 — BODY -->
+    <div class="reveal" id="s5"><div class="section-header"><span class="section-num">05</span><h2>Что происходит с телом во время практик</h2></div></div>
+
+    <div class="reveal"><p>Наша нервная система может находиться в двух состояниях.</p></div>
+
+    <div class="ns-diagram reveal">
+        <div class="ns-side">
+            <div class="ns-mode">Симпатическое</div>
+            <h3>«Бороться или бежать»</h3>
+            <ul class="ns-effects"><li>Сердце ускоряется</li><li>Мышцы напрягаются</li><li>Пищеварение отключается</li><li>Тело тратит ресурсы</li></ul>
+        </div>
+        <div class="ns-side">
+            <div class="ns-mode">Парасимпатическое</div>
+            <h3>«Отдыхать и переваривать»</h3>
+            <ul class="ns-effects"><li>Сердце замедляется</li><li>Дыхание углубляется</li><li>Мышцы расслабляются</li><li>Тело восполняет ресурсы</li></ul>
+        </div>
+    </div>
+
+    <div class="reveal">
+        <p>Наш мозг не очень хорошо различает настоящую угрозу и воображаемую. Дедлайн на работе, неловкое сообщение в телефоне, тревожные новости — для нервной системы это примерно то же самое, что медведь в лесу. Этот режим хорошо умеет включаться, но сам по себе плохо умеет выключаться.</p>
+    </div>
+
+    <div class="vagus-wrap reveal">
+        <div class="vagus-svg">
+            <svg viewBox="0 0 120 360" xmlns="http://www.w3.org/2000/svg">
+                <ellipse cx="60" cy="28" rx="30" ry="22" fill="none" stroke="var(--gold)" stroke-width="0.8" opacity="0.4"/>
+                <text x="60" y="32" text-anchor="middle" class="vagus-label" font-size="8">мозг</text>
+                <path d="M60,50 C60,80 45,100 50,130 S65,170 60,200 S50,240 55,270 S60,310 60,340" class="vagus-path-glow"/>
+                <path d="M60,50 C60,80 45,100 50,130 S65,170 60,200 S50,240 55,270 S60,310 60,340" class="vagus-path"/>
+                <circle cx="50" cy="90" r="5" class="vagus-dot"/><text x="72" y="93" class="vagus-label" font-size="7">горло</text>
+                <circle cx="55" cy="145" r="6" class="vagus-dot"/><text x="74" y="148" class="vagus-label" font-size="7">сердце</text>
+                <circle cx="60" cy="200" r="6" class="vagus-dot"/><text x="78" y="203" class="vagus-label" font-size="7">лёгкие</text>
+                <circle cx="55" cy="270" r="7" class="vagus-dot"/><text x="74" y="273" class="vagus-label" font-size="7">кишечник</text>
+            </svg>
+        </div>
+        <div class="vagus-text">
+            <p>В нашем теле есть <span class="highlight">блуждающий нерв</span>. Он начинается в стволе мозга и спускается через горло, сердце, лёгкие до самого кишечника. Это главный провод между мозгом и внутренними органами. Именно этот нерв управляет переключением между двумя состояниями.</p>
+            <p>Слух — один из самых древних каналов оценки безопасности. Мозг постоянно сканирует звуковой фон: есть ли угроза? Когда вы перестаёте анализировать и просто слушаете — этот сканер успокаивается. Внимательное, ненапряжённое слушание само по себе сигнализирует телу: <span class="highlight">угрозы нет, можно расслабиться.</span></p>
+        </div>
+    </div>
+
+    <div class="reveal">
+        <p>Это знание существовало задолго до нейрофизики. В буддийских практиках, в йоге, в даосских техниках дыхания — тысячи лет люди замечали: когда ты замедляешься и направляешь внимание внутрь, то что-то меняется. Оливерос изучала эти практики всерьёз. Дзен, дзогчен, йога звука, дао, тай-чи — всё это было частью её работы, а не просто фоном.</p>
+    </div>
+
+    <div class="section-divider"><span></span><span></span><span></span></div>
+
+    <!-- 06 — REALITY -->
+    <div class="reveal" id="s6"><div class="section-header"><span class="section-num">06</span><h2>Реальность без свойств</h2></div></div>
+
+    <div class="reveal"><p>Звук за окном — это шум? Или музыка? Или просто колебания воздуха? Это зависит не от звука. Это зависит от нас. От того, как мы решили его назвать.</p></div>
+
+    <div class="sound-demo reveal">
+        <svg class="sound-demo-wave" viewBox="0 0 400 60" preserveAspectRatio="none">
+            <path id="soundWave" d="" fill="none" stroke="var(--gold)" stroke-width="1.5" opacity="0.6"/>
+        </svg>
+        <div style="font-family:var(--sans);font-size:.7rem;letter-spacing:.15em;text-transform:uppercase;color:var(--text-muted);margin-bottom:1rem;">Один и тот же звук. Выберите ярлык:</div>
+        <div class="sound-demo-labels">
+            <div class="sound-label" onclick="setLabel(this, 'Вы решили, что это шум — и мозг начал его игнорировать.')">Шум</div>
+            <div class="sound-label" onclick="setLabel(this, 'Вы решили, что это музыка — и мозг начал искать структуру.')">Музыка</div>
+            <div class="sound-label" onclick="setLabel(this, 'Без ярлыка. Просто колебания воздуха. Просто то, что есть. Впрочем, это тоже ярлык, не так ли?')">Колебания воздуха</div>
+        </div>
+        <div class="sound-demo-reveal" id="soundReveal"></div>
+    </div>
+
+    <div class="reveal">
+        <p>Нейрофизиологи говорят, что мозг не воспринимает реальность напрямую. Он строит модель из того, что приходит снаружи, и из того, что он ожидает на основе прошлого опыта. Когда вы слышите звук и сразу называете его «шумом» — это не восприятие. Это предсказание.</p>
+    </div>
+
+    <div class="reveal">
+        <p>Квантовая физика говорит примерно то же самое, только на другом уровне. До момента наблюдения частица не имеет определённого состояния. Реальность не существует отдельно от того, кто на неё смотрит.</p>
+    </div>
+
+    <div class="breather reveal">
+        <div class="breather-text">Мы не слышим мир. Мы слышим наше слушание.<cite>Полина Оливерос</cite></div>
+    </div>
+
+    <div class="section-divider"><span></span><span></span><span></span></div>
+
+    <!-- 07 — BODY LISTENING -->
+    <div class="reveal" id="s7"><div class="section-header"><span class="section-num">07</span><h2>Слушание телом</h2></div></div>
+
+    <div class="reveal">
+        <p>Полина Оливерос говорила, что слушание ушами — это только часть слушания. И что наше тело слышит не меньше, а может быть, и больше. Это не метафора. Это физиология. Наш слуховой нерв — не единственный канал, через который в нас входит звук. Низкие частоты мы воспринимаем всей поверхностью кожи. Грудная клетка резонирует со звуком. Внутренние органы откликаются на вибрацию.</p>
+    </div>
+
+    <div class="reveal">
+        <p>Но мы разучились это замечать. Мы живём преимущественно в голове — особенно в городе, с гаджетами в руках. Тело становится чем-то вроде транспортного средства для головы.</p>
+    </div>
+
+    <div class="reveal">
+        <p>Оливерос включала в свои практики движение, дыхание, работу с телесными ощущениями. Её студенты занимались йогой, тай-чи, цигун, контактной импровизацией не как дополнением к музыке, а как частью слушания. Когда тело находится в осознанном движении — оно начинает воспринимать звук иначе. Слух становится объёмным.</p>
+    </div>
+
+    <!-- PRACTICE III — full, open -->
+    <div class="reveal">
+        <div class="practice-block" id="practice3">
+            <div class="practice-label-top">Практика — слушание телом</div>
+            <p class="practice-text">Попробуйте почувствовать, где в вашем теле живёт звук, который вы слышите. Не только в ушах. Может быть, в груди или в ступнях. Может быть, где-то ещё. Эту практику можно делать каждый день вне зависимости от того, где вы находитесь.</p>
+			<p class="practice-text">Попробуйте выполнить практику с таймером.</p>
+            <div class="practice-timer">
+                <button class="timer-btn" onclick="startTimer(this, 180)"><svg width="10" height="12" viewBox="0 0 10 12" style="fill:currentColor"><polygon points="0,0 10,6 0,12"/></svg>03:00</button>
+				<button class="timer-btn" onclick="startTimer(this, 300)"><svg width="10" height="12" viewBox="0 0 10 12" style="fill:currentColor"><polygon points="0,0 10,6 0,12"/></svg>05:00</button>
+				<button class="timer-btn" onclick="startTimer(this, 600)"><svg width="10" height="12" viewBox="0 0 10 12" style="fill:currentColor"><polygon points="0,0 10,6 0,12"/></svg>10:00</button>
+                <span class="timer-display">—</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="section-divider"><span></span><span></span><span></span></div>
+
+    <!-- 08 — EIS -->
+    <div class="reveal" id="s8"><div class="section-header"><span class="section-num">08</span><h2>EIS: система как философия</h2></div></div>
+
+    <div class="reveal">
+        <p>Expanded Instrument System, которую придумала Полина Оливерос — это прямое продолжение философии Глубокого Слушания на поле электронной музыки. Как и в live looping, здесь записываются фрагменты живой игры. Но эти фрагменты не просто воспроизводятся, а видоизменяются. Система слушает саму себя и применяет к записанному материалу разные изменения: меняет высоту, скорость, тембр, пространство. Память здесь не статична — она живая и постоянно трансформируется.</p>
+    </div>
+
+    <div class="reveal">
+        <p>Это больше похоже на разговор между музыкантом и системой, которая помнит, трансформирует и отвечает. Граница между исполнителем и инструментом стирается. Музыкант перестает быть просто источником звука, а становится частью среды. Именно поэтому EIS стала для Оливерос не просто техническим методом, а <span class="highlight">философией слушания в действии</span>.</p>
+    </div>
+
+    <div class="reveal"><p><em>Про философию EIS в скором времени выйдет отдельная статья.</em></p></div>
+
+    <div class="section-divider"><span></span><span></span><span></span></div>
+
+    <!-- ENDING -->
+    <div class="reveal"><div class="section-header" style="margin-top:3rem;"><span class="section-num">Напоследок</span></div></div>
+
+    <div class="reveal">
+        <p>Полина Оливерос умерла в 2016 году. Ей было восемьдесят четыре. До конца жизни она проводила воркшопы, писала партитуры-инструкции, путешествовала с лекциями. Она не считала глубокое слушание особой техникой или духовной практикой. Она считала его просто способом быть внимательным.</p>
+    </div>
+
+    <div class="reveal">
+        <p>Глубокое слушание — это не то, что делается на коврике для медитации по утрам. Для этого не надо становиться частью каких-либо традиций или религиозных систем. Это то, что можно делать в метро, в очереди или в разговоре, когда хочется перебить, но вы не перебиваете и вдруг слышите что-то, чего раньше не слышали.</p>
+    </div>
+
+    <div class="breather reveal"><div class="breather-text">Это можно делать прямо сейчас.<br>Это можно делать всегда.</div></div>
+
+    <!-- VIDEO — раскомментировать и вставить ссылку -->
+    <!--
+    <div class="reveal">
+        <div class="video-block">
+            <div class="video-block-label">Видео-лекция</div>
+            <div class="video-block-title">Глубокое Слушание: практика и философия</div>
+            <div class="video-embed">
+                <iframe src="ВСТАВИТЬ_ССЫЛКУ" allowfullscreen></iframe>
+            </div>
+        </div>
+    </div>
+    -->
+	<div class="reveal" style="text-align:center;margin-top:3rem;">
+	  <a href="https://ksburayamusic.ru/deeplistening/practice" style="display:inline-flex;align-items:center;gap:0.7rem;padding:1rem 2rem;border:1px solid var(--gold);border-radius:2px;color:var(--gold);font-family:var(--sans);font-size:0.78rem;letter-spacing:0.18em;text-transform:uppercase;text-decoration:none;background:rgba(201,168,76,0.06);transition:all 0.3s;" onmouseover="this.style.background='rgba(201,168,76,0.14)'" onmouseout="this.style.background='rgba(201,168,76,0.06)'">
+	    Попробовать звуковые практики
+	    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+	  </a>
+	</div>
+
+
+
+</article>
+
+<footer class="article-footer">
+    <span>&copy; 2026 Ксюша Бурая</span>
+    <a href="https://ksburayamusic.ru/index.html#articles">Все статьи &rarr;</a>
+</footer>
+
+<script>
+// Progress
+window.addEventListener('scroll', () => {
+    const h = document.documentElement.scrollHeight - window.innerHeight;
+    const pct = Math.min(window.scrollY / h * 100, 100);
+    const bar = document.getElementById('progressBar');
+    bar.style.width = pct + '%';
+    bar.classList.toggle('active', pct > 0 && pct < 100);
+    document.getElementById('nav').classList.toggle('scrolled', window.scrollY > 80);
+});
+
+// Reveal
+const obs = new IntersectionObserver(entries => {
+    entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('visible'); });
+}, { threshold: 0.1, rootMargin: '0px 0px -60px 0px' });
+document.querySelectorAll('.reveal').forEach(el => obs.observe(el));
+
+// Audio
+let sharedAudioCtx = null;
+function getAudioCtx() {
+    if (!sharedAudioCtx) sharedAudioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    if (sharedAudioCtx.state === 'suspended') sharedAudioCtx.resume();
+    return sharedAudioCtx;
+}
+function playBell() {
+    const ctx = getAudioCtx(), now = ctx.currentTime;
+    function tone(freq, vol, dur, start) {
+        const o = ctx.createOscillator(), g = ctx.createGain();
+        o.type = 'sine'; o.frequency.value = freq;
+        g.gain.setValueAtTime(vol, now+start);
+        g.gain.exponentialRampToValueAtTime(0.001, now+start+dur);
+        o.connect(g).connect(ctx.destination);
+        o.start(now+start); o.stop(now+start+dur);
+    }
+    tone(528,.15,4,0); tone(1056,.07,3,0); tone(1584,.03,2.5,0); tone(528,.1,3.5,2);
+}
+function pulseGlow(block) {
+    if (!block) return;
+    let n = 0;
+    const iv = setInterval(() => {
+        n++;
+        if (n > 5) { clearInterval(iv); block.style.boxShadow = 'none'; return; }
+        block.style.boxShadow = n%2===0
+            ? '0 0 40px rgba(201,168,76,.25), inset 0 0 20px rgba(201,168,76,.06)'
+            : '0 0 8px rgba(201,168,76,.05)';
+    }, 1500);
+}
+
+// Timers
+let timers = {};
+function startTimer(btn, sec) {
+    getAudioCtx();
+    const block = btn.closest('.practice-block'), disp = block.querySelector('.timer-display'), tid = block.id;
+    if (timers[tid]) { clearInterval(timers[tid]); delete timers[tid]; block.querySelectorAll('.timer-btn').forEach(b=>b.classList.remove('active')); disp.textContent='\u2014'; return; }
+    block.querySelectorAll('.timer-btn').forEach(b=>b.classList.remove('active'));
+    btn.classList.add('active');
+    let r = sec;
+    const upd = () => { disp.textContent = (Math.floor(r/60)<10?'0':'') + Math.floor(r/60) + ':' + (r%60<10?'0':'') + r%60; };
+    upd();
+    timers[tid] = setInterval(() => {
+        r--;
+        if (r<=0) { clearInterval(timers[tid]); delete timers[tid]; disp.textContent='Готово'; btn.classList.remove('active'); playBell(); pulseGlow(block); if('vibrate' in navigator) navigator.vibrate([200,100,200]); }
+        else upd();
+    }, 1000);
+}
+
+// Particles
+const c=document.getElementById('ambientCanvas'), x=c.getContext('2d'), ps=[];
+function resize(){c.width=innerWidth;c.height=innerHeight;} resize(); addEventListener('resize',resize);
+for(let i=0;i<30;i++) ps.push({x:Math.random()*c.width,y:Math.random()*c.height,r:Math.random()*1.5+.5,dx:(Math.random()-.5)*.3,dy:(Math.random()-.5)*.2,o:Math.random()*.3+.1});
+(function draw(){x.clearRect(0,0,c.width,c.height);ps.forEach(p=>{x.beginPath();x.arc(p.x,p.y,p.r,0,Math.PI*2);x.fillStyle=`rgba(201,168,76,${p.o})`;x.fill();p.x+=p.dx;p.y+=p.dy;if(p.x<0||p.x>c.width)p.dx*=-1;if(p.y<0||p.y>c.height)p.dy*=-1;});requestAnimationFrame(draw);})();
+
+// TOC
+document.querySelectorAll('.toc-list a').forEach(a=>{a.addEventListener('click',e=>{e.preventDefault();document.querySelector(a.getAttribute('href'))?.scrollIntoView({behavior:'smooth',block:'start'});});});
+
+// Focused vs Panoramic — with bounds clamping
+let listeningMode='focused';
+const lCanvas=document.getElementById('listeningCanvas'), lCtx=lCanvas.getContext('2d');
+let lDots=[], lW=0, lH=0;
+
+function initDots(){
+    lDots=[];
+    lW=lCanvas.clientWidth; lH=lCanvas.clientHeight;
+    const margin=20;
+    for(let i=0;i<40;i++) lDots.push({
+        x: margin + Math.random()*(lW-margin*2),
+        y: margin + Math.random()*(lH-margin*2),
+        baseR: Math.random()*3+1,
+        freq: Math.random()*.02+.005,
+        phase: Math.random()*Math.PI*2,
+        ox: margin + Math.random()*(lW-margin*2),
+        oy: margin + Math.random()*(lH-margin*2)
+    });
+}
+function resizeLCanvas(){
+    const r=lCanvas.getBoundingClientRect(), dpr=window.devicePixelRatio||1;
+    lCanvas.width=r.width*dpr; lCanvas.height=r.height*dpr;
+    lCtx.scale(dpr,dpr);
+    initDots();
+}
+resizeLCanvas(); window.addEventListener('resize',resizeLCanvas);
+
+let lTime=0;
+(function drawL(){
+    const w=lCanvas.clientWidth, h=lCanvas.clientHeight;
+    lCtx.clearRect(0,0,w,h); lTime+=.016;
+    const cx=w/2, cy=h/2, margin=10;
+    lDots.forEach(d=>{
+        d.phase+=d.freq; let alpha,r;
+        if(listeningMode==='focused'){
+            const tx=cx+Math.sin(d.phase*3)*30, ty=cy+Math.cos(d.phase*2)*20;
+            d.x+=(tx-d.x)*.03; d.y+=(ty-d.y)*.03;
+            const dist=Math.sqrt((d.x-cx)**2+(d.y-cy)**2);
+            alpha=Math.max(.1,1-dist/80); r=d.baseR*(1+Math.sin(d.phase)*.3);
+        } else {
+            d.x+=(d.ox-d.x)*.02+Math.sin(d.phase)*.5;
+            d.y+=(d.oy-d.y)*.02+Math.cos(d.phase*.7)*.5;
+            alpha=.5+Math.sin(d.phase)*.2; r=d.baseR*(1+Math.sin(d.phase*.5)*.2);
+        }
+        // Clamp to bounds
+        d.x = Math.max(margin, Math.min(w-margin, d.x));
+        d.y = Math.max(margin, Math.min(h-margin, d.y));
+
+        lCtx.beginPath();lCtx.arc(d.x,d.y,r,0,Math.PI*2);
+        lCtx.fillStyle=`rgba(201,168,76,${alpha})`;lCtx.fill();
+        lCtx.beginPath();lCtx.arc(d.x,d.y,r*3,0,Math.PI*2);
+        lCtx.fillStyle=`rgba(201,168,76,${alpha*.08})`;lCtx.fill();
+    });
+    if(listeningMode==='focused'){
+        const rr=50+Math.sin(lTime*2)*5;
+        lCtx.beginPath();lCtx.arc(cx,cy,rr,0,Math.PI*2);
+        lCtx.strokeStyle='rgba(201,168,76,0.15)';lCtx.lineWidth=1;lCtx.stroke();
+    }
+    requestAnimationFrame(drawL);
+})();
+
+function setListeningMode(mode,btn){
+    listeningMode=mode;
+    document.querySelectorAll('.listening-btn').forEach(b=>b.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById('listeningLabel').textContent=
+        mode==='focused'?'Извлекает детали из любого звука':'Охватывает звуковое пространство целиком';
+}
+
+// Sound wave
+const wavePath=document.getElementById('soundWave'); let waveTime=0;
+(function drawW(){waveTime+=.03;let d='M0,30';for(let i=0;i<=400;i+=2){const y=30+Math.sin(i*.04+waveTime)*12+Math.sin(i*.02+waveTime*.7)*8;d+=` L${i},${y}`;}wavePath.setAttribute('d',d);requestAnimationFrame(drawW);})();
+
+function setLabel(el,text){
+    document.querySelectorAll('.sound-label').forEach(l=>l.classList.remove('active'));
+    el.classList.add('active');
+    const rv=document.getElementById('soundReveal');rv.style.opacity=0;
+    setTimeout(()=>{rv.textContent=text;rv.style.opacity=1;},200);
+}
+</script>
+</body>
+</html>
+а

@@ -1,0 +1,1029 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Дневник звуковых практик · Квантовое Ухо</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&family=Raleway:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0a0a; --bg2: #111111; --bg3: #181818;
+    --gold: #c9a84c; --gold-dim: #9a7a35;
+    --gold-glow: rgba(201,168,76,0.15);
+    --text: #e8e0d0; --text-dim: #8a8070; --text-muted: #5a5448;
+    --border: rgba(201,168,76,0.18); --radius: 2px;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background: var(--bg); color: var(--text);
+    font-family: 'Raleway', sans-serif; font-weight: 300;
+    font-size: 18px; min-height: 100vh; overflow-x: hidden;
+  }
+  #particles { position: fixed; inset: 0; pointer-events: none; z-index: 0; overflow: hidden; }
+  .particle {
+    position: absolute; width: 1px; height: 1px;
+    background: var(--gold); border-radius: 50%; opacity: 0;
+    animation: float linear infinite;
+  }
+  @keyframes float {
+    0%   { transform: translateY(100vh) translateX(0); opacity: 0; }
+    10%  { opacity: 0.4; } 90%  { opacity: 0.2; }
+    100% { transform: translateY(-10vh) translateX(40px); opacity: 0; }
+  }
+  .page { position: relative; z-index: 1; display: none; min-height: 100vh; }
+  .page.active { display: block; }
+
+  /* NAV */
+  nav {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+    padding: 20px 40px;
+    display: flex; align-items: center; justify-content: space-between;
+    background: linear-gradient(to bottom, rgba(10,10,10,0.95), transparent);
+    border-bottom: 1px solid transparent; transition: border-color 0.3s;
+  }
+  nav.scrolled { border-bottom-color: var(--border); }
+  .nav-logo {
+    font-family: 'Cormorant Garamond', serif; font-size: 1.2rem; font-weight: 400;
+    color: var(--gold); text-decoration: none; letter-spacing: 0.08em;
+  }
+  .nav-logo span { font-style: italic; }
+  .nav-right { display: flex; align-items: center; gap: 24px; }
+  .nav-user { font-size: 0.82rem; letter-spacing: 0.1em; color: var(--text-dim); text-transform: uppercase; }
+  .btn-ghost {
+    background: none; border: 1px solid var(--border); color: var(--text-dim);
+    font-family: 'Raleway', sans-serif; font-size: 0.76rem; letter-spacing: 0.12em;
+    text-transform: uppercase; padding: 8px 18px; cursor: pointer; transition: all 0.25s;
+  }
+  .btn-ghost:hover { border-color: var(--gold); color: var(--gold); }
+
+  /* AUTH */
+  .auth-box {
+    width: 100%; max-width: 420px; border: 1px solid var(--border);
+    padding: 48px 40px; background: var(--bg2); position: relative;
+  }
+  .auth-box::before {
+    content: ''; position: absolute; top: -1px; left: 40px; right: 40px; height: 1px;
+    background: linear-gradient(to right, transparent, var(--gold), transparent);
+  }
+  .auth-title { font-family: 'Cormorant Garamond', serif; font-size: 2.1rem; font-weight: 300; color: var(--gold); margin-bottom: 8px; text-align: center; }
+  .auth-subtitle { font-size: 0.82rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-muted); text-align: center; margin-bottom: 36px; }
+  .auth-tabs { display: flex; margin-bottom: 28px; border-bottom: 1px solid var(--border); }
+  .auth-tab {
+    flex: 1; padding: 12px; background: none; border: none;
+    font-family: 'Raleway', sans-serif; font-size: 0.82rem; letter-spacing: 0.1em;
+    text-transform: uppercase; cursor: pointer; color: var(--text-muted);
+    border-bottom: 1px solid transparent; margin-bottom: -1px; transition: all 0.25s;
+  }
+  .auth-tab.active { color: var(--gold); border-bottom-color: var(--gold); }
+  .field { margin-bottom: 22px; }
+  .field label { display: block; font-size: 0.76rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--text-muted); margin-bottom: 8px; }
+  .field input {
+    width: 100%; background: var(--bg3); border: 1px solid var(--border); color: var(--text);
+    font-family: 'Raleway', sans-serif; font-size: 1rem; padding: 13px 16px; outline: none; transition: border-color 0.25s;
+  }
+  .field input:focus { border-color: var(--gold); }
+  .field input::placeholder { color: var(--text-muted); }
+  .btn-primary {
+    width: 100%; padding: 15px; background: transparent; border: 1px solid var(--gold);
+    color: var(--gold); font-family: 'Raleway', sans-serif; font-size: 0.82rem;
+    letter-spacing: 0.15em; text-transform: uppercase; cursor: pointer; transition: all 0.3s; margin-top: 8px;
+  }
+  .btn-primary:hover { background: var(--gold-glow); }
+  .auth-error { font-size: 0.84rem; color: #c07060; text-align: center; margin-top: 14px; min-height: 20px; }
+
+  /* TIMELINE */
+  #page-timeline { padding: 120px 40px 80px; max-width: 860px; margin: 0 auto; }
+  .page-header { margin-bottom: 56px; }
+  .page-header h1 { font-family: 'Cormorant Garamond', serif; font-size: clamp(2rem, 4vw, 3rem); font-weight: 300; color: var(--text); line-height: 1.1; margin-bottom: 10px; }
+  .page-header h1 em { color: var(--gold); font-style: italic; }
+  .page-header p { font-size: 0.86rem; letter-spacing: 0.08em; color: var(--text-muted); text-transform: uppercase; }
+  .btn-new {
+    display: inline-flex; align-items: center; gap: 10px; padding: 14px 30px;
+    border: 1px solid var(--gold); background: transparent; color: var(--gold);
+    font-family: 'Raleway', sans-serif; font-size: 0.82rem; letter-spacing: 0.15em;
+    text-transform: uppercase; cursor: pointer; transition: all 0.3s; margin-bottom: 52px; text-decoration: none;
+  }
+  .btn-new:hover { background: var(--gold-glow); }
+  .btn-new .plus { font-size: 1.1rem; font-weight: 300; }
+  .timeline-empty { text-align: center; padding: 60px 20px; border: 1px dashed var(--border); color: var(--text-muted); font-size: 0.92rem; line-height: 1.9; letter-spacing: 0.04em; }
+  .timeline-empty .icon { font-size: 2rem; margin-bottom: 16px; opacity: 0.4; display: block; }
+  .timeline { position: relative; }
+  .timeline::before { content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 1px; background: linear-gradient(to bottom, transparent, var(--border) 10%, var(--border) 90%, transparent); }
+  .entry-card { position: relative; padding: 0 0 36px 32px; cursor: pointer; animation: fadeUp 0.4s ease both; }
+  @keyframes fadeUp { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
+  .entry-dot { position: absolute; left: -4px; top: 4px; width: 9px; height: 9px; border: 1px solid var(--gold); background: var(--bg); border-radius: 50%; transition: background 0.25s; }
+  .entry-card:hover .entry-dot { background: var(--gold); }
+  .entry-date { font-size: 0.76rem; letter-spacing: 0.14em; text-transform: uppercase; color: var(--gold-dim); margin-bottom: 8px; }
+  .entry-inner { border: 1px solid var(--border); background: var(--bg2); padding: 24px 26px; transition: border-color 0.25s, background 0.25s; }
+  .entry-card:hover .entry-inner { border-color: rgba(201,168,76,0.35); background: var(--bg3); }
+  .entry-practice-name { font-family: 'Cormorant Garamond', serif; font-size: 1.3rem; font-weight: 400; color: var(--text); margin-bottom: 14px; }
+  .sounds-arrows { margin-bottom: 14px; display: flex; flex-direction: column; gap: 5px; }
+  .sa-row { display: flex; align-items: baseline; gap: 8px; }
+  .sa-dir { font-size: 0.72rem; color: var(--gold-dim); flex-shrink: 0; width: 12px; }
+  .sa-text { font-size: 0.8rem; color: var(--text-muted); line-height: 1.4; display: -webkit-box; -webkit-line-clamp: 1; -webkit-box-orient: vertical; overflow: hidden; }
+  .entry-likes { font-size: 0.84rem; color: var(--text-dim); line-height: 1.6; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+
+  /* SELECT */
+  #page-select { padding: 120px 40px 80px; max-width: 900px; margin: 0 auto; }
+  .back-link { display: inline-flex; align-items: center; gap: 8px; font-size: 0.8rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-muted); text-decoration: none; cursor: pointer; margin-bottom: 44px; transition: color 0.25s; background: none; border: none; }
+  .back-link:hover { color: var(--gold); }
+  .back-link::before { content: '←'; }
+  .practices-grid { margin-top: 36px; }
+  .category-header { margin-bottom: 16px; margin-top: 40px; }
+  .category-header:first-child { margin-top: 0; }
+  .cat-title { font-family: 'Cormorant Garamond', serif; font-size: 1.5rem; font-weight: 300; color: var(--gold); margin-bottom: 4px; }
+  .cat-subtitle { font-size: 0.76rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-muted); }
+  .practices-row { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 2px; margin-bottom: 12px; }
+  .practice-card { border: 1px solid var(--border); background: var(--bg2); padding: 28px 24px; cursor: pointer; transition: all 0.3s; position: relative; overflow: hidden; }
+  .practice-card::after { content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 1px; background: var(--gold); transform: scaleX(0); transform-origin: left; transition: transform 0.3s; }
+  .practice-card:hover { background: var(--bg3); border-color: rgba(201,168,76,0.3); }
+  .practice-card:hover::after { transform: scaleX(1); }
+  .pc-duration { font-size: 0.72rem; letter-spacing: 0.14em; text-transform: uppercase; color: var(--gold-dim); margin-bottom: 12px; display: flex; align-items: center; gap: 6px; }
+  .pc-duration::before { content: ''; display: inline-block; width: 20px; height: 1px; background: var(--gold-dim); }
+  .pc-title { font-family: 'Cormorant Garamond', serif; font-size: 1.5rem; font-weight: 400; color: var(--text); margin-bottom: 10px; line-height: 1.2; }
+  .pc-desc { font-size: 0.88rem; color: var(--text-dim); line-height: 1.75; }
+  .pc-start { margin-top: 20px; font-size: 0.76rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--gold); opacity: 0; transition: opacity 0.25s; display: flex; align-items: center; gap: 6px; }
+  .pc-start::after { content: '→'; }
+  .practice-card:hover .pc-start { opacity: 1; }
+  .practice-card--soon { cursor: default; opacity: 0.6; }
+  .practice-card--soon:hover { background: var(--bg2); border-color: var(--border); }
+  .practice-card--soon::after { display: none; }
+  .pc-soon-badge { display: inline-block; margin-bottom: 14px; font-size: 0.68rem; letter-spacing: 0.14em; text-transform: uppercase; color: var(--bg); background: var(--text-muted); padding: 3px 10px; }
+
+  /* PRACTICE PAGE */
+  #page-practice { padding: 100px 40px 80px; max-width: 760px; margin: 0 auto; }
+  .practice-header { text-align: center; margin-bottom: 48px; }
+  .practice-header .label { font-size: 0.76rem; letter-spacing: 0.16em; text-transform: uppercase; color: var(--gold-dim); margin-bottom: 10px; }
+  .practice-header h2 { font-family: 'Cormorant Garamond', serif; font-size: clamp(1.8rem, 3vw, 2.6rem); font-weight: 300; color: var(--text); margin-bottom: 14px; }
+  .practice-header .desc { font-size: 0.92rem; color: var(--text-dim); line-height: 1.85; max-width: 520px; margin: 0 auto; }
+  .duration-selector { display: flex; justify-content: center; gap: 10px; margin-bottom: 32px; flex-wrap: wrap; }
+  .dur-btn { padding: 9px 22px; border: 1px solid var(--border); background: none; color: var(--text-muted); font-family: 'Raleway', sans-serif; font-size: 0.8rem; letter-spacing: 0.1em; text-transform: uppercase; cursor: pointer; transition: all 0.25s; }
+  .dur-btn:hover { border-color: var(--gold-dim); color: var(--text-dim); }
+  .dur-btn.active { border-color: var(--gold); color: var(--gold); background: var(--gold-glow); }
+  .timer-wrap { display: flex; flex-direction: column; align-items: center; margin-bottom: 48px; }
+  .timer-ring { position: relative; width: 160px; height: 160px; margin-bottom: 20px; }
+  .timer-svg { width: 160px; height: 160px; transform: rotate(-90deg); }
+  .timer-track { fill: none; stroke: var(--border); stroke-width: 1.5; }
+  .timer-progress { fill: none; stroke: var(--gold); stroke-width: 1.5; stroke-linecap: round; stroke-dasharray: 440; stroke-dashoffset: 0; transition: stroke-dashoffset 1s linear, stroke 0.5s; }
+  .timer-progress.urgent { stroke: #c07060; }
+  .timer-display { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; font-family: 'Cormorant Garamond', serif; font-size: 2.8rem; font-weight: 300; color: var(--text); letter-spacing: 0.04em; }
+  .timer-controls { display: flex; gap: 12px; }
+  .btn-timer { padding: 11px 28px; border: 1px solid var(--border); background: none; color: var(--text-dim); font-family: 'Raleway', sans-serif; font-size: 0.8rem; letter-spacing: 0.12em; text-transform: uppercase; cursor: pointer; transition: all 0.25s; }
+  .btn-timer:hover, .btn-timer.active { border-color: var(--gold); color: var(--gold); }
+  .btn-timer.start { border-color: var(--gold); color: var(--gold); }
+  .btn-timer.start:hover { background: var(--gold-glow); }
+  .section-divider { display: flex; align-items: center; gap: 16px; margin: 40px 0 28px; }
+  .section-divider span { font-size: 0.76rem; letter-spacing: 0.14em; text-transform: uppercase; color: var(--text-muted); white-space: nowrap; }
+  .section-divider::before, .section-divider::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+  .timer-done-msg { font-size: 0.82rem; letter-spacing: 0.1em; color: var(--gold); text-transform: uppercase; text-align: center; margin-top: 10px; opacity: 0; transition: opacity 0.5s; height: 22px; }
+  .timer-done-msg.show { opacity: 1; }
+
+  /* DESKTOP SOUND MAP */
+  .sound-map-wrap { position: relative; margin: 0 auto 40px; width: 620px; height: 620px; }
+  .sm-circle { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 200px; height: 200px; border: 1px solid var(--border); border-radius: 50%; background: radial-gradient(circle, rgba(201,168,76,0.05) 0%, transparent 70%); pointer-events: none; }
+  .sm-circle-inner { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 100px; height: 100px; border: 1px dashed rgba(201,168,76,0.08); border-radius: 50%; pointer-events: none; }
+  .sm-axis-h { position: absolute; top: 50%; left: 0; right: 0; height: 1px; background: var(--border); transform: translateY(-50%); pointer-events: none; }
+  .sm-axis-v { position: absolute; left: 50%; top: 0; bottom: 0; width: 1px; background: var(--border); transform: translateX(-50%); pointer-events: none; }
+  .sm-listener { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 46px; height: 46px; border: 1px solid var(--gold); border-radius: 50%; background: radial-gradient(circle, rgba(201,168,76,0.2), rgba(10,10,10,0.9)); display: flex; align-items: center; justify-content: center; font-size: 0.65rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--gold); z-index: 3; pointer-events: none; }
+  .sm-sector { position: absolute; z-index: 4; display: flex; }
+  .sm-sector.top { top: 0; left: calc(50% - 150px); width: 300px; height: 196px; flex-direction: column; align-items: center; justify-content: flex-end; gap: 8px; padding-bottom: 4px; }
+  .sm-sector.bottom { bottom: 0; left: calc(50% - 150px); width: 300px; height: 196px; flex-direction: column-reverse; align-items: center; justify-content: flex-end; gap: 8px; padding-top: 4px; }
+  .sm-sector.left { left: 0; top: calc(50% - 110px); width: 196px; height: 220px; flex-direction: column; align-items: flex-end; justify-content: center; gap: 8px; padding-right: 4px; }
+  .sm-sector.right { right: 0; top: calc(50% - 110px); width: 196px; height: 220px; flex-direction: column; align-items: flex-start; justify-content: center; gap: 8px; padding-left: 4px; }
+  .sm-label { font-size: 0.6rem; letter-spacing: 0.2em; text-transform: uppercase; color: var(--gold-dim); white-space: nowrap; flex-shrink: 0; }
+  .sm-cloud { display: flex; flex-wrap: wrap; gap: 5px; overflow-y: auto; scrollbar-width: thin; scrollbar-color: var(--border) transparent; }
+  .sm-cloud::-webkit-scrollbar { width: 2px; }
+  .sm-cloud::-webkit-scrollbar-thumb { background: var(--border); }
+  .sm-sector.top .sm-cloud, .sm-sector.bottom .sm-cloud { width: 280px; max-height: 100px; justify-content: center; }
+  .sm-sector.left .sm-cloud { width: 180px; max-height: 150px; justify-content: flex-end; }
+  .sm-sector.right .sm-cloud { width: 180px; max-height: 150px; justify-content: flex-start; }
+  .sm-input { background: var(--bg2); border: 1px solid var(--border); color: var(--text); font-family: 'Raleway', sans-serif; font-size: 0.86rem; padding: 9px 11px; outline: none; resize: none; line-height: 1.5; transition: border-color 0.25s; flex-shrink: 0; }
+  .sm-sector.top .sm-input, .sm-sector.bottom .sm-input { width: 180px; height: 54px; text-align: center; }
+  .sm-sector.left .sm-input { width: 150px; height: 50px; text-align: right; }
+  .sm-sector.right .sm-input { width: 150px; height: 50px; text-align: left; }
+  .sm-input:focus { border-color: var(--gold); }
+  .sm-input::placeholder { color: var(--text-muted); font-size: 0.72rem; }
+  .sm-hint { font-size: 0.6rem; color: var(--text-muted); letter-spacing: 0.08em; opacity: 0; transition: opacity 0.2s; pointer-events: none; flex-shrink: 0; }
+  .sm-input:focus ~ .sm-hint { opacity: 1; }
+  .sm-scroll-indicator { font-size: 0.58rem; letter-spacing: 0.1em; color: var(--text-muted); text-align: center; opacity: 0; transition: opacity 0.3s; pointer-events: none; flex-shrink: 0; }
+  .sm-scroll-indicator.show { opacity: 1; }
+  .word-tag { display: inline-flex; align-items: center; gap: 4px; border: 1px solid var(--border); padding: 4px 9px; font-size: 0.76rem; color: var(--text-dim); line-height: 1; animation: tagIn 0.2s ease both; white-space: nowrap; }
+  @keyframes tagIn { from { opacity:0; transform:translateY(3px) scale(0.9); } to { opacity:1; transform:translateY(0) scale(1); } }
+  .word-tag .rm { cursor: pointer; color: var(--text-muted); font-size: 0.64rem; transition: color 0.15s; }
+  .word-tag .rm:hover { color: var(--gold); }
+  .word-tag-static { display: inline-block; border: 1px solid var(--border); padding: 4px 10px; font-size: 0.8rem; color: var(--text-dim); line-height: 1; white-space: nowrap; }
+
+  /* QUESTIONS */
+  .question-block { margin-bottom: 28px; }
+  .question-block label { display: block; font-size: 0.82rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-dim); margin-bottom: 10px; }
+  .question-block textarea { width: 100%; background: var(--bg2); border: 1px solid var(--border); color: var(--text); font-family: 'Raleway', sans-serif; font-size: 1rem; line-height: 1.8; padding: 16px 18px; outline: none; resize: vertical; min-height: 100px; transition: border-color 0.25s; }
+  .question-block textarea:focus { border-color: var(--gold); }
+  .question-block textarea::placeholder { color: var(--text-muted); }
+  .save-row { display: flex; align-items: center; justify-content: space-between; margin-top: 36px; flex-wrap: wrap; gap: 16px; }
+  .save-note { font-size: 0.8rem; color: var(--text-muted); letter-spacing: 0.04em; }
+  .btn-save { padding: 15px 40px; border: 1px solid var(--gold); background: transparent; color: var(--gold); font-family: 'Raleway', sans-serif; font-size: 0.82rem; letter-spacing: 0.15em; text-transform: uppercase; cursor: pointer; transition: all 0.3s; }
+  .btn-save:hover { background: var(--gold-glow); }
+
+  /* ENTRY DETAIL */
+  #page-entry { padding: 100px 40px 80px; max-width: 760px; margin: 0 auto; }
+  .entry-detail-meta { margin-bottom: 32px; }
+  .entry-detail-meta .date { font-size: 0.78rem; letter-spacing: 0.14em; text-transform: uppercase; color: var(--gold-dim); margin-bottom: 6px; }
+  .entry-detail-meta h2 { font-family: 'Cormorant Garamond', serif; font-size: 2rem; font-weight: 300; color: var(--text); }
+  .detail-section { margin-bottom: 32px; }
+  .detail-section h3 { font-size: 0.76rem; letter-spacing: 0.14em; text-transform: uppercase; color: var(--text-muted); margin-bottom: 12px; padding-bottom: 8px; border-bottom: 1px solid var(--border); }
+  .detail-text { font-size: 0.96rem; line-height: 1.85; color: var(--text-dim); }
+  .sound-map-static { position: relative; width: 280px; height: 280px; margin: 0 auto; }
+  .toast { position: fixed; bottom: 32px; left: 50%; transform: translateX(-50%) translateY(20px); background: var(--bg3); border: 1px solid var(--gold); color: var(--text); padding: 12px 24px; font-size: 0.78rem; letter-spacing: 0.06em; opacity: 0; transition: all 0.3s; pointer-events: none; z-index: 999; white-space: nowrap; }
+  .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+  /* ════════════════════════════════════
+     МОБИЛЬНАЯ СХЕМА ЗВУКОВ
+  ════════════════════════════════════ */
+  .mobile-soundmap { display: none; }
+
+  /* Радар */
+  .mob-radar-wrap {
+    position: relative;
+    width: min(72vw, 280px); height: min(72vw, 280px);
+    margin: 0 auto 0; flex-shrink: 0;
+  }
+  .mob-radar-svg { width: 100%; height: 100%; overflow: visible; }
+  .mob-sector-path { fill: transparent; stroke: rgba(201,168,76,0.28); stroke-width: 1; transition: fill 0.3s, stroke 0.3s; cursor: pointer; }
+  .mob-sector-path.active { fill: rgba(201,168,76,0.1); stroke: rgba(201,168,76,0.5); }
+  .mob-sector-path.has-tags { fill: rgba(201,168,76,0.04); }
+  .mob-sector-path.active.has-tags { fill: rgba(201,168,76,0.12); }
+  .mob-radar-ring { fill: none; stroke: rgba(201,168,76,0.28); stroke-width: 1.5; }
+  .mob-radar-ring-inner { fill: none; stroke: rgba(201,168,76,0.12); stroke-width: 1; stroke-dasharray: 3 4; }
+  .mob-radar-axis { stroke: rgba(201,168,76,0.28); stroke-width: 1.5; }
+  .mob-dir-arrow { font-family: 'Raleway', sans-serif; fill: #9a9088; font-size: 16px; transition: fill 0.25s; }
+  .mob-dir-arrow.active { fill: var(--gold); }
+  .mob-dir-label { font-family: 'Raleway', sans-serif; font-size: 9px; letter-spacing: 2.5px; text-transform: uppercase; fill: #c8bfb0; transition: fill 0.25s; cursor: pointer; }
+  .mob-dir-label.active { fill: var(--gold); }
+  .mob-cnt-badge { transition: opacity 0.2s; }
+  .mob-cnt-circle { fill: rgba(201,168,76,0.15); stroke: rgba(201,168,76,0.45); stroke-width: 1; }
+  .mob-cnt-text { font-family: 'Raleway', sans-serif; font-size: 10px; fill: #b8923e; font-weight: 400; }
+  .mob-radar-center-bg { fill: rgba(10,10,10,0.95); stroke: var(--gold); stroke-width: 1; }
+  .mob-radar-center-txt { font-family: 'Raleway', sans-serif; font-size: 8px; letter-spacing: 2px; text-transform: uppercase; fill: var(--gold); }
+
+  /* Табы */
+  .mob-dir-tabs { display: flex; flex-shrink: 0; border-top: 1px solid rgba(201,168,76,0.28); }
+  .mob-dir-tab {
+    flex: 1; padding: 12px 4px; display: flex; flex-direction: column; align-items: center; gap: 3px;
+    cursor: pointer; border-right: 1px solid rgba(201,168,76,0.28);
+    transition: background 0.2s; background: transparent;
+    border-bottom: none; border-top: none; border-left: none; min-height: 64px;
+  }
+  .mob-dir-tab:last-child { border-right: none; }
+  .mob-dir-tab.active { background: rgba(201,168,76,0.08); }
+  .mob-dir-tab-arrow { font-size: 1.1rem; color: #9a9088; line-height: 1; transition: color 0.2s; }
+  .mob-dir-tab.active .mob-dir-tab-arrow { color: var(--gold); }
+  .mob-dir-tab-name { font-size: 0.58rem; letter-spacing: 0.12em; text-transform: uppercase; color: #9a9088; transition: color 0.2s; }
+  .mob-dir-tab.active .mob-dir-tab-name { color: var(--gold); }
+  .mob-dir-tab-count { font-family: 'Cormorant Garamond', serif; font-size: 0.85rem; color: #b8923e; min-height: 14px; }
+
+  /* Панель тегов */
+  .mob-panel-content { padding: 14px 20px 0; overflow-y: auto; -webkit-overflow-scrolling: touch; }
+  .mob-panel-tags { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 12px; min-height: 28px; }
+  .mob-ptag { display: inline-flex; align-items: center; gap: 5px; border: 1px solid rgba(201,168,76,0.28); padding: 7px 12px; font-size: 0.86rem; color: #c8bfb0; animation: tagIn 0.18s ease both; }
+  .mob-ptag .mob-rm { cursor:pointer; color:#9a9088; font-size:0.7rem; padding:2px 4px; }
+  .mob-ptag .mob-rm:active { color:var(--gold); }
+  .mob-panel-empty { font-size:0.84rem; color:#9a9088; font-style:italic; opacity:0.7; }
+
+  /* Поле ввода */
+  .mob-input-row { display: flex; flex-shrink: 0; border-top: 1px solid rgba(201,168,76,0.28); }
+  .mob-panel-input {
+    flex: 1; background: #0e0e0e; border: none; border-right: 1px solid rgba(201,168,76,0.28);
+    color: #f5f0e8; font-family: 'Raleway', sans-serif;
+    font-size: 1rem; padding: 15px 16px; outline: none;
+  }
+  .mob-panel-input::placeholder { color: #9a9088; }
+  .mob-panel-add { width: 56px; background: none; border: none; color: var(--gold); font-size: 1.5rem; cursor: pointer; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  .mob-panel-add:active { background: rgba(201,168,76,0.1); }
+
+  /* ════════════════════════════════════
+     МОБИЛЬНЫЕ МЕДИА-ЗАПРОСЫ
+  ════════════════════════════════════ */
+  @media (max-width: 768px) {
+    nav { padding: 14px 20px; }
+    .nav-user { display: none; }
+
+    #page-timeline, #page-select, #page-entry {
+      padding: 80px 20px 60px;
+    }
+    #page-practice { padding: 80px 20px 60px; }
+
+    /* Скрываем десктопную схему, показываем мобильную */
+    .sound-map-wrap { display: none; }
+    .mobile-soundmap { display: block; }
+
+    /* Таймер меньше */
+    .timer-ring { width: 130px; height: 130px; }
+    .timer-svg { width: 130px; height: 130px; }
+    .timer-display { font-size: 2.2rem; }
+
+    /* Кнопки практики */
+    .dur-btn { padding: 10px 18px; }
+    .btn-save { width: 100%; text-align: center; justify-content: center; }
+    .save-row { flex-direction: column; }
+
+    /* Таймлайн */
+    .entry-inner { padding: 18px 16px; }
+
+    /* Auth */
+    .auth-box { padding: 36px 24px; }
+  }
+
+  @media (max-width: 375px) {
+    .mob-radar-wrap { width: 64vw; height: 64vw; }
+    .mob-dir-tab { min-height: 56px; padding: 10px 2px; }
+    .mob-dir-tab-name { font-size: 0.52rem; }
+  }
+</style>
+</head>
+<body>
+<div id="particles"></div>
+
+<nav id="main-nav">
+  <a class="nav-logo" href="https://ksburayamusic.ru">Ксюша <span>Бурая</span></a>
+  <div class="nav-right">
+    <span class="nav-user" id="nav-username"></span>
+    <button class="btn-ghost" id="btn-logout" style="display:none" onclick="logout()">Выйти</button>
+  </div>
+</nav>
+
+<!-- AUTH -->
+<div class="page active" id="page-auth">
+  <div style="display:flex;align-items:center;justify-content:center;min-height:100vh;padding:40px 20px">
+    <div class="auth-box">
+      <div class="auth-title">Квантовое Ухо</div>
+      <div class="auth-subtitle">Дневник звуковых практик</div>
+      <div class="auth-tabs">
+        <button class="auth-tab active" onclick="switchTab('login')">Войти</button>
+        <button class="auth-tab" onclick="switchTab('register')">Зарегистрироваться</button>
+      </div>
+      <div id="tab-login">
+        <div class="field"><label>Email</label><input type="email" id="login-email" placeholder="your@email.com" autocomplete="email"></div>
+        <div class="field"><label>Пароль</label><input type="password" id="login-pass" placeholder="••••••••" autocomplete="current-password"></div>
+        <button class="btn-primary" onclick="doLogin()">Войти</button>
+        <div style="text-align:center;margin-top:14px"><a href="/journal/forgot.html" style="font-size:0.74rem;letter-spacing:0.1em;text-transform:uppercase;color:var(--text-muted);text-decoration:none">Забыли пароль?</a></div>
+      </div>
+      <div id="tab-register" style="display:none">
+        <div class="field"><label>Имя</label><input type="text" id="reg-name" placeholder="Как вас называть" autocomplete="name"></div>
+        <div class="field"><label>Email</label><input type="email" id="reg-email" placeholder="your@email.com" autocomplete="email"></div>
+        <div class="field"><label>Пароль</label><input type="password" id="reg-pass" placeholder="••••••••" autocomplete="new-password"></div>
+        <button class="btn-primary" onclick="doRegister()">Создать дневник</button>
+      </div>
+      <div class="auth-error" id="auth-error"></div>
+    </div>
+    <div class="auth-box" id="auth-success" style="display:none;text-align:center">
+      <div style="font-size:2rem;margin-bottom:16px;color:var(--gold)">✦</div>
+      <div class="auth-title" id="success-name"></div>
+      <div class="auth-subtitle" style="margin-top:6px;margin-bottom:28px">дневник создан</div>
+      <p style="font-size:0.88rem;color:var(--text-dim);line-height:1.8;margin-bottom:28px">Добро пожаловать.<br>Ваш дневник звуковых практик готов.</p>
+      <button class="btn-primary" onclick="goToJournal()">Открыть дневник</button>
+    </div>
+  </div>
+</div>
+
+<!-- TIMELINE -->
+<div class="page" id="page-timeline">
+  <div class="page-header">
+    <h1>Дневник<br><em>практик</em></h1>
+    <p>Звуковые наблюдения · <span id="entries-count">0</span> записей</p>
+  </div>
+  <button class="btn-new" onclick="showPage('page-select')"><span class="plus">+</span> Сделать практику</button>
+  <div class="timeline" id="timeline-list">
+    <div class="timeline-empty" id="timeline-empty"><span class="icon">◎</span>Здесь будут появляться ваши записи.<br>Начните первую практику прямо сейчас.</div>
+  </div>
+</div>
+
+<!-- SELECT -->
+<div class="page" id="page-select">
+  <button class="back-link" onclick="showPage('page-timeline')">К дневнику</button>
+  <div class="page-header"><h1>Выбрать<br><em>практику</em></h1><p>Выберите формат и нажмите «Начать»</p></div>
+  <div class="practices-grid" id="practices-grid"></div>
+</div>
+
+<!-- PRACTICE -->
+<div class="page" id="page-practice">
+  <button class="back-link" onclick="showPage('page-select')">Назад к выбору</button>
+  <div class="practice-header">
+    <div class="label" id="prac-label"></div>
+    <h2 id="prac-title"></h2>
+    <p class="desc" id="prac-desc"></p>
+  </div>
+  <div class="duration-selector" id="duration-selector"></div>
+  <div class="timer-wrap">
+    <div class="timer-ring">
+      <svg class="timer-svg" viewBox="0 0 160 160">
+        <circle class="timer-track" cx="80" cy="80" r="70"/>
+        <circle class="timer-progress" id="timer-progress" cx="80" cy="80" r="70"/>
+      </svg>
+      <div class="timer-display" id="timer-display">5:00</div>
+    </div>
+    <div class="timer-done-msg" id="timer-done-msg">Время вышло · перейдите к записи</div>
+    <div class="timer-controls">
+      <button class="btn-timer start" id="btn-start" onclick="timerToggle()">Начать</button>
+      <button class="btn-timer" id="btn-reset" onclick="timerReset()">Сбросить</button>
+    </div>
+  </div>
+
+  <div class="section-divider"><span>Место</span></div>
+  <div class="question-block" style="max-width:400px;margin:0 auto 40px">
+    <label>Где вы были во время практики?</label>
+    <input type="text" id="q-place" placeholder="парк, квартира, залив, крыша…"
+      style="width:100%;background:var(--bg2);border:1px solid var(--border);color:var(--text);font-family:'Raleway',sans-serif;font-size:1rem;padding:14px 16px;outline:none;transition:border-color 0.25s;"
+      onfocus="this.style.borderColor='var(--gold)'" onblur="this.style.borderColor='var(--border)'">
+  </div>
+
+  <div class="section-divider"><span>Схема звуков</span></div>
+  <p style="font-size:0.86rem;color:var(--text-muted);text-align:center;margin-bottom:24px;line-height:1.7">Опишите звуки, которые слышали вокруг вас во время практики</p>
+
+  <!-- ДЕСКТОП: круговая схема -->
+  <div class="sound-map-wrap">
+    <div class="sm-axis-h"></div><div class="sm-axis-v"></div>
+    <div class="sm-circle"></div><div class="sm-circle-inner"></div>
+    <div class="sm-listener">я</div>
+    <div class="sm-sector top">
+      <div class="sm-cloud" id="cloud-front"></div>
+      <div class="sm-scroll-indicator" id="si-front">· · ·</div>
+      <textarea class="sm-input" id="sound-front" placeholder="звук…"></textarea>
+      <span class="sm-hint">Enter — добавить</span>
+      <div class="sm-label">спереди</div>
+    </div>
+    <div class="sm-sector bottom">
+      <div class="sm-cloud" id="cloud-back"></div>
+      <div class="sm-scroll-indicator" id="si-back">· · ·</div>
+      <textarea class="sm-input" id="sound-back" placeholder="звук…"></textarea>
+      <span class="sm-hint">Enter — добавить</span>
+      <div class="sm-label">сзади</div>
+    </div>
+    <div class="sm-sector left">
+      <div class="sm-label">слева</div>
+      <div class="sm-cloud" id="cloud-left"></div>
+      <div class="sm-scroll-indicator" id="si-left">· · ·</div>
+      <textarea class="sm-input" id="sound-left" placeholder="звук…"></textarea>
+      <span class="sm-hint">Enter</span>
+    </div>
+    <div class="sm-sector right">
+      <div class="sm-label">справа</div>
+      <div class="sm-cloud" id="cloud-right"></div>
+      <div class="sm-scroll-indicator" id="si-right">· · ·</div>
+      <textarea class="sm-input" id="sound-right" placeholder="звук…"></textarea>
+      <span class="sm-hint">Enter</span>
+    </div>
+  </div>
+
+  <!-- МОБИЛЬНЫЙ: радар + табы -->
+  <div class="mobile-soundmap">
+    <div class="mob-radar-wrap">
+      <svg class="mob-radar-svg" viewBox="0 0 240 240">
+        <circle class="mob-radar-ring" cx="120" cy="120" r="112"/>
+        <circle class="mob-radar-ring-inner" cx="120" cy="120" r="68"/>
+        <circle class="mob-radar-ring-inner" cx="120" cy="120" r="30"/>
+        <line class="mob-radar-axis" x1="120" y1="8" x2="120" y2="232"/>
+        <line class="mob-radar-axis" x1="8" y1="120" x2="232" y2="120"/>
+        <path id="mob-sp-front" class="mob-sector-path active" d="M120,120 L8,8 L232,8 Z" onclick="mobSwitchDir('front')"/>
+        <path id="mob-sp-right" class="mob-sector-path" d="M120,120 L232,8 L232,232 Z" onclick="mobSwitchDir('right')"/>
+        <path id="mob-sp-back"  class="mob-sector-path" d="M120,120 L232,232 L8,232 Z" onclick="mobSwitchDir('back')"/>
+        <path id="mob-sp-left"  class="mob-sector-path" d="M120,120 L8,232 L8,8 Z" onclick="mobSwitchDir('left')"/>
+        <text class="mob-dir-arrow active" id="mob-arr-front" x="120" y="28" text-anchor="middle">↑</text>
+        <text class="mob-dir-arrow" id="mob-arr-right" x="212" y="126" text-anchor="middle">→</text>
+        <text class="mob-dir-arrow" id="mob-arr-back"  x="120" y="220" text-anchor="middle">↓</text>
+        <text class="mob-dir-arrow" id="mob-arr-left"  x="28"  y="126" text-anchor="middle">←</text>
+        <text class="mob-dir-label active" id="mob-lbl-front" x="120" y="46"  text-anchor="middle" onclick="mobSwitchDir('front')">спереди</text>
+        <text class="mob-dir-label" id="mob-lbl-right" x="196" y="148" text-anchor="middle" onclick="mobSwitchDir('right')">справа</text>
+        <text class="mob-dir-label" id="mob-lbl-back"  x="120" y="202" text-anchor="middle" onclick="mobSwitchDir('back')">сзади</text>
+        <text class="mob-dir-label" id="mob-lbl-left"  x="44"  y="100" text-anchor="middle" onclick="mobSwitchDir('left')">слева</text>
+        <g id="mob-cnt-front" class="mob-cnt-badge" opacity="0"><circle class="mob-cnt-circle" cx="120" cy="74" r="13"/><text class="mob-cnt-text" id="mob-cnt-txt-front" x="120" y="79" text-anchor="middle">0</text></g>
+        <g id="mob-cnt-right" class="mob-cnt-badge" opacity="0"><circle class="mob-cnt-circle" cx="166" cy="120" r="13"/><text class="mob-cnt-text" id="mob-cnt-txt-right" x="166" y="125" text-anchor="middle">0</text></g>
+        <g id="mob-cnt-back"  class="mob-cnt-badge" opacity="0"><circle class="mob-cnt-circle" cx="120" cy="166" r="13"/><text class="mob-cnt-text" id="mob-cnt-txt-back"  x="120" y="171" text-anchor="middle">0</text></g>
+        <g id="mob-cnt-left"  class="mob-cnt-badge" opacity="0"><circle class="mob-cnt-circle" cx="74"  cy="120" r="13"/><text class="mob-cnt-text" id="mob-cnt-txt-left"  x="74"  y="125" text-anchor="middle">0</text></g>
+        <circle class="mob-radar-center-bg" cx="120" cy="120" r="20"/>
+        <text class="mob-radar-center-txt" x="120" y="124" text-anchor="middle">я</text>
+      </svg>
+    </div>
+    <div class="mob-dir-tabs">
+      <div class="mob-dir-tab active" id="mob-tab-front" onclick="mobSwitchDir('front')">
+        <div class="mob-dir-tab-arrow">↑</div><div class="mob-dir-tab-name">спереди</div><div class="mob-dir-tab-count" id="mob-tc-front"></div>
+      </div>
+      <div class="mob-dir-tab" id="mob-tab-right" onclick="mobSwitchDir('right')">
+        <div class="mob-dir-tab-arrow">→</div><div class="mob-dir-tab-name">справа</div><div class="mob-dir-tab-count" id="mob-tc-right"></div>
+      </div>
+      <div class="mob-dir-tab" id="mob-tab-back" onclick="mobSwitchDir('back')">
+        <div class="mob-dir-tab-arrow">↓</div><div class="mob-dir-tab-name">сзади</div><div class="mob-dir-tab-count" id="mob-tc-back"></div>
+      </div>
+      <div class="mob-dir-tab" id="mob-tab-left" onclick="mobSwitchDir('left')">
+        <div class="mob-dir-tab-arrow">←</div><div class="mob-dir-tab-name">слева</div><div class="mob-dir-tab-count" id="mob-tc-left"></div>
+      </div>
+    </div>
+    <div class="mob-panel-content">
+      <div class="mob-panel-tags" id="mob-panel-tags">
+        <span class="mob-panel-empty">Добавьте звуки которые слышали спереди</span>
+      </div>
+    </div>
+    <div class="mob-input-row">
+      <input class="mob-panel-input" id="mob-panel-input" placeholder="звук… Enter чтобы добавить" autocomplete="off" autocorrect="off">
+      <button class="mob-panel-add" onclick="mobAddTag()">+</button>
+    </div>
+  </div>
+
+  <!-- Рефлексия -->
+  <div class="section-divider"><span>Рефлексия</span></div>
+  <div class="question-block">
+    <label>Что понравилось в звуковом ландшафте и почему?</label>
+    <textarea id="q-liked" placeholder="Опишите звуки или качества, которые привлекли внимание…" rows="3"></textarea>
+  </div>
+  <div class="question-block">
+    <label>Что не понравилось и почему?</label>
+    <textarea id="q-disliked" placeholder="Что мешало, раздражало или казалось лишним…" rows="3"></textarea>
+  </div>
+  <div class="question-block">
+    <label>Дополнительные наблюдения</label>
+    <textarea id="q-notes" placeholder="Любые мысли, образы, ощущения…" rows="3"></textarea>
+  </div>
+  <div class="save-row">
+    <span class="save-note" id="save-date-preview"></span>
+    <button class="btn-save" onclick="saveEntry()">Сохранить запись</button>
+  </div>
+</div>
+
+<!-- ENTRY DETAIL -->
+<div class="page" id="page-entry">
+  <button class="back-link" onclick="showPage('page-timeline')">К дневнику</button>
+  <div id="entry-detail-content"></div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const API = '/journal/api';
+const IS_MOBILE = () => window.innerWidth <= 768;
+
+const PRACTICES = [{
+  id: 'listen-space', category: 'listening', title: 'Слушание пространства',
+  durations: [5, 10, 15, 20], requiredAccess: null,
+  desc: 'Займите удобное положение, сделайте три глубоких вдоха и выдоха и закройте глаза.  Слушайте пространство, без попытки оценить происходящее. Позвольте звукам приходить и уходить, просто замечая их.'
+}];
+const PRACTICE_CATEGORIES = [
+  { id: 'listening', title: 'Слушание', subtitle: 'Практики глубокого слушания пространства' },
+  { id: 'eis', title: 'EIS', subtitle: 'Музыкальные практики', comingSoon: true }
+];
+
+// Particles
+(function() {
+  const c = document.getElementById('particles');
+  for (let i = 0; i < 28; i++) {
+    const p = document.createElement('div'); p.className = 'particle';
+    p.style.left = Math.random()*100+'vw';
+    p.style.animationDuration = (18+Math.random()*24)+'s';
+    p.style.animationDelay = (Math.random()*20)+'s';
+    p.style.opacity = Math.random()*0.5;
+    c.appendChild(p);
+  }
+})();
+
+let currentUser = null, currentPractice = null, timerInterval = null, timerRemaining = 0, timerRunning = false;
+
+function showPage(id) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  window.scrollTo(0, 0);
+  if (id === 'page-timeline') renderTimeline();
+  if (id === 'page-select') renderPractices();
+}
+window.addEventListener('scroll', () => { document.getElementById('main-nav').classList.toggle('scrolled', window.scrollY > 20); });
+
+function authHeader() { return { 'Authorization': 'Bearer ' + currentUser.token }; }
+function switchTab(tab) {
+  document.getElementById('tab-login').style.display = tab==='login'?'block':'none';
+  document.getElementById('tab-register').style.display = tab==='register'?'block':'none';
+  document.querySelectorAll('.auth-tab').forEach((t,i) => { t.classList.toggle('active', (i===0&&tab==='login')||(i===1&&tab==='register')); });
+  document.getElementById('auth-error').textContent = '';
+}
+function setAuthLoading(on) { document.querySelectorAll('.btn-primary').forEach(b => { b.disabled=on; b.style.opacity=on?'0.5':'1'; }); }
+
+async function doLogin() {
+  const email=document.getElementById('login-email').value.trim().toLowerCase();
+  const pass=document.getElementById('login-pass').value;
+  if (!email||!pass) { document.getElementById('auth-error').textContent='Заполните все поля'; return; }
+  setAuthLoading(true);
+  try {
+    const res = await fetch(API+'/login.php', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({email,password:pass}) });
+    const data = await res.json();
+    if (!res.ok) { document.getElementById('auth-error').textContent=data.error||'Ошибка входа'; return; }
+    loginAs(data.token,data.name,data.email); showPage('page-timeline');
+  } catch { document.getElementById('auth-error').textContent='Нет соединения с сервером'; }
+  finally { setAuthLoading(false); }
+}
+
+async function doRegister() {
+  const name=document.getElementById('reg-name').value.trim();
+  const email=document.getElementById('reg-email').value.trim().toLowerCase();
+  const pass=document.getElementById('reg-pass').value;
+  if (!name||!email||!pass) { document.getElementById('auth-error').textContent='Заполните все поля'; return; }
+  setAuthLoading(true);
+  try {
+    const res = await fetch(API+'/register.php', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({name,email,password:pass}) });
+    const data = await res.json();
+    if (!res.ok) { document.getElementById('auth-error').textContent=data.error||'Ошибка регистрации'; return; }
+    loginAs(data.token,data.name,data.email);
+    document.querySelector('.auth-box:not(#auth-success)').style.display='none';
+    document.getElementById('auth-success').style.display='block';
+    document.getElementById('success-name').textContent=data.name;
+  } catch { document.getElementById('auth-error').textContent='Нет соединения с сервером'; }
+  finally { setAuthLoading(false); }
+}
+
+function goToJournal() { showPage('page-timeline'); }
+function loginAs(token,name,email) {
+  currentUser={token,name,email};
+  localStorage.setItem('qs_session',JSON.stringify(currentUser));
+  document.getElementById('nav-username').textContent=name;
+  document.getElementById('btn-logout').style.display='inline-block';
+}
+function logout() {
+  currentUser=null; localStorage.removeItem('qs_session');
+  document.getElementById('nav-username').textContent='';
+  document.getElementById('btn-logout').style.display='none';
+  showPage('page-auth');
+}
+(function() {
+  const s=localStorage.getItem('qs_session'); if (!s) return;
+  try { const u=JSON.parse(s); if (u.token&&u.name) { currentUser=u; document.getElementById('nav-username').textContent=u.name; document.getElementById('btn-logout').style.display='inline-block'; showPage('page-timeline'); } } catch {}
+})();
+
+async function renderTimeline() {
+  if (!currentUser) return;
+  const container=document.getElementById('timeline-list'), empty=document.getElementById('timeline-empty');
+  container.querySelectorAll('.entry-card').forEach(e=>e.remove()); empty.style.display='none';
+  let loadEl=document.createElement('div');
+  loadEl.style.cssText='text-align:center;padding:40px;font-size:0.8rem;letter-spacing:0.1em;color:var(--text-muted);text-transform:uppercase';
+  loadEl.textContent='· · ·'; container.appendChild(loadEl);
+  let entries=[];
+  try {
+    const res=await fetch(API+'/entries.php',{headers:authHeader()});
+    if (res.status===401){logout();return;} entries=await res.json();
+  } catch { loadEl.textContent='Нет соединения с сервером'; return; }
+  loadEl.remove();
+  document.getElementById('entries-count').textContent=entries.length;
+  if (entries.length===0){empty.style.display='block';return;}
+  entries.forEach((entry,i)=>{
+    const card=document.createElement('div'); card.className='entry-card'; card.style.animationDelay=(i*0.06)+'s';
+    const d=new Date(entry.saved_at);
+    const dateStr=d.toLocaleDateString('ru-RU',{day:'numeric',month:'long',year:'numeric'})+' · '+d.toLocaleTimeString('ru-RU',{hour:'2-digit',minute:'2-digit'});
+    const prac=PRACTICES.find(p=>p.id===entry.practice_id)||{title:entry.practice_id};
+    const durLabel=entry.duration_min?entry.duration_min+' мин':'';
+    const sounds=typeof entry.sounds==='string'?JSON.parse(entry.sounds):(entry.sounds||{});
+    card.innerHTML=`<div class="entry-dot"></div><div class="entry-date">${dateStr}</div><div class="entry-inner"><div class="entry-practice-name">${prac.title} <span style="font-size:0.8rem;color:var(--text-muted);font-family:'Raleway',sans-serif">· ${durLabel}</span></div>${entry.place?`<div style="font-size:0.78rem;color:var(--gold-dim);letter-spacing:0.06em;margin-bottom:12px">◎ ${entry.place}</div>`:''}<div class="sounds-arrows">${sounds.front?`<div class="sa-row"><span class="sa-dir">↑</span><span class="sa-text">${sounds.front}</span></div>`:''} ${sounds.right?`<div class="sa-row"><span class="sa-dir">→</span><span class="sa-text">${sounds.right}</span></div>`:''} ${sounds.back?`<div class="sa-row"><span class="sa-dir">↓</span><span class="sa-text">${sounds.back}</span></div>`:''} ${sounds.left?`<div class="sa-row"><span class="sa-dir">←</span><span class="sa-text">${sounds.left}</span></div>`:''}</div>${entry.liked?`<div class="entry-likes">♥ ${entry.liked}</div>`:''}</div>`;
+    card.addEventListener('click',()=>showEntry(entry)); container.appendChild(card);
+  });
+}
+
+function renderPractices() {
+  const grid=document.getElementById('practices-grid'); grid.innerHTML='';
+  PRACTICE_CATEGORIES.forEach(cat=>{
+    const header=document.createElement('div'); header.className='category-header';
+    header.innerHTML=`<div class="cat-title">${cat.title}</div><div class="cat-subtitle">${cat.subtitle}</div>`;
+    grid.appendChild(header);
+    const row=document.createElement('div'); row.className='practices-row';
+    if (cat.comingSoon) {
+      const pl=document.createElement('div'); pl.className='practice-card practice-card--soon';
+      pl.innerHTML=`<div class="pc-soon-badge">Скоро</div><div class="pc-title" style="opacity:0.4">Затухание</div><div class="pc-desc" style="opacity:0.35">Сосредоточьте внимание на звуке. Замечайте, как он затухает с каждым новым повтором, и как ему отвечает новый звук.</div>`;
+      row.appendChild(pl);
+    } else {
+      PRACTICES.filter(p=>p.category===cat.id).forEach(p=>{
+        const card=document.createElement('div'); card.className='practice-card';
+        card.innerHTML=`<div class="pc-duration">${p.durations.join(' / ')} мин</div><div class="pc-title">${p.title}</div><div class="pc-desc">${p.desc}</div><div class="pc-start">Начать</div>`;
+        card.addEventListener('click',()=>startPractice(p)); row.appendChild(card);
+      });
+    }
+    grid.appendChild(row);
+  });
+}
+
+function startPractice(practice) {
+  currentPractice={...practice,selectedDuration:practice.durations[0]*60};
+  timerRemaining=currentPractice.selectedDuration; timerRunning=false; clearInterval(timerInterval);
+  document.getElementById('prac-label').textContent='Практика';
+  document.getElementById('prac-title').textContent=practice.title;
+  document.getElementById('prac-desc').textContent=practice.desc;
+  const sel=document.getElementById('duration-selector'); sel.innerHTML='';
+  practice.durations.forEach((min,i)=>{
+    const btn=document.createElement('button'); btn.className='dur-btn'+(i===0?' active':''); btn.textContent=min+' мин';
+    btn.addEventListener('click',()=>{
+      if (timerRunning) return;
+      document.querySelectorAll('.dur-btn').forEach(b=>b.classList.remove('active')); btn.classList.add('active');
+      currentPractice.selectedDuration=min*60; timerRemaining=min*60; updateTimerDisplay();
+      document.getElementById('timer-progress').style.strokeDashoffset=0;
+      document.getElementById('timer-progress').classList.remove('urgent');
+      document.getElementById('timer-done-msg').classList.remove('show');
+      document.getElementById('btn-start').textContent='Начать'; document.getElementById('btn-start').classList.add('start');
+    }); sel.appendChild(btn);
+  });
+  ['sound-front','sound-back','sound-left','sound-right','q-liked','q-disliked','q-notes','q-place'].forEach(id=>{document.getElementById(id).value='';});
+  ['cloud-front','cloud-back','cloud-left','cloud-right'].forEach(id=>{document.getElementById(id).innerHTML='';});
+  // Сброс мобильного радара
+  mobWords={front:[],right:[],back:[],left:[]}; mobActive='front';
+  mobSwitchDir('front'); mobUpdateCounts();
+  updateTimerDisplay();
+  document.getElementById('btn-start').textContent='Начать'; document.getElementById('btn-start').classList.add('start');
+  document.getElementById('timer-done-msg').classList.remove('show');
+  document.getElementById('timer-progress').style.strokeDashoffset=0;
+  document.getElementById('timer-progress').classList.remove('urgent');
+  document.getElementById('save-date-preview').textContent=new Date().toLocaleDateString('ru-RU',{day:'numeric',month:'long',year:'numeric'});
+  showPage('page-practice');
+}
+
+function timerToggle() {
+  if (timerRemaining<=0) return; timerRunning=!timerRunning;
+  const btn=document.getElementById('btn-start');
+  if (timerRunning){btn.textContent='Пауза';btn.classList.remove('start');timerInterval=setInterval(timerTick,1000);}
+  else{btn.textContent='Продолжить';btn.classList.add('start');clearInterval(timerInterval);}
+}
+function timerTick() {
+  timerRemaining--; updateTimerDisplay();
+  const offset=440*(1-timerRemaining/currentPractice.selectedDuration);
+  document.getElementById('timer-progress').style.strokeDashoffset=offset;
+  if (timerRemaining<=30) document.getElementById('timer-progress').classList.add('urgent');
+  if (timerRemaining<=0){clearInterval(timerInterval);timerRunning=false;document.getElementById('btn-start').textContent='Время вышло';document.getElementById('timer-done-msg').classList.add('show');}
+}
+function timerReset() {
+  clearInterval(timerInterval);timerRunning=false;timerRemaining=currentPractice?currentPractice.selectedDuration:300;updateTimerDisplay();
+  document.getElementById('btn-start').textContent='Начать';document.getElementById('btn-start').classList.add('start');
+  document.getElementById('timer-progress').style.strokeDashoffset=0;document.getElementById('timer-progress').classList.remove('urgent');document.getElementById('timer-done-msg').classList.remove('show');
+}
+function updateTimerDisplay() { const m=Math.floor(timerRemaining/60),s=timerRemaining%60; document.getElementById('timer-display').textContent=m+':'+String(s).padStart(2,'0'); }
+
+// Desktop sound map
+function getSectorWords(sec) { return Array.from(document.querySelectorAll('#cloud-'+sec+' .word-tag')).map(t=>t.childNodes[0].textContent.trim()).join(', '); }
+function addSoundTag(sec,text) {
+  const cloud=document.getElementById('cloud-'+sec),si=document.getElementById('si-'+sec);
+  const tag=document.createElement('span'); tag.className='word-tag';
+  tag.innerHTML=`${text}<span class="rm" onclick="removeSoundTag(this,'${sec}')"> ×</span>`;
+  cloud.appendChild(tag); cloud.scrollTop=cloud.scrollHeight;
+  if (si) si.classList.toggle('show',cloud.scrollHeight>cloud.clientHeight+2);
+}
+function removeSoundTag(el,sec) {
+  const tag=el.parentElement; tag.style.transition='all 0.15s'; tag.style.opacity='0'; tag.style.transform='scale(0.8)';
+  setTimeout(()=>{tag.remove();const cloud=document.getElementById('cloud-'+sec),si=document.getElementById('si-'+sec);if (si) si.classList.toggle('show',cloud.scrollHeight>cloud.clientHeight+2);},150);
+}
+document.querySelectorAll('.sm-input').forEach(ta=>{
+  ta.addEventListener('keydown',e=>{
+    if (e.key!=='Enter') return; e.preventDefault();
+    const val=ta.value.trim(); if (!val) return;
+    const sec=ta.id.replace('sound-',''); addSoundTag(sec,val);
+    ta.style.transition='opacity 0.1s'; ta.style.opacity='0.3';
+    setTimeout(()=>{ta.value='';ta.style.opacity='1';ta.focus();},100);
+  });
+});
+
+// Mobile sound map
+const MOB_DIRS = { front:{name:'спереди',arrow:'↑'}, right:{name:'справа',arrow:'→'}, back:{name:'сзади',arrow:'↓'}, left:{name:'слева',arrow:'←'} };
+let mobWords={front:[],right:[],back:[],left:[]}, mobActive='front';
+
+function mobSwitchDir(dir) {
+  mobActive=dir;
+  Object.keys(MOB_DIRS).forEach(k=>{
+    const on=k===dir;
+    ['mob-sp-','mob-arr-','mob-lbl-','mob-tab-'].forEach(prefix=>{const el=document.getElementById(prefix+k);if(el)el.classList.toggle('active',on);});
+  });
+  mobRenderTags();
+}
+function mobAddTag() {
+  const input=document.getElementById('mob-panel-input'), val=input.value.trim(); if (!val) return;
+  mobWords[mobActive].push(val); input.value=''; mobRenderTags(); mobUpdateCounts();
+}
+function mobRemoveTag(dir,idx) { mobWords[dir].splice(idx,1); mobRenderTags(); mobUpdateCounts(); }
+function mobRenderTags() {
+  const container=document.getElementById('mob-panel-tags'); container.innerHTML='';
+  if (mobWords[mobActive].length===0){container.innerHTML=`<span class="mob-panel-empty">Добавьте звуки которые слышали ${MOB_DIRS[mobActive].name}</span>`;return;}
+  mobWords[mobActive].forEach((w,i)=>{
+    const tag=document.createElement('span'); tag.className='mob-ptag';
+    tag.innerHTML=`${w}<span class="mob-rm" onclick="mobRemoveTag('${mobActive}',${i})"> ×</span>`;
+    container.appendChild(tag);
+  });
+}
+function mobUpdateCounts() {
+  Object.keys(MOB_DIRS).forEach(dir=>{
+    const n=mobWords[dir].length;
+    const tc=document.getElementById('mob-tc-'+dir); if(tc) tc.textContent=n>0?n:'';
+    const cnt=document.getElementById('mob-cnt-'+dir); if(cnt) cnt.setAttribute('opacity',n>0?'1':'0');
+    if (n>0){const txt=document.getElementById('mob-cnt-txt-'+dir);if(txt)txt.textContent=n;}
+    const sp=document.getElementById('mob-sp-'+dir); if(sp) sp.classList.toggle('has-tags',n>0);
+  });
+}
+function getMobSectorWords(sec) { return mobWords[sec].join(', '); }
+document.getElementById('mob-panel-input').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();mobAddTag();}});
+
+// Swipe on mobile sound map
+let mobTouchX=0;
+document.querySelector('.mobile-soundmap').addEventListener('touchstart',e=>{mobTouchX=e.touches[0].clientX;},{passive:true});
+document.querySelector('.mobile-soundmap').addEventListener('touchend',e=>{
+  const dx=e.changedTouches[0].clientX-mobTouchX;
+  if (Math.abs(dx)>44){const order=['front','right','back','left'],idx=order.indexOf(mobActive);if(dx<0&&idx<3)mobSwitchDir(order[idx+1]);if(dx>0&&idx>0)mobSwitchDir(order[idx-1]);}
+},{passive:true});
+
+async function saveEntry() {
+  if (!currentUser||!currentPractice) return;
+  const mobile=IS_MOBILE();
+  const body = {
+    practiceId:currentPractice.id, durationMin:currentPractice.selectedDuration/60,
+    place:document.getElementById('q-place').value.trim(),
+    sounds:{
+      front: mobile?getMobSectorWords('front'):getSectorWords('front'),
+      back:  mobile?getMobSectorWords('back') :getSectorWords('back'),
+      left:  mobile?getMobSectorWords('left') :getSectorWords('left'),
+      right: mobile?getMobSectorWords('right'):getSectorWords('right'),
+    },
+    liked:document.getElementById('q-liked').value.trim(),
+    disliked:document.getElementById('q-disliked').value.trim(),
+    notes:document.getElementById('q-notes').value.trim(),
+  };
+  const btn=document.querySelector('.btn-save'); btn.disabled=true; btn.style.opacity='0.5';
+  try {
+    const res=await fetch(API+'/entries.php',{method:'POST',headers:{'Content-Type':'application/json',...authHeader()},body:JSON.stringify(body)});
+    if (res.status===401){logout();return;}
+    const data=await res.json(); if (!data.id) throw new Error();
+    showToast('Запись сохранена ✦'); setTimeout(()=>showPage('page-timeline'),800);
+  } catch { showToast('Ошибка сохранения — попробуйте ещё раз'); btn.disabled=false; btn.style.opacity='1'; }
+}
+
+function showEntry(entry) {
+  const prac=PRACTICES.find(p=>p.id===entry.practice_id)||{title:entry.practice_id};
+  const durLabel=entry.duration_min?entry.duration_min+' мин':'';
+  const d=new Date(entry.saved_at);
+  const dateStr=d.toLocaleDateString('ru-RU',{day:'numeric',month:'long',year:'numeric'})+', '+d.toLocaleTimeString('ru-RU',{hour:'2-digit',minute:'2-digit'});
+  const s=typeof entry.sounds==='string'?JSON.parse(entry.sounds):(entry.sounds||{});
+
+  function renderTags(text){
+    if(!text) return '<span style="color:var(--text-muted)">—</span>';
+    return text.split(',').map(w=>w.trim()).filter(Boolean).map(w=>`<span class="word-tag-static">${w}</span>`).join('');
+  }
+
+  // Мобильная круговая схема с тегами внутри и панелью при тапе
+  function mobileSoundMap(sounds) {
+    return `
+    <div style="width:100%;max-width:360px;margin:0 auto">
+      <div style="position:relative;width:100%;padding-bottom:100%;margin-bottom:12px">
+        <div style="position:absolute;inset:0">
+          <svg id="detail-map-svg" viewBox="0 0 280 280" style="width:100%;height:100%;overflow:visible">
+            <circle fill="none" stroke="rgba(201,168,76,0.2)" stroke-width="1" cx="140" cy="140" r="130"/>
+            <circle fill="none" stroke="rgba(201,168,76,0.08)" stroke-width="1" stroke-dasharray="3 5" cx="140" cy="140" r="78"/>
+            <circle fill="none" stroke="rgba(201,168,76,0.08)" stroke-width="1" stroke-dasharray="3 5" cx="140" cy="140" r="34"/>
+            <line stroke="rgba(201,168,76,0.2)" stroke-width="1" x1="140" y1="10" x2="140" y2="270"/>
+            <line stroke="rgba(201,168,76,0.2)" stroke-width="1" x1="10" y1="140" x2="270" y2="140"/>
+            <path id="dmap-sec-front" d="M140,140 L10,10 L270,10 Z" fill="transparent" stroke="rgba(201,168,76,0.2)" stroke-width="1" style="cursor:pointer" onclick="dmapSelect('front')"/>
+            <path id="dmap-sec-right" d="M140,140 L270,10 L270,270 Z" fill="transparent" stroke="rgba(201,168,76,0.2)" stroke-width="1" style="cursor:pointer" onclick="dmapSelect('right')"/>
+            <path id="dmap-sec-back"  d="M140,140 L270,270 L10,270 Z" fill="transparent" stroke="rgba(201,168,76,0.2)" stroke-width="1" style="cursor:pointer" onclick="dmapSelect('back')"/>
+            <path id="dmap-sec-left"  d="M140,140 L10,270 L10,10 Z"   fill="transparent" stroke="rgba(201,168,76,0.2)" stroke-width="1" style="cursor:pointer" onclick="dmapSelect('left')"/>
+            <text id="dmap-arr-front" x="140" y="32"  text-anchor="middle" font-family="Raleway,sans-serif" font-size="14" fill="rgba(201,168,76,0.45)">↑</text>
+            <text id="dmap-arr-right" x="248" y="146" text-anchor="middle" font-family="Raleway,sans-serif" font-size="14" fill="rgba(201,168,76,0.45)">→</text>
+            <text id="dmap-arr-back"  x="140" y="258" text-anchor="middle" font-family="Raleway,sans-serif" font-size="14" fill="rgba(201,168,76,0.45)">↓</text>
+            <text id="dmap-arr-left"  x="32"  y="146" text-anchor="middle" font-family="Raleway,sans-serif" font-size="14" fill="rgba(201,168,76,0.45)">←</text>
+            <text id="dmap-lbl-front" x="140" y="50"  text-anchor="middle" font-family="Raleway,sans-serif" font-size="8" letter-spacing="2" fill="rgba(201,168,76,0.4)" style="text-transform:uppercase;cursor:pointer" onclick="dmapSelect('front')">спереди</text>
+            <text id="dmap-lbl-right" x="228" y="170" text-anchor="middle" font-family="Raleway,sans-serif" font-size="8" letter-spacing="2" fill="rgba(201,168,76,0.4)" style="text-transform:uppercase;cursor:pointer" onclick="dmapSelect('right')">справа</text>
+            <text id="dmap-lbl-back"  x="140" y="236" text-anchor="middle" font-family="Raleway,sans-serif" font-size="8" letter-spacing="2" fill="rgba(201,168,76,0.4)" style="text-transform:uppercase;cursor:pointer" onclick="dmapSelect('back')">сзади</text>
+            <text id="dmap-lbl-left"  x="52"  y="116" text-anchor="middle" font-family="Raleway,sans-serif" font-size="8" letter-spacing="2" fill="rgba(201,168,76,0.4)" style="text-transform:uppercase;cursor:pointer" onclick="dmapSelect('left')">слева</text>
+            <g id="dmap-tags-front"></g>
+            <g id="dmap-tags-right"></g>
+            <g id="dmap-tags-back"></g>
+            <g id="dmap-tags-left"></g>
+            <circle fill="rgba(10,10,10,0.95)" stroke="#c9a84c" stroke-width="1" cx="140" cy="140" r="22"/>
+            <text x="140" y="144" text-anchor="middle" font-family="Raleway,sans-serif" font-size="7" letter-spacing="2" fill="#c9a84c">я</text>
+          </svg>
+        </div>
+      </div>
+      <div id="dmap-panel" style="border:1px solid rgba(201,168,76,0.2);background:#111;padding:16px 18px;min-height:56px;transition:border-color 0.25s">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
+          <span id="dmap-panel-arrow" style="font-size:1rem;color:var(--gold);line-height:1">↑</span>
+          <span id="dmap-panel-name" style="font-size:0.6rem;letter-spacing:0.18em;text-transform:uppercase;color:var(--gold-dim)">спереди</span>
+        </div>
+        <div id="dmap-panel-tags" style="display:flex;flex-wrap:wrap;gap:7px"></div>
+      </div>
+    </div>`;
+  }
+
+  const soundsBlock = IS_MOBILE()
+    ? mobileSoundMap(s)
+    : `<div class="sound-map-wrap" style="margin-bottom:0">
+        <div class="sm-axis-h"></div><div class="sm-axis-v"></div><div class="sm-circle"></div><div class="sm-circle-inner"></div><div class="sm-listener">я</div>
+        <div class="sm-sector top"><div class="sm-cloud">${renderTags(s.front)}</div><div class="sm-label">спереди</div></div>
+        <div class="sm-sector bottom"><div class="sm-cloud">${renderTags(s.back)}</div><div class="sm-label">сзади</div></div>
+        <div class="sm-sector left"><div class="sm-label">слева</div><div class="sm-cloud" style="justify-content:flex-end">${renderTags(s.left)}</div></div>
+        <div class="sm-sector right"><div class="sm-label">справа</div><div class="sm-cloud">${renderTags(s.right)}</div></div>
+      </div>`;
+
+  document.getElementById('entry-detail-content').innerHTML=`
+    <div class="entry-detail-meta">
+      <div class="date">${dateStr}</div>
+      <h2>${prac.title}${durLabel?' · '+durLabel:''}</h2>
+      ${entry.place?`<div style="font-size:0.85rem;color:var(--gold-dim);letter-spacing:0.06em;margin-top:8px">◎ ${entry.place}</div>`:''}
+    </div>
+    <div class="detail-section"><h3>Схема звуков</h3>${soundsBlock}</div>
+    ${entry.liked?`<div class="detail-section"><h3>Что понравилось</h3><div class="detail-text">${entry.liked}</div></div>`:''}
+    ${entry.disliked?`<div class="detail-section"><h3>Что не понравилось</h3><div class="detail-text">${entry.disliked}</div></div>`:''}
+    ${entry.notes?`<div class="detail-section"><h3>Дополнительные наблюдения</h3><div class="detail-text">${entry.notes}</div></div>`:''}
+  `;
+
+  // Инициализируем мобильную карту после рендера
+  if (IS_MOBILE()) {
+    window._dmapSounds = s;
+    window._dmapActive = null;
+    const DPOS = {
+      front:{x:140,y:76, anchor:'middle'},
+      right:{x:208,y:134,anchor:'start'},
+      back: {x:140,y:200,anchor:'middle'},
+      left: {x:72, y:134,anchor:'end'},
+    };
+    const DINFO = {front:{arrow:'↑',name:'спереди'},right:{arrow:'→',name:'справа'},back:{arrow:'↓',name:'сзади'},left:{arrow:'←',name:'слева'}};
+
+    // Рисуем теги внутри секторов
+    Object.keys(DPOS).forEach(dir => {
+      const words = s[dir] ? s[dir].split(',').map(w=>w.trim()).filter(Boolean) : [];
+      const g = document.getElementById('dmap-tags-'+dir);
+      if (!g) return;
+      g.innerHTML = '';
+      const show = words.slice(0, 3);
+      show.forEach((word, i) => {
+        const t = document.createElementNS('http://www.w3.org/2000/svg','text');
+        t.setAttribute('x', DPOS[dir].x);
+        t.setAttribute('y', DPOS[dir].y + i * 13);
+        t.setAttribute('text-anchor', DPOS[dir].anchor);
+        t.setAttribute('font-family','Raleway,sans-serif');
+        t.setAttribute('font-size','7.5');
+        t.setAttribute('fill','rgba(201,168,76,0.55)');
+        t.textContent = word.length > 13 ? word.slice(0,12)+'…' : word;
+        g.appendChild(t);
+      });
+      if (words.length > 3) {
+        const more = document.createElementNS('http://www.w3.org/2000/svg','text');
+        more.setAttribute('x', DPOS[dir].x);
+        more.setAttribute('y', DPOS[dir].y + 3 * 13);
+        more.setAttribute('text-anchor', DPOS[dir].anchor);
+        more.setAttribute('font-family','Raleway,sans-serif');
+        more.setAttribute('font-size','7');
+        more.setAttribute('fill','rgba(201,168,76,0.3)');
+        more.textContent = '+' + (words.length - 3);
+        g.appendChild(more);
+      }
+    });
+
+    // Выбор сектора при тапе
+    window.dmapSelect = function(dir) {
+      window._dmapActive = dir;
+      // Сбрасываем все секторы
+      ['front','right','back','left'].forEach(k => {
+        const sec = document.getElementById('dmap-sec-'+k);
+        if (sec) { sec.style.fill = 'transparent'; sec.setAttribute('stroke','rgba(201,168,76,0.2)'); }
+        const arr = document.getElementById('dmap-arr-'+k);
+        if (arr) arr.setAttribute('fill','rgba(201,168,76,0.45)');
+        const lbl = document.getElementById('dmap-lbl-'+k);
+        if (lbl) lbl.setAttribute('fill','rgba(201,168,76,0.4)');
+        // Приглушаем теги
+        const tg = document.getElementById('dmap-tags-'+k);
+        if (tg) tg.querySelectorAll('text').forEach(t => t.setAttribute('fill', k===dir ? 'rgba(201,168,76,0.75)' : 'rgba(201,168,76,0.25)'));
+      });
+      // Подсвечиваем активный
+      const sec = document.getElementById('dmap-sec-'+dir);
+      if (sec) { sec.style.fill = 'rgba(201,168,76,0.1)'; sec.setAttribute('stroke','rgba(201,168,76,0.45)'); }
+      const arr = document.getElementById('dmap-arr-'+dir);
+      if (arr) arr.setAttribute('fill','#c9a84c');
+      const lbl = document.getElementById('dmap-lbl-'+dir);
+      if (lbl) lbl.setAttribute('fill','#c9a84c');
+
+      // Панель
+      const info = DINFO[dir];
+      const panel = document.getElementById('dmap-panel');
+      if (panel) panel.style.borderColor = 'rgba(201,168,76,0.35)';
+      const panArrow = document.getElementById('dmap-panel-arrow');
+      if (panArrow) panArrow.textContent = info.arrow;
+      const panName = document.getElementById('dmap-panel-name');
+      if (panName) panName.textContent = info.name;
+      const panTags = document.getElementById('dmap-panel-tags');
+      if (!panTags) return;
+      panTags.innerHTML = '';
+      const words = s[dir] ? s[dir].split(',').map(w=>w.trim()).filter(Boolean) : [];
+      if (words.length === 0) {
+        panTags.innerHTML = '<span style="font-size:0.78rem;color:var(--text-muted);font-style:italic;opacity:0.55">—</span>';
+      } else {
+        words.forEach(w => {
+          const tag = document.createElement('span');
+          tag.className = 'word-tag-static';
+          tag.textContent = w;
+          panTags.appendChild(tag);
+        });
+      }
+    };
+    // Автовыбор первого заполненного сектора
+    const first = ['front','right','back','left'].find(k => s[k] && s[k].trim()) || 'front';
+    window.dmapSelect(first);
+  }
+
+  showPage('page-entry');
+}
+
+function showToast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2500);}
+</script>
+</body>
+</html>

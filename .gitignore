@@ -1,0 +1,33 @@
+# Секреты — никогда не в git
+.env
+public_html/deeplistening/api/config.php
+
+# Медиафайлы — хранятся на сервере, не в git
+public_html/video/
+public_html/audio/
+public_html/images/*.rw2
+
+# Логи
+*.log
+public_html/deeplistening/api/*.log
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+.venv/
+venv/
+.pytest_cache/
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# IDE
+.vscode/
+.idea/
+*.swp
+
+# Claude Code
+.claude/
