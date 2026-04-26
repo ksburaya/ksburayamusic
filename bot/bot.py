@@ -102,9 +102,9 @@ def save_entry(token: str, data: dict) -> bool:
         return False
     try:
         payload = {
-            'practice_id':  'listen-space',
-            'duration_min': data.get('duration', 0),
-            'place':        data.get('place', ''),
+            'practiceId':  'listen-space',
+            'durationMin': data.get('duration', 0),
+            'place':       data.get('place', ''),
             'sounds': {
                 'front': data.get('front', ''),
                 'right': data.get('right', ''),
@@ -132,6 +132,12 @@ async def finish(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     user    = update.effective_user
     chat_id = update.effective_chat.id
     data    = context.user_data
+
+    # Refresh token if missing (e.g. after bot restart)
+    if not context.user_data.get('token'):
+        auth = bot_auth(user.id, user.full_name)
+        if auth.get('token'):
+            context.user_data['token'] = auth['token']
 
     save_entry(context.user_data.get('token', ''), data)
 
