@@ -2547,15 +2547,11 @@
       } catch { document.getElementById('auth-error').textContent = 'Нет соединения с сервером'; }
       finally { clearTimeout(tid); setAuthLoading(false); }
     }
-    function isTelegramContext() {
-      const twa = window.Telegram?.WebApp;
-      return twa && (twa.initDataUnsafe?.user?.id || (twa.platform && twa.platform !== 'unknown'));
-    }
     function logout() {
       currentUser = null; localStorage.removeItem('qs_session');
       document.getElementById('nav-username').textContent = '';
       document.getElementById('btn-logout').style.display = 'none';
-      if (isTelegramContext() && window.Telegram.WebApp.initData) {
+      if (window.Telegram?.WebApp?.initData) {
         document.body.classList.add('tg-mode');
         doTelegramAuth();
         return;
@@ -2563,6 +2559,10 @@
       showPage('page-auth');
     }
     (function () {
+      const twa = window.Telegram?.WebApp;
+      // Вызываем ready() сразу — иначе Telegram держит свой оверлей загрузки 1-2 минуты
+      if (twa) { try { twa.ready(); twa.expand(); } catch(e) {} }
+
       if (DEV_MODE) {
         loginAs('dev-token', 'DEV', 'dev@localhost');
         const badge = document.createElement('span');
@@ -2573,25 +2573,25 @@
         return;
       }
 
-      // 1. Telegram Mini App — всегда авторизуем через Telegram (сессия переиспользуется на сервере)
-      const twa = window.Telegram?.WebApp;
-      if (isTelegramContext()) {
+      // 1. Telegram Mini App с initData — авторизуем через Telegram
+      if (twa?.initData) {
         document.body.classList.add('tg-mode');
-        twa.ready();
-        twa.expand();
         document.getElementById('tg-auth-btn-wrap').style.display = 'block';
-        if (twa.initData) {
-          doTelegramAuth();
-          return;
-        }
-        // На iOS initData иногда пуст на первом тике — повторяем через 300мс
-        setTimeout(function () {
-          if (window.Telegram?.WebApp?.initData && !currentUser) doTelegramAuth();
-        }, 300);
+        doTelegramAuth();
         return;
       }
 
-      // 2. Веб-браузер — проверяем сохранённую сессию
+      // 2. Telegram SDK есть, но initData ещё не готов (iOS — задержка первого тика)
+      if (twa && (twa.initDataUnsafe?.user?.id || (twa.platform && twa.platform !== 'unknown'))) {
+        document.body.classList.add('tg-mode');
+        document.getElementById('tg-auth-btn-wrap').style.display = 'block';
+        setTimeout(function () {
+          if (window.Telegram?.WebApp?.initData && !currentUser) doTelegramAuth();
+        }, 1000);
+        return;
+      }
+
+      // 3. Веб-браузер — проверяем сохранённую сессию
       try {
         const s = localStorage.getItem('qs_session');
         const u = s ? JSON.parse(s) : null;
@@ -2602,7 +2602,7 @@
         }
       } catch {}
 
-      // 3. Нет ни Telegram, ни сессии — показываем форму логина (видна по умолчанию)
+      // 4. Нет ни Telegram, ни сессии — показываем форму логина (видна по умолчанию)
     })();
 
     async function renderTimeline() {
