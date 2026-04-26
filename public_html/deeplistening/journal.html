@@ -278,6 +278,17 @@
       min-height: 20px;
     }
 
+    /* В Telegram Mini App скрываем email/пароль */
+    body.tg-mode .auth-tabs,
+    body.tg-mode #tab-login,
+    body.tg-mode #tab-register {
+      display: none !important;
+    }
+    body.tg-mode #tg-auth-btn-wrap {
+      display: block !important;
+      margin-top: 0;
+    }
+
     /* TIMELINE */
     #page-timeline {
       padding: 48px 40px 80px;
