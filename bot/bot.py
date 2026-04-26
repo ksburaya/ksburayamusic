@@ -44,13 +44,15 @@ def kb_durations() -> InlineKeyboardMarkup:
         InlineKeyboardButton('20 мин', callback_data='dur_20'),
     ]])
 
-def kb_done() -> ReplyKeyboardMarkup:
-    return ReplyKeyboardMarkup([['✅ Готово']], resize_keyboard=True)
+def kb_done() -> InlineKeyboardMarkup:
+    return InlineKeyboardMarkup([[
+        InlineKeyboardButton('✅ Готово', callback_data='done'),
+    ]])
 
-def kb_skip() -> ReplyKeyboardMarkup:
-    return ReplyKeyboardMarkup(
-        [['⏭ Пропустить']], resize_keyboard=True, one_time_keyboard=True
-    )
+def kb_skip() -> InlineKeyboardMarkup:
+    return InlineKeyboardMarkup([[
+        InlineKeyboardButton('⏭ Пропустить', callback_data='skip'),
+    ]])
 
 def kb_home(has_practices: bool) -> ReplyKeyboardMarkup:
     buttons = [['🎧 Начать практику']]
@@ -250,7 +252,10 @@ async def on_choose_duration(update: Update, context: ContextTypes.DEFAULT_TYPE)
 
 
 async def on_waiting_done(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
-    await update.message.reply_text(
+    query = update.callback_query
+    await query.answer()
+    await context.bot.send_message(
+        query.message.chat_id,
         '📍 <b>Где вы находились?</b>\n\n<i>Например: парк, квартира, залив, крыша…</i>',
         parse_mode='HTML',
         reply_markup=kb_skip(),
@@ -259,9 +264,14 @@ async def on_waiting_done(update: Update, context: ContextTypes.DEFAULT_TYPE) ->
 
 
 async def on_ask_place(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
-    text = update.message.text
-    context.user_data['place'] = '' if is_skip(text) else text
-    await update.message.reply_text(
+    if update.callback_query:
+        await update.callback_query.answer()
+        context.user_data['place'] = ''
+    else:
+        text = update.message.text
+        context.user_data['place'] = '' if is_skip(text) else text
+    await context.bot.send_message(
+        update.effective_chat.id,
         '🔊 Звуки <b>⬆️ СПЕРЕДИ</b>\n\n<i>Перечислите через запятую или нажмите «Пропустить»</i>',
         parse_mode='HTML',
         reply_markup=kb_skip(),
@@ -270,9 +280,14 @@ async def on_ask_place(update: Update, context: ContextTypes.DEFAULT_TYPE) -> in
 
 
 async def on_ask_front(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
-    text = update.message.text
-    context.user_data['front'] = '' if is_skip(text) else text
-    await update.message.reply_text(
+    if update.callback_query:
+        await update.callback_query.answer()
+        context.user_data['front'] = ''
+    else:
+        text = update.message.text
+        context.user_data['front'] = '' if is_skip(text) else text
+    await context.bot.send_message(
+        update.effective_chat.id,
         '🔊 Звуки <b>➡️ СПРАВА</b>\n\n<i>Перечислите через запятую или нажмите «Пропустить»</i>',
         parse_mode='HTML',
         reply_markup=kb_skip(),
@@ -281,9 +296,14 @@ async def on_ask_front(update: Update, context: ContextTypes.DEFAULT_TYPE) -> in
 
 
 async def on_ask_right(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
-    text = update.message.text
-    context.user_data['right'] = '' if is_skip(text) else text
-    await update.message.reply_text(
+    if update.callback_query:
+        await update.callback_query.answer()
+        context.user_data['right'] = ''
+    else:
+        text = update.message.text
+        context.user_data['right'] = '' if is_skip(text) else text
+    await context.bot.send_message(
+        update.effective_chat.id,
         '🔊 Звуки <b>⬇️ СЗАДИ</b>\n\n<i>Перечислите через запятую или нажмите «Пропустить»</i>',
         parse_mode='HTML',
         reply_markup=kb_skip(),
@@ -292,9 +312,14 @@ async def on_ask_right(update: Update, context: ContextTypes.DEFAULT_TYPE) -> in
 
 
 async def on_ask_back(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
-    text = update.message.text
-    context.user_data['back'] = '' if is_skip(text) else text
-    await update.message.reply_text(
+    if update.callback_query:
+        await update.callback_query.answer()
+        context.user_data['back'] = ''
+    else:
+        text = update.message.text
+        context.user_data['back'] = '' if is_skip(text) else text
+    await context.bot.send_message(
+        update.effective_chat.id,
         '🔊 Звуки <b>⬅️ СЛЕВА</b>\n\n<i>Перечислите через запятую или нажмите «Пропустить»</i>',
         parse_mode='HTML',
         reply_markup=kb_skip(),
@@ -303,9 +328,14 @@ async def on_ask_back(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int
 
 
 async def on_ask_left(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
-    text = update.message.text
-    context.user_data['left'] = '' if is_skip(text) else text
-    await update.message.reply_text(
+    if update.callback_query:
+        await update.callback_query.answer()
+        context.user_data['left'] = ''
+    else:
+        text = update.message.text
+        context.user_data['left'] = '' if is_skip(text) else text
+    await context.bot.send_message(
+        update.effective_chat.id,
         '❤️ <b>Что понравилось или привлекло внимание?</b>\n\n<i>Звуки, качества, ощущения…</i>',
         parse_mode='HTML',
         reply_markup=kb_skip(),
@@ -314,9 +344,14 @@ async def on_ask_left(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int
 
 
 async def on_ask_liked(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
-    text = update.message.text
-    context.user_data['liked'] = '' if is_skip(text) else text
-    await update.message.reply_text(
+    if update.callback_query:
+        await update.callback_query.answer()
+        context.user_data['liked'] = ''
+    else:
+        text = update.message.text
+        context.user_data['liked'] = '' if is_skip(text) else text
+    await context.bot.send_message(
+        update.effective_chat.id,
         '💔 <b>Что мешало или казалось лишним?</b>',
         parse_mode='HTML',
         reply_markup=kb_skip(),
@@ -325,9 +360,14 @@ async def on_ask_liked(update: Update, context: ContextTypes.DEFAULT_TYPE) -> in
 
 
 async def on_ask_disliked(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
-    text = update.message.text
-    context.user_data['disliked'] = '' if is_skip(text) else text
-    await update.message.reply_text(
+    if update.callback_query:
+        await update.callback_query.answer()
+        context.user_data['disliked'] = ''
+    else:
+        text = update.message.text
+        context.user_data['disliked'] = '' if is_skip(text) else text
+    await context.bot.send_message(
+        update.effective_chat.id,
         '📖 <b>Опишите историю, которую вы услышали.</b>\n\n'
         '<i>Какой образ, сюжет или настроение возникло из звуков?</i>',
         parse_mode='HTML',
@@ -337,13 +377,17 @@ async def on_ask_disliked(update: Update, context: ContextTypes.DEFAULT_TYPE) ->
 
 
 async def on_ask_story(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
-    text = update.message.text
-    context.user_data['story'] = '' if is_skip(text) else text
-    await update.message.reply_text(
+    if update.callback_query:
+        await update.callback_query.answer()
+        context.user_data['story'] = ''
+    else:
+        text = update.message.text
+        context.user_data['story'] = '' if is_skip(text) else text
+    await context.bot.send_message(
+        update.effective_chat.id,
         '📷 Хотите прикрепить фото места?',
-        reply_markup=ReplyKeyboardRemove(),
+        reply_markup=kb_photo(),
     )
-    await update.message.reply_text('Выберите:', reply_markup=kb_photo())
     return ASK_PHOTO
 
 
@@ -440,15 +484,39 @@ def main() -> None:
                 MessageHandler(filters.TEXT & ~filters.COMMAND, on_home),
             ],
             CHOOSE_DURATION: [CallbackQueryHandler(on_choose_duration, pattern='^dur_')],
-            WAITING_DONE:    [MessageHandler(filters.TEXT & ~filters.COMMAND, on_waiting_done)],
-            ASK_PLACE:       [MessageHandler(filters.TEXT & ~filters.COMMAND, on_ask_place)],
-            ASK_FRONT:       [MessageHandler(filters.TEXT & ~filters.COMMAND, on_ask_front)],
-            ASK_RIGHT:       [MessageHandler(filters.TEXT & ~filters.COMMAND, on_ask_right)],
-            ASK_BACK:        [MessageHandler(filters.TEXT & ~filters.COMMAND, on_ask_back)],
-            ASK_LEFT:        [MessageHandler(filters.TEXT & ~filters.COMMAND, on_ask_left)],
-            ASK_LIKED:       [MessageHandler(filters.TEXT & ~filters.COMMAND, on_ask_liked)],
-            ASK_DISLIKED:    [MessageHandler(filters.TEXT & ~filters.COMMAND, on_ask_disliked)],
-            ASK_STORY:       [MessageHandler(filters.TEXT & ~filters.COMMAND, on_ask_story)],
+            WAITING_DONE:    [CallbackQueryHandler(on_waiting_done, pattern='^done$')],
+            ASK_PLACE:       [
+                MessageHandler(filters.TEXT & ~filters.COMMAND, on_ask_place),
+                CallbackQueryHandler(on_ask_place, pattern='^skip$'),
+            ],
+            ASK_FRONT:       [
+                MessageHandler(filters.TEXT & ~filters.COMMAND, on_ask_front),
+                CallbackQueryHandler(on_ask_front, pattern='^skip$'),
+            ],
+            ASK_RIGHT:       [
+                MessageHandler(filters.TEXT & ~filters.COMMAND, on_ask_right),
+                CallbackQueryHandler(on_ask_right, pattern='^skip$'),
+            ],
+            ASK_BACK:        [
+                MessageHandler(filters.TEXT & ~filters.COMMAND, on_ask_back),
+                CallbackQueryHandler(on_ask_back, pattern='^skip$'),
+            ],
+            ASK_LEFT:        [
+                MessageHandler(filters.TEXT & ~filters.COMMAND, on_ask_left),
+                CallbackQueryHandler(on_ask_left, pattern='^skip$'),
+            ],
+            ASK_LIKED:       [
+                MessageHandler(filters.TEXT & ~filters.COMMAND, on_ask_liked),
+                CallbackQueryHandler(on_ask_liked, pattern='^skip$'),
+            ],
+            ASK_DISLIKED:    [
+                MessageHandler(filters.TEXT & ~filters.COMMAND, on_ask_disliked),
+                CallbackQueryHandler(on_ask_disliked, pattern='^skip$'),
+            ],
+            ASK_STORY:       [
+                MessageHandler(filters.TEXT & ~filters.COMMAND, on_ask_story),
+                CallbackQueryHandler(on_ask_story, pattern='^skip$'),
+            ],
             ASK_PHOTO: [
                 CallbackQueryHandler(on_photo_yes,  pattern='^photo_yes$'),
                 CallbackQueryHandler(on_photo_skip, pattern='^photo_skip$'),
