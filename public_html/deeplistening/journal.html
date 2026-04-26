@@ -2594,18 +2594,26 @@
         return;
       }
 
+      // 1. Токен в URL — бот передал его напрямую через bot-auth.php (самый надёжный путь)
+      const _p = new URLSearchParams(window.location.search);
+      const _urlToken = _p.get('token');
+      const _urlName  = decodeURIComponent(_p.get('name') || '');
+      if (_urlToken && _urlName) {
+        loginAs(_urlToken, _urlName, '');
+        showPage('page-timeline');
+        return;
+      }
+
       // Helper: enter Telegram mode — hide login form, show loading message, kick off auth
       function enterTgMode() {
         document.body.classList.add('tg-mode');
-        // Show the TG section (button + error area); hide login/pass tabs via CSS tg-mode
         document.getElementById('tg-auth-btn-wrap').style.display = 'block';
-        // Replace button text with loading indicator so user knows something is happening
         var btn = document.getElementById('tg-login-btn');
         if (btn) { btn.textContent = 'Подключение к Telegram…'; btn.disabled = true; }
         doTelegramAuth();
       }
 
-      // 1. Telegram Mini App с initData — авторизуем через Telegram
+      // 2. Telegram Mini App с initData — авторизуем через Telegram SDK
       if (twa?.initData) {
         enterTgMode();
         return;

@@ -1,5 +1,6 @@
 import os
 import logging
+import urllib.parse
 from typing import Optional
 import requests
 from dotenv import load_dotenv
@@ -20,12 +21,12 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
-BOT_TOKEN   = os.environ['BOT_TOKEN']
-WEBHOOK_URL = os.environ['WEBHOOK_URL']
-PORT        = int(os.environ.get('PORT', 8080))
-BOT_SECRET  = os.environ.get('BOT_SECRET', '')          # общий секрет с сервером
-API_BASE    = 'https://ksburayamusic.ru/deeplistening/api'
-JOURNAL_URL = 'https://t.me/deeplistening_journal_bot/Journal'
+BOT_TOKEN    = os.environ['BOT_TOKEN']
+WEBHOOK_URL  = os.environ['WEBHOOK_URL']
+PORT         = int(os.environ.get('PORT', 8080))
+BOT_SECRET   = os.environ.get('BOT_SECRET', '')
+API_BASE     = 'https://ksburayamusic.ru/deeplistening/api'
+JOURNAL_BASE = 'https://ksburayamusic.ru/deeplistening/journal.html'
 
 # ── FSM states ────────────────────────────────────────────────────────────────
 
@@ -63,9 +64,9 @@ def kb_photo() -> InlineKeyboardMarkup:
         InlineKeyboardButton('Пропустить', callback_data='photo_skip'),
     ]])
 
-def kb_journal() -> InlineKeyboardMarkup:
+def kb_journal(url: str) -> InlineKeyboardMarkup:
     return InlineKeyboardMarkup([[
-        InlineKeyboardButton('Открыть дневник 📖', url=JOURNAL_URL)
+        InlineKeyboardButton('Открыть дневник 📖', url=url)
     ]])
 
 def is_skip(text: str) -> bool:
@@ -85,6 +86,15 @@ def bot_auth(telegram_id: int, tg_name: str) -> dict:
     except Exception as e:
         logger.error('bot_auth: %s', e)
         return {}
+
+def journal_url(telegram_id: int, tg_name: str) -> str:
+    """Возвращает URL журнала с токеном — браузер сразу входит без Mini App initData."""
+    auth = bot_auth(telegram_id, tg_name)
+    token = auth.get('token', '')
+    if not token:
+        return JOURNAL_BASE
+    name = urllib.parse.quote(tg_name or str(telegram_id))
+    return f'{JOURNAL_BASE}?token={token}&name={name}'
 
 def save_entry(token: str, data: dict) -> bool:
     if not token:
@@ -146,11 +156,12 @@ async def finish(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     if data.get('story'):
         text += f'\n\n📖 {data["story"]}'
 
+    url = journal_url(user.id, user.full_name)
     await context.bot.send_message(
         chat_id,
         text,
         parse_mode='HTML',
-        reply_markup=kb_journal(),
+        reply_markup=kb_journal(url),
     )
     # сохраняем флаг, очищаем только данные практики
     for key in ('duration', 'place', 'front', 'right', 'back', 'left',
@@ -185,10 +196,11 @@ async def cmd_start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
 async def on_home(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     text = update.message.text
     if text == '📖 Открыть дневник':
+        url = journal_url(update.effective_user.id, update.effective_user.full_name)
         await update.message.reply_text(
             'Открывайте дневник:',
             reply_markup=InlineKeyboardMarkup([[
-                InlineKeyboardButton('Открыть дневник 📖', url=JOURNAL_URL)
+                InlineKeyboardButton('Открыть дневник 📖', url=url)
             ]]),
         )
         return HOME
