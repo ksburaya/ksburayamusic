@@ -25,7 +25,7 @@ WEBHOOK_URL = os.environ['WEBHOOK_URL']
 PORT        = int(os.environ.get('PORT', 8080))
 BOT_SECRET  = os.environ.get('BOT_SECRET', '')          # общий секрет с сервером
 API_BASE    = 'https://ksburayamusic.ru/deeplistening/api'
-JOURNAL_URL = 'https://ksburayamusic.ru/deeplistening/journal.html'
+JOURNAL_URL = 'https://t.me/deeplistening_journal_bot/Journal'
 
 # ── FSM states ────────────────────────────────────────────────────────────────
 
@@ -43,10 +43,16 @@ def kb_durations() -> InlineKeyboardMarkup:
         InlineKeyboardButton('20 мин', callback_data='dur_20'),
     ]])
 
+def kb_done() -> ReplyKeyboardMarkup:
+    return ReplyKeyboardMarkup([['✅ Готово']], resize_keyboard=True)
+
 def kb_skip() -> ReplyKeyboardMarkup:
     return ReplyKeyboardMarkup(
         [['⏭ Пропустить']], resize_keyboard=True, one_time_keyboard=True
     )
+
+def kb_new_practice() -> ReplyKeyboardMarkup:
+    return ReplyKeyboardMarkup([['🎧 Начать практику']], resize_keyboard=True)
 
 def kb_photo() -> InlineKeyboardMarkup:
     return InlineKeyboardMarkup([[
@@ -139,13 +145,17 @@ async def finish(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
         text += f'\n\n💔 {data["disliked"]}'
     if data.get('story'):
         text += f'\n\n📖 {data["story"]}'
-    text += '\n\nНапишите /start чтобы начать новую практику.'
 
     await context.bot.send_message(
         chat_id,
         text,
         parse_mode='HTML',
         reply_markup=kb_journal(),
+    )
+    await context.bot.send_message(
+        chat_id,
+        'Начать новую практику?',
+        reply_markup=kb_new_practice(),
     )
     context.user_data.clear()
     return ConversationHandler.END
@@ -172,9 +182,13 @@ async def on_choose_duration(update: Update, context: ContextTypes.DEFAULT_TYPE)
     context.user_data['duration'] = duration
     await query.edit_message_text(
         f'⏱ Установите таймер на <b>{duration} минут</b>.\n\n'
-        'Позвольте звукам приходить и уходить, просто замечая их.\n\n'
-        'Напишите что-нибудь, когда закончите.',
+        'Позвольте звукам приходить и уходить, просто замечая их.',
         parse_mode='HTML',
+    )
+    await context.bot.send_message(
+        query.message.chat_id,
+        'Нажмите кнопку, когда практика завершится:',
+        reply_markup=kb_done(),
     )
     return WAITING_DONE
 
@@ -291,6 +305,10 @@ async def on_photo_skip(update: Update, context: ContextTypes.DEFAULT_TYPE) -> i
 
 async def on_receive_photo(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     context.user_data['photo_file_id'] = update.message.photo[-1].file_id
+    await update.message.reply_text(
+        '💾 Сохраните фото на телефон, если хотите оставить его у себя.',
+        reply_markup=ReplyKeyboardRemove(),
+    )
     return await finish(update, context)
 
 # ── Main ──────────────────────────────────────────────────────────────────────
@@ -299,7 +317,10 @@ def main() -> None:
     app = Application.builder().token(BOT_TOKEN).build()
 
     conv = ConversationHandler(
-        entry_points=[CommandHandler('start', cmd_start)],
+        entry_points=[
+            CommandHandler('start', cmd_start),
+            MessageHandler(filters.Regex('^🎧 Начать практику$'), cmd_start),
+        ],
         states={
             CHOOSE_DURATION: [CallbackQueryHandler(on_choose_duration, pattern='^dur_')],
             WAITING_DONE:    [MessageHandler(filters.TEXT & ~filters.COMMAND, on_waiting_done)],
