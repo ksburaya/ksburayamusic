@@ -396,10 +396,19 @@ if ($liked !== '') {
 
 // ── Save & return ─────────────────────────────────────────────────────────────
 $outFile = $TMP_DIR . 'card_' . uniqid('', true) . '.png';
-imagepng($img, $outFile, 8);
+$saved = imagepng($img, $outFile, 8);
 imagedestroy($img);
 
-$b64 = 'data:image/png;base64,' . base64_encode(file_get_contents($outFile));
+if (!$saved || !file_exists($outFile) || filesize($outFile) === 0) {
+    echo json_encode(['error' => 'imagepng failed: could not write ' . $outFile]); exit;
+}
+
+$raw = file_get_contents($outFile);
+if ($raw === false || strlen($raw) === 0) {
+    echo json_encode(['error' => 'file_get_contents failed for ' . $outFile]); exit;
+}
+
+$b64 = 'data:image/png;base64,' . base64_encode($raw);
 echo json_encode([
     'file'   => $outFile,
     'url'    => 'tmp/' . basename($outFile),

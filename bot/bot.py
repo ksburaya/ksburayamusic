@@ -1,8 +1,10 @@
+import base64
+import io
 import os
 import logging
 import urllib.parse
 from typing import Optional
-import requests
+import httpx
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -76,29 +78,29 @@ def is_skip(text: str) -> bool:
 
 # ── API helpers ───────────────────────────────────────────────────────────────
 
-def bot_auth(telegram_id: int, tg_name: str) -> dict:
+async def bot_auth(telegram_id: int, tg_name: str) -> dict:
     """POST /bot-auth.php → {'token': '...', 'has_entries': bool}"""
     try:
-        r = requests.post(
-            f'{API_BASE}/bot-auth.php',
-            json={'telegram_id': telegram_id, 'name': tg_name, 'bot_secret': BOT_SECRET},
-            timeout=10,
-        )
-        return r.json()
+        async with httpx.AsyncClient(timeout=10) as client:
+            r = await client.post(
+                f'{API_BASE}/bot-auth.php',
+                json={'telegram_id': telegram_id, 'name': tg_name, 'bot_secret': BOT_SECRET},
+            )
+            return r.json()
     except Exception as e:
         logger.error('bot_auth: %s', e)
         return {}
 
-def journal_url(telegram_id: int, tg_name: str) -> str:
+async def journal_url(telegram_id: int, tg_name: str) -> str:
     """Возвращает URL журнала с токеном — браузер сразу входит без Mini App initData."""
-    auth = bot_auth(telegram_id, tg_name)
+    auth = await bot_auth(telegram_id, tg_name)
     token = auth.get('token', '')
     if not token:
         return JOURNAL_BASE
     name = urllib.parse.quote(tg_name or str(telegram_id))
     return f'{JOURNAL_BASE}?token={token}&name={name}'
 
-def save_entry(token: str, data: dict) -> bool:
+async def save_entry(token: str, data: dict) -> bool:
     if not token:
         logger.error('save_entry: токен отсутствует')
         return False
@@ -117,13 +119,13 @@ def save_entry(token: str, data: dict) -> bool:
             'disliked': data.get('disliked', ''),
             'notes':    data.get('story',    ''),
         }
-        r = requests.post(
-            f'{API_BASE}/entries.php',
-            json=payload,
-            headers={'Authorization': f'Bearer {token}'},
-            timeout=10,
-        )
-        return r.ok
+        async with httpx.AsyncClient(timeout=10) as client:
+            r = await client.post(
+                f'{API_BASE}/entries.php',
+                json=payload,
+                headers={'Authorization': f'Bearer {token}'},
+            )
+            return r.is_success
     except Exception as e:
         logger.error('save_entry: %s', e)
         return False
@@ -135,71 +137,76 @@ async def finish(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     chat_id = update.effective_chat.id
     data    = context.user_data
 
-    # Refresh token if missing (e.g. after bot restart)
-    if not context.user_data.get('token'):
-        auth = bot_auth(user.id, user.full_name)
-        if auth.get('token'):
-            context.user_data['token'] = auth['token']
+    try:
+        # Refresh token if missing (e.g. after bot restart)
+        if not context.user_data.get('token'):
+            auth = await bot_auth(user.id, user.full_name)
+            if auth.get('token'):
+                context.user_data['token'] = auth['token']
 
-    save_entry(context.user_data.get('token', ''), data)
+        await save_entry(context.user_data.get('token', ''), data)
 
-    d      = data.get('duration', '?')
-    place  = data.get('place', '')
-    sounds = []
-    for key, arrow in [('front','⬆️'), ('right','➡️'), ('back','⬇️'), ('left','⬅️')]:
-        v = data.get(key, '').strip()
-        if v:
-            sounds.append(f'  {arrow} {v}')
+        d      = data.get('duration', '?')
+        place  = data.get('place', '')
+        sounds = []
+        for key, arrow in [('front','⬆️'), ('right','➡️'), ('back','⬇️'), ('left','⬅️')]:
+            v = data.get(key, '').strip()
+            if v:
+                sounds.append(f'  {arrow} {v}')
 
-    text = '✦ <b>Запись сохранена!</b>\n\n'
-    text += f'🎧 Слушание пространства · {d} мин'
-    if place:
-        text += f'\n📍 {place}'
-    if sounds:
-        text += '\n\n🔊 <b>Звуки:</b>\n' + '\n'.join(sounds)
-    if data.get('liked'):
-        text += f'\n\n❤️ {data["liked"]}'
-    if data.get('disliked'):
-        text += f'\n\n💔 {data["disliked"]}'
-    if data.get('story'):
-        text += f'\n\n📖 {data["story"]}'
+        text = '✦ <b>Запись сохранена!</b>\n\n'
+        text += f'🎧 Слушание пространства · {d} мин'
+        if place:
+            text += f'\n📍 {place}'
+        if sounds:
+            text += '\n\n🔊 <b>Звуки:</b>\n' + '\n'.join(sounds)
+        if data.get('liked'):
+            text += f'\n\n❤️ {data["liked"]}'
+        if data.get('disliked'):
+            text += f'\n\n💔 {data["disliked"]}'
+        if data.get('story'):
+            text += f'\n\n📖 {data["story"]}'
 
-    # Саммари — убираем клавиатуру практики
-    await context.bot.send_message(
-        chat_id,
-        text,
-        parse_mode='HTML',
-        reply_markup=ReplyKeyboardRemove(),
-    )
-    # Очищаем данные практики
-    for key in ('duration', 'place', 'front', 'right', 'back', 'left',
-                'liked', 'disliked', 'story', 'photo_file_id'):
-        context.user_data.pop(key, None)
-    context.user_data['has_practices'] = True
-    # «Что дальше?» с инлайн-кнопками
-    url = journal_url(user.id, user.full_name)
-    await context.bot.send_message(
-        chat_id,
-        'Что дальше?',
-        reply_markup=InlineKeyboardMarkup([[
-            InlineKeyboardButton('📖 Перейти в дневник', web_app=WebAppInfo(url=url)),
-            InlineKeyboardButton('🎧 Новая практика', callback_data='new_practice'),
-        ]]),
-    )
+        # Очищаем данные практики
+        for key in ('duration', 'place', 'front', 'right', 'back', 'left',
+                    'liked', 'disliked', 'story', 'photo_file_id'):
+            context.user_data.pop(key, None)
+        context.user_data['has_practices'] = True
+
+        url = await journal_url(user.id, user.full_name)
+        await context.bot.send_message(
+            chat_id,
+            text,
+            parse_mode='HTML',
+            reply_markup=InlineKeyboardMarkup([
+                [InlineKeyboardButton('📖 Перейти в дневник', web_app=WebAppInfo(url=url))],
+                [InlineKeyboardButton('🎧 Новая практика', callback_data='new_practice')],
+            ]),
+        )
+    except Exception as e:
+        logger.error('finish: %s', e)
+        try:
+            await context.bot.send_message(
+                chat_id,
+                '✦ Практика завершена. Запись сохранена.',
+            )
+        except Exception:
+            pass
+
     return ConversationHandler.END
 
 # ── Handlers ──────────────────────────────────────────────────────────────────
 
 async def cmd_start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     user = update.effective_user
-    auth = bot_auth(user.id, user.full_name)
+    auth = await bot_auth(user.id, user.full_name)
     if auth.get('token'):
         context.user_data['token'] = auth['token']
         context.user_data['has_practices'] = auth.get('has_entries', False)
     has_practices = context.user_data.get('has_practices', False)
     buttons = [[InlineKeyboardButton('🎧 Начать практику', callback_data='new_practice')]]
     if has_practices:
-        url = journal_url(user.id, user.full_name)
+        url = await journal_url(user.id, user.full_name)
         buttons.append([InlineKeyboardButton('📖 Открыть дневник', web_app=WebAppInfo(url=url))])
     await update.message.reply_text(
         '🎧 <b>Квантовое Ухо</b>\n\n'
@@ -213,7 +220,7 @@ async def cmd_start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
 async def on_home(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     text = update.message.text
     if text == '📖 Открыть дневник':
-        url = journal_url(update.effective_user.id, update.effective_user.full_name)
+        url = await journal_url(update.effective_user.id, update.effective_user.full_name)
         await update.message.reply_text(
             'Открывайте дневник:',
             reply_markup=InlineKeyboardMarkup([[
@@ -421,34 +428,38 @@ async def on_receive_photo(update: Update, context: ContextTypes.DEFAULT_TYPE) -
     context.user_data['photo_file_id'] = update.message.photo[-1].file_id
     data = context.user_data
 
-    # Generate card with session overlay
     card_sent = False
     try:
-        r = requests.post(
-            f'{API_BASE}/generate_card.php',
-            json={
-                'photo_file_id': data['photo_file_id'],
-                'sounds': {
-                    'front': data.get('front', ''),
-                    'right': data.get('right', ''),
-                    'back':  data.get('back',  ''),
-                    'left':  data.get('left',  ''),
+        async with httpx.AsyncClient(timeout=60) as client:
+            r = await client.post(
+                f'{API_BASE}/generate_card.php',
+                json={
+                    'photo_file_id':      data['photo_file_id'],
+                    'telegram_bot_token': BOT_TOKEN,
+                    'sounds': {
+                        'front': data.get('front', ''),
+                        'right': data.get('right', ''),
+                        'back':  data.get('back',  ''),
+                        'left':  data.get('left',  ''),
+                    },
+                    'place':    data.get('place', ''),
+                    'liked':    data.get('liked', ''),
+                    'duration': data.get('duration', 0),
                 },
-                'place':    data.get('place', ''),
-                'liked':    data.get('liked', ''),
-                'duration': data.get('duration', 0),
-            },
-            timeout=30,
-        )
+            )
         result = r.json()
-        if result.get('url') and not result.get('error'):
+        if result.get('error'):
+            logger.error('generate_card error: %s', result['error'])
+        elif result.get('base64'):
+            raw = base64.b64decode(result['base64'].split(',', 1)[1])
+            await update.message.reply_photo(photo=io.BytesIO(raw))
+            card_sent = True
+        elif result.get('url'):
             card_url = f'https://ksburayamusic.ru/deeplistening/{result["url"]}'
             await update.message.reply_photo(photo=card_url)
             card_sent = True
-        if result.get('error'):
-            logger.error('generate_card: %s', result['error'])
     except Exception as e:
-        logger.error('generate_card: %s', e)
+        logger.error('generate_card exception: %s', e)
 
     if not card_sent:
         await update.message.reply_text('💾 Фото сохранено.')
