@@ -1,9 +1,6 @@
-import base64
-import io
 import os
 import logging
 import urllib.parse
-from typing import Optional
 import httpx
 from dotenv import load_dotenv
 
@@ -34,7 +31,7 @@ JOURNAL_BASE = 'https://ksburayamusic.ru/deeplistening/journal.html'
 
 (HOME, CHOOSE_DURATION, WAITING_DONE, ASK_PLACE,
  ASK_FRONT, ASK_RIGHT, ASK_BACK, ASK_LEFT,
- ASK_LIKED, ASK_DISLIKED, ASK_STORY, ASK_PHOTO) = range(12)
+ ASK_LIKED, ASK_DISLIKED, ASK_STORY) = range(11)
 
 # ── Keyboards ─────────────────────────────────────────────────────────────────
 
@@ -61,12 +58,6 @@ def kb_home(has_practices: bool) -> ReplyKeyboardMarkup:
     if has_practices:
         buttons.append(['📖 Открыть дневник'])
     return ReplyKeyboardMarkup(buttons, resize_keyboard=True)
-
-def kb_photo() -> InlineKeyboardMarkup:
-    return InlineKeyboardMarkup([[
-        InlineKeyboardButton('Да 📷',     callback_data='photo_yes'),
-        InlineKeyboardButton('Пропустить', callback_data='photo_skip'),
-    ]])
 
 def kb_journal(url: str) -> InlineKeyboardMarkup:
     return InlineKeyboardMarkup([[
@@ -156,6 +147,7 @@ async def finish(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
 
         text = '✦ <b>Запись сохранена!</b>\n\n'
         text += f'🎧 Слушание пространства · {d} мин'
+        text += '\n📷 В дневнике доступна генерация фотоотчёта.'
         if place:
             text += f'\n📍 {place}'
         if sounds:
@@ -169,7 +161,7 @@ async def finish(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
 
         # Очищаем данные практики
         for key in ('duration', 'place', 'front', 'right', 'back', 'left',
-                    'liked', 'disliked', 'story', 'photo_file_id'):
+                    'liked', 'disliked', 'story'):
             context.user_data.pop(key, None)
         context.user_data['has_practices'] = True
 
@@ -390,23 +382,6 @@ async def on_ask_story(update: Update, context: ContextTypes.DEFAULT_TYPE) -> in
     else:
         text = update.message.text
         context.user_data['story'] = '' if is_skip(text) else text
-    await context.bot.send_message(
-        update.effective_chat.id,
-        '📷 Хотите прикрепить фото места?',
-        reply_markup=kb_photo(),
-    )
-    return ASK_PHOTO
-
-
-async def on_photo_yes(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
-    query = update.callback_query
-    await query.answer()
-    await query.edit_message_text('Пришлите фотографию:')
-    return ASK_PHOTO
-
-
-async def on_photo_skip(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
-    await update.callback_query.answer()
     return await finish(update, context)
 
 
@@ -423,48 +398,6 @@ async def on_new_practice(update: Update, context: ContextTypes.DEFAULT_TYPE) ->
     )
     return CHOOSE_DURATION
 
-
-async def on_receive_photo(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
-    context.user_data['photo_file_id'] = update.message.photo[-1].file_id
-    data = context.user_data
-
-    card_sent = False
-    try:
-        async with httpx.AsyncClient(timeout=60) as client:
-            r = await client.post(
-                f'{API_BASE}/generate_card.php',
-                json={
-                    'photo_file_id':      data['photo_file_id'],
-                    'telegram_bot_token': BOT_TOKEN,
-                    'sounds': {
-                        'front': data.get('front', ''),
-                        'right': data.get('right', ''),
-                        'back':  data.get('back',  ''),
-                        'left':  data.get('left',  ''),
-                    },
-                    'place':    data.get('place', ''),
-                    'liked':    data.get('liked', ''),
-                    'duration': data.get('duration', 0),
-                },
-            )
-        result = r.json()
-        if result.get('error'):
-            logger.error('generate_card error: %s', result['error'])
-        elif result.get('base64'):
-            raw = base64.b64decode(result['base64'].split(',', 1)[1])
-            await update.message.reply_photo(photo=io.BytesIO(raw))
-            card_sent = True
-        elif result.get('url'):
-            card_url = f'https://ksburayamusic.ru/deeplistening/{result["url"]}'
-            await update.message.reply_photo(photo=card_url)
-            card_sent = True
-    except Exception as e:
-        logger.error('generate_card exception: %s', e)
-
-    if not card_sent:
-        await update.message.reply_text('💾 Фото сохранено.')
-
-    return await finish(update, context)
 
 # ── Main ──────────────────────────────────────────────────────────────────────
 
@@ -527,11 +460,6 @@ def main() -> None:
             ASK_STORY:       [
                 MessageHandler(filters.TEXT & ~filters.COMMAND, on_ask_story),
                 CallbackQueryHandler(on_ask_story, pattern='^skip$'),
-            ],
-            ASK_PHOTO: [
-                CallbackQueryHandler(on_photo_yes,  pattern='^photo_yes$'),
-                CallbackQueryHandler(on_photo_skip, pattern='^photo_skip$'),
-                MessageHandler(filters.PHOTO, on_receive_photo),
             ],
         },
         fallbacks=[CommandHandler('start', cmd_start)],
