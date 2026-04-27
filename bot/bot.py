@@ -1,3 +1,5 @@
+import datetime
+import json
 import os
 import logging
 import urllib.parse
@@ -24,8 +26,46 @@ BOT_TOKEN    = os.environ['BOT_TOKEN']
 WEBHOOK_URL  = os.environ['WEBHOOK_URL']
 PORT         = int(os.environ.get('PORT', 8080))
 BOT_SECRET   = os.environ.get('BOT_SECRET', '')
-API_BASE     = 'https://ksburayamusic.ru/deeplistening/api'
-JOURNAL_BASE = 'https://ksburayamusic.ru/deeplistening/journal.html'
+API_BASE       = 'https://ksburayamusic.ru/deeplistening/api'
+JOURNAL_BASE   = 'https://ksburayamusic.ru/deeplistening/journal.html'
+REMINDER_FILE  = os.environ.get('REMINDER_FILE', '/data/reminder_users.json')
+REMINDER_HOUR  = int(os.environ.get('REMINDER_HOUR', '7'))   # UTC; 07:00 = 10:00 MSK
+
+# ── Reminder storage ──────────────────────────────────────────────────────────
+
+def load_reminder_users() -> set:
+    try:
+        with open(REMINDER_FILE) as f:
+            return set(json.load(f))
+    except Exception:
+        return set()
+
+def save_reminder_users(users: set) -> None:
+    try:
+        os.makedirs(os.path.dirname(REMINDER_FILE) or '.', exist_ok=True)
+        with open(REMINDER_FILE, 'w') as f:
+            json.dump(list(users), f)
+    except Exception as e:
+        logger.error('save_reminder_users: %s', e)
+
+async def send_daily_reminder(context: ContextTypes.DEFAULT_TYPE) -> None:
+    users = load_reminder_users()
+    dead: set = set()
+    for chat_id in list(users):
+        try:
+            await context.bot.send_message(
+                chat_id,
+                '🎧 Привет! Сегодня хороший день, чтобы послушать пространство.',
+                reply_markup=InlineKeyboardMarkup([[
+                    InlineKeyboardButton('🎧 Начать практику', callback_data='new_practice'),
+                ]]),
+            )
+        except Exception as e:
+            logger.warning('reminder for %s: %s', chat_id, e)
+            if any(x in str(e).lower() for x in ('blocked', 'deactivated', 'not found', 'forbidden')):
+                dead.add(chat_id)
+    if dead:
+        save_reminder_users(users - dead)
 
 # ── FSM states ────────────────────────────────────────────────────────────────
 
@@ -190,6 +230,10 @@ async def finish(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
 # ── Handlers ──────────────────────────────────────────────────────────────────
 
 async def cmd_start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
+    users = load_reminder_users()
+    users.add(update.effective_chat.id)
+    save_reminder_users(users)
+
     user = update.effective_user
     auth = await bot_auth(user.id, user.full_name)
     if auth.get('token'):
@@ -466,6 +510,11 @@ def main() -> None:
         allow_reentry=True,
     )
     app.add_handler(conv)
+
+    app.job_queue.run_daily(
+        send_daily_reminder,
+        time=datetime.time(hour=REMINDER_HOUR, minute=0, tzinfo=datetime.timezone.utc),
+    )
 
     app.run_webhook(
         listen='0.0.0.0',
