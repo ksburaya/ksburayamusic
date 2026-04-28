@@ -48,6 +48,9 @@ try {
             if (is_string($row['sounds'])) {
                 $row['sounds'] = json_decode($row['sounds'], true);
             }
+            if (is_string($row['content'])) {
+                $row['content'] = json_decode($row['content'], true);
+            }
         }
         echo json_encode($rows);
         exit;
@@ -62,6 +65,7 @@ try {
         $liked        = trim($data['liked'] ?? '');
         $disliked     = trim($data['disliked'] ?? '');
         $notes        = trim($data['notes'] ?? '');
+        $content      = isset($data['content']) ? json_encode($data['content']) : null;
 
         if (!$practice_id) {
             http_response_code(400);
@@ -69,8 +73,8 @@ try {
             exit;
         }
 
-        $stmt = $db->prepare('INSERT INTO entries (user_id, practice_id, duration_min, place, sounds, liked, disliked, notes, is_public, saved_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, 0, NOW())');
-        $stmt->execute([$user['id'], $practice_id, $duration_min, $place, $sounds, $liked, $disliked, $notes]);
+        $stmt = $db->prepare('INSERT INTO entries (user_id, practice_id, duration_min, place, sounds, liked, disliked, notes, content, is_public, saved_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 0, NOW())');
+        $stmt->execute([$user['id'], $practice_id, $duration_min, $place, $sounds, $liked, $disliked, $notes, $content]);
         echo json_encode(['id' => $db->lastInsertId(), 'status' => 'saved']);
         exit;
     }
