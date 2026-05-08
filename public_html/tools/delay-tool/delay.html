@@ -420,44 +420,51 @@ async function resetBuffer() {
   if (sourceNode) sourceNode.disconnect();
   await ctx.close();
 
-  ctx = new (window.AudioContext || window.webkitAudioContext)();
+  try {
+    ctx = new (window.AudioContext || window.webkitAudioContext)();
 
-  const outputSelect = document.getElementById('outputSelect');
-  if (outputSelect.value && typeof ctx.setSinkId === 'function') {
-    try {
-      await ctx.setSinkId(outputSelect.value);
-    } catch(sinkErr) {
-      // Continue with default output if selected device fails
+    const outputSelect = document.getElementById('outputSelect');
+    if (outputSelect.value && typeof ctx.setSinkId === 'function') {
+      try {
+        await ctx.setSinkId(outputSelect.value);
+      } catch(sinkErr) {
+        // Continue with default output if selected device fails
+      }
     }
+
+    sourceNode = ctx.createMediaStreamSource(currentStream);
+
+    delayNode = ctx.createDelay(20.0);
+    delayNode.delayTime.value = parseFloat(timeSlider.value);
+
+    feedbackGain = ctx.createGain();
+    feedbackGain.gain.value = parseInt(fbSlider.value) / 100;
+
+    dryGain = ctx.createGain();
+    wetGain = ctx.createGain();
+    const mix = parseInt(mixSlider.value) / 100;
+    dryGain.gain.value = 1 - mix;
+    wetGain.gain.value = mix;
+
+    analyser = ctx.createAnalyser();
+    analyser.fftSize = 512;
+
+    sourceNode.connect(dryGain);
+    sourceNode.connect(delayNode);
+    delayNode.connect(feedbackGain);
+    feedbackGain.connect(delayNode);
+    delayNode.connect(wetGain);
+    dryGain.connect(analyser);
+    wetGain.connect(analyser);
+    analyser.connect(ctx.destination);
+
+    canvasCtx.clearRect(0, 0, canvas.width, canvas.height);
+    drawLoop();
+  } catch(e) {
+    stop();
+    status.textContent = 'Ошибка сброса';
+    status.className = 'status err';
   }
-
-  sourceNode = ctx.createMediaStreamSource(currentStream);
-
-  delayNode = ctx.createDelay(20.0);
-  delayNode.delayTime.value = parseFloat(timeSlider.value);
-
-  feedbackGain = ctx.createGain();
-  feedbackGain.gain.value = parseInt(fbSlider.value) / 100;
-
-  dryGain = ctx.createGain();
-  wetGain = ctx.createGain();
-  const mix = parseInt(mixSlider.value) / 100;
-  dryGain.gain.value = 1 - mix;
-  wetGain.gain.value = mix;
-
-  analyser = ctx.createAnalyser();
-  analyser.fftSize = 512;
-
-  sourceNode.connect(dryGain);
-  sourceNode.connect(delayNode);
-  delayNode.connect(feedbackGain);
-  feedbackGain.connect(delayNode);
-  delayNode.connect(wetGain);
-  dryGain.connect(analyser);
-  wetGain.connect(analyser);
-  analyser.connect(ctx.destination);
-
-  drawLoop();
 }
 
 document.getElementById('resetBtn').addEventListener('click', resetBuffer);
