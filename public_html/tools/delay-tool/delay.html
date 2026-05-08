@@ -340,7 +340,11 @@ btn.addEventListener('click', async () => {
     ctx = new (window.AudioContext || window.webkitAudioContext)();
     const outputSelect = document.getElementById('outputSelect');
     if (outputSelect.value && typeof ctx.setSinkId === 'function') {
-      await ctx.setSinkId(outputSelect.value);
+      try {
+        await ctx.setSinkId(outputSelect.value);
+      } catch(sinkErr) {
+        // Continue with default output if selected device fails
+      }
     }
     sourceNode = ctx.createMediaStreamSource(stream);
 
@@ -379,6 +383,11 @@ btn.addEventListener('click', async () => {
 
     drawLoop();
   } catch(e) {
+    if (currentStream) {
+      currentStream.getTracks().forEach(t => t.stop());
+      currentStream = null;
+    }
+    btn.classList.remove('error');
     btn.classList.add('error');
     status.textContent = 'Нет доступа к микрофону';
     status.className = 'status err';
