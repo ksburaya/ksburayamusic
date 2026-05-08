@@ -242,6 +242,7 @@
 <script>
 let ctx, sourceNode, delayNode, feedbackGain, dryGain, wetGain, analyser, animId;
 let running = false;
+let currentStream = null;
 
 const btn = document.getElementById('btn');
 const status = document.getElementById('status');
@@ -250,6 +251,38 @@ const fbSlider = document.getElementById('fbSlider');
 const mixSlider = document.getElementById('mixSlider');
 const canvas = document.getElementById('canvas');
 const canvasCtx = canvas.getContext('2d');
+
+async function initDevices() {
+  try {
+    const tmp = await navigator.mediaDevices.getUserMedia({ audio: true });
+    tmp.getTracks().forEach(t => t.stop());
+  } catch(e) {
+    status.textContent = 'Нет доступа к микрофону';
+    status.className = 'status err';
+    return;
+  }
+
+  const devices = await navigator.mediaDevices.enumerateDevices();
+  const inputs = devices.filter(d => d.kind === 'audioinput');
+  const outputs = devices.filter(d => d.kind === 'audiooutput');
+
+  const inputSelect = document.getElementById('inputSelect');
+  const outputSelect = document.getElementById('outputSelect');
+
+  inputSelect.innerHTML = inputs.map((d, i) =>
+    `<option value="${d.deviceId}">${d.label || 'Вход ' + (i + 1)}</option>`
+  ).join('');
+
+  outputSelect.innerHTML = outputs.map((d, i) =>
+    `<option value="${d.deviceId}">${d.label || 'Выход ' + (i + 1)}</option>`
+  ).join('');
+
+  if (typeof AudioContext.prototype.setSinkId !== 'function') {
+    document.getElementById('outputWrap').style.display = 'none';
+  }
+}
+
+document.addEventListener('DOMContentLoaded', initDevices);
 
 function updateTimeDisplay() {
   document.getElementById('timeVal').innerHTML = timeSlider.value + '<span class="control-unit">с</span>';
