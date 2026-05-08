@@ -218,7 +218,7 @@
         <span class="control-label">Затухание</span>
         <span class="control-value" id="fbVal">70<span class="control-unit">%</span></span>
       </div>
-      <input type="range" id="fbSlider" min="0" max="95" step="1" value="70">
+      <input type="range" id="fbSlider" min="5" max="95" step="1" value="70">
     </div>
 
     <div class="control">
@@ -304,7 +304,7 @@ timeSlider.addEventListener('input', () => {
 fbSlider.addEventListener('input', () => {
   updateFbDisplay();
   if (feedbackGain) {
-    feedbackGain.gain.setTargetAtTime(parseInt(fbSlider.value) / 100, ctx.currentTime, 0.05);
+    feedbackGain.gain.setTargetAtTime((100 - parseInt(fbSlider.value)) / 100, ctx.currentTime, 0.05);
   }
 });
 
@@ -352,7 +352,7 @@ btn.addEventListener('click', async () => {
     delayNode.delayTime.value = parseFloat(timeSlider.value);
 
     feedbackGain = ctx.createGain();
-    feedbackGain.gain.value = parseInt(fbSlider.value) / 100;
+    feedbackGain.gain.value = (100 - parseInt(fbSlider.value)) / 100;
 
     dryGain = ctx.createGain();
     wetGain = ctx.createGain();
@@ -438,7 +438,7 @@ async function resetBuffer() {
     delayNode.delayTime.value = parseFloat(timeSlider.value);
 
     feedbackGain = ctx.createGain();
-    feedbackGain.gain.value = parseInt(fbSlider.value) / 100;
+    feedbackGain.gain.value = (100 - parseInt(fbSlider.value)) / 100;
 
     dryGain = ctx.createGain();
     wetGain = ctx.createGain();
