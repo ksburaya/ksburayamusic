@@ -1455,7 +1455,6 @@
             'низ ↔ верх',
         ];
 
-        // PARAMS removed — now loaded from data/params.json into DATA.params
 
         let state = {
             scale: 'ionian_12tet',
@@ -1968,7 +1967,6 @@
             document.getElementById('exercise-display').style.display = 'block';
             document.getElementById('scenario-display').style.display = 'none';
             document.getElementById('summary-card').classList.remove('visible');
-            document.getElementById('exercise-display').style.display = 'block';
 
             buildStepIndicator();
             showExercise(0);
@@ -2389,58 +2387,6 @@
         }
 
         // ---- FREE FORM ----
-        const FREE_SCENARIO_TEMPLATES = [
-            [
-                { time: 60, label: 'Одна нота, rubato', params: 'pp · свободно · очень долгие ноты' },
-                { time: 90, label: 'Добавляются соседние ноты', params: 'нарастая · в ритм · ostinato' },
-                { time: 60, label: 'Кульминация', params: 'ff · насыщенно · акцентировано' },
-                { time: 60, label: 'Возврат к одной ноте', params: 'pp · затихая · свободно' },
-            ],
-            [
-                { time: 45, label: 'Тишина, затем один звук', params: 'pp · очень долгие ноты' },
-                { time: 75, label: 'Разрежённое движение по ладу', params: 'p · арпеджио · rubato' },
-                { time: 90, label: 'Два голоса', params: 'mf · одна держит — другая движется' },
-                { time: 60, label: 'Затихание', params: 'pp · затихая · разрежённо' },
-            ]
-        ];
-
-        function startFreeForm() {
-            showView('session');
-            document.getElementById('exercise-display').style.display = 'none';
-            document.getElementById('summary-card').classList.remove('visible');
-            document.getElementById('scenario-display').style.display = 'block';
-
-            const template = pick(FREE_SCENARIO_TEMPLATES);
-            state.scenarioDuration = template.reduce((a, s) => a + s.time, 0);
-            state.scenarioSeconds = 0;
-            document.getElementById('scenario-total-time').textContent = Math.round(state.scenarioDuration / 60) + ' мин';
-
-            const card = document.getElementById('scenario-card');
-            card.innerHTML = '';
-            let acc = 0;
-            template.forEach((sec, i) => {
-                const div = document.createElement('div');
-                div.className = 'scenario-section';
-                div.id = 'scenario-sec-' + i;
-                div.dataset.start = acc;
-                div.dataset.end = acc + sec.time;
-                const mm = Math.floor(acc / 60), ss = acc % 60;
-                div.innerHTML = `
-      <div class="scenario-time">${mm}:${ss.toString().padStart(2, '0')}</div>
-      <div>
-        <div class="scenario-instruction">${sec.label}</div>
-        <div class="scenario-params">${sec.params}</div>
-      </div>`;
-                card.appendChild(div);
-                acc += sec.time;
-            });
-
-            document.getElementById('scenario-timer').textContent = '0:00';
-            document.getElementById('scenario-progress').style.width = '0%';
-            document.getElementById('btn-scenario-start').textContent = 'Начать →';
-            document.getElementById('btn-scenario-start').onclick = startScenarioTimer;
-        }
-
         function startScenarioTimer() {
             document.getElementById('btn-scenario-start').textContent = 'Пауза';
             document.getElementById('btn-scenario-start').onclick = pauseScenario;
@@ -2527,6 +2473,10 @@
 
         // ---- NAVIGATION ----
         function showView(name) {
+            if (name !== 'session') {
+                clearTimer();
+                clearInterval(state.scenarioTimer);
+            }
             document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
             document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
             document.getElementById('view-' + name).classList.add('active');
