@@ -1913,7 +1913,41 @@
         }
 
         function buildFinalScenario(exercises, totalMin) {
-            return null; // implemented in Task 10
+            const totalSec = totalMin * 60;
+            const sections = 4;
+            const secPerSection = Math.floor(totalSec / sections);
+            const used = exercises.filter(e => !e.isFree);
+            const a = used[0] || {};
+            const b = used[Math.floor(used.length / 2)] || {};
+            return {
+                totalSec,
+                sections: [
+                    {
+                        time: 0,
+                        durationSec: secPerSection,
+                        label: 'Войди',
+                        params: `с ${a.params?.dinamika?.value?.label || 'тихо'}, ${a.registr?.label || ''} регистр`
+                    },
+                    {
+                        time: secPerSection,
+                        durationSec: secPerSection,
+                        label: 'Развивай',
+                        params: `${a.params?.faktura?.value?.label || ''} ${a.params?.dvizhenie?.value?.label || ''}`.trim() || 'свободно'
+                    },
+                    {
+                        time: secPerSection * 2,
+                        durationSec: secPerSection,
+                        label: 'Контраст',
+                        params: `смени на ${b.params?.shtrix?.value?.label || ''}, ${b.params?.dinamika?.value?.label || ''}`.trim()
+                    },
+                    {
+                        time: secPerSection * 3,
+                        durationSec: totalSec - secPerSection * 3,
+                        label: 'Выход',
+                        params: 'затихая, в один звук'
+                    }
+                ]
+            };
         }
 
         function buildInstruction(notes, params, registr) {
@@ -1967,6 +2001,11 @@
             if (!ex) { showSummary(); return; }
 
             const total = state.exercises.length;
+            if (ex.isFree && ex.scenario) {
+                showScenarioFreePlay(ex);
+                return;
+            }
+
             if (ex.isFree) {
                 document.getElementById('exercise-label').textContent = `Свободная игра`;
                 document.getElementById('exercise-mode-label').textContent = DATA.modes[state.mode]?.label || state.mode;
@@ -2435,15 +2474,55 @@
             });
         }
 
+        function showScenarioFreePlay(ex) {
+            document.getElementById('exercise-display').style.display = 'none';
+            document.getElementById('summary-card').classList.remove('visible');
+            document.getElementById('scenario-display').style.display = 'block';
+
+            const scenario = ex.scenario;
+            state.scenarioDuration = scenario.totalSec;
+            state.scenarioSeconds = 0;
+            document.getElementById('scenario-total-time').textContent = Math.round(scenario.totalSec / 60) + ' мин';
+
+            const card = document.getElementById('scenario-card');
+            card.innerHTML = '';
+            let acc = 0;
+            scenario.sections.forEach((sec, i) => {
+                const div = document.createElement('div');
+                div.className = 'scenario-section';
+                div.id = 'scenario-sec-' + i;
+                div.dataset.start = sec.time;
+                div.dataset.end = sec.time + sec.durationSec;
+                const mm = Math.floor(acc / 60), ss = acc % 60;
+                const timeDiv = document.createElement('div');
+                timeDiv.className = 'scenario-time';
+                timeDiv.textContent = `${mm}:${ss.toString().padStart(2, '0')}`;
+                const contentDiv = document.createElement('div');
+                const instrDiv = document.createElement('div');
+                instrDiv.className = 'scenario-instruction';
+                instrDiv.textContent = sec.label;
+                const paramsDiv = document.createElement('div');
+                paramsDiv.className = 'scenario-params';
+                paramsDiv.textContent = sec.params;
+                contentDiv.appendChild(instrDiv);
+                contentDiv.appendChild(paramsDiv);
+                div.appendChild(timeDiv);
+                div.appendChild(contentDiv);
+                card.appendChild(div);
+                acc += sec.durationSec;
+            });
+
+            document.getElementById('scenario-timer').textContent = '0:00';
+            document.getElementById('scenario-progress').style.width = '0%';
+            const startBtn = document.getElementById('btn-scenario-start');
+            startBtn.textContent = 'Начать →';
+            startBtn.onclick = startScenarioTimer;
+        }
+
         function stopScenario() {
             clearInterval(state.scenarioTimer);
             document.getElementById('scenario-display').style.display = 'none';
-            const card = document.getElementById('summary-card');
-            card.classList.add('visible');
-            const stopScaleObj = getScale(state.scale);
-            document.getElementById('summary-scale').textContent = stopScaleObj ? stopScaleObj.name : state.scale;
-            document.getElementById('summary-text').textContent = 'Свободная форма завершена.';
-            saveHistory();
+            showSummary();
         }
 
         // ---- NAVIGATION ----
