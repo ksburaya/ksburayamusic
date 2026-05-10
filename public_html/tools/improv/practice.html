@@ -2150,7 +2150,7 @@
             };
             state.history.unshift(entry);
             if (state.history.length > 100) state.history.pop();
-            localStorage.setItem('improv_history', JSON.stringify(state.history));
+            SessionStore.save(entry);
             renderHistory();
         }
 
@@ -2635,6 +2635,72 @@
             metronome.setFrequency(state.metronomeFreq);
         });
 
+        // ---- SESSION STORE ----
+        const SessionStore = {
+            backend: null,
+            init() { this.backend = new LocalStorageStore(); },
+            save(session) { return this.backend.save(session); },
+            list() { return this.backend.list(); },
+            get(id) { return this.backend.get(id); },
+            delete(id) { return this.backend.delete(id); }
+        };
+
+        class LocalStorageStore {
+            constructor() { this.key = 'improv_history'; }
+            _read() { return JSON.parse(localStorage.getItem(this.key) || '[]'); }
+            _write(arr) { localStorage.setItem(this.key, JSON.stringify(arr)); }
+            save(session) {
+                const arr = this._read();
+                const idx = arr.findIndex(x => x.id === session.id);
+                if (idx >= 0) arr[idx] = session; else arr.unshift(session);
+                if (arr.length > 100) arr.pop();
+                this._write(arr);
+                return Promise.resolve(session);
+            }
+            list() { return Promise.resolve(this._read()); }
+            get(id) { return Promise.resolve(this._read().find(x => x.id === id) || null); }
+            delete(id) { this._write(this._read().filter(x => x.id !== id)); return Promise.resolve(); }
+        }
+
+        /*
+        class RemotePhpStore {
+            constructor() {
+                this.base = '/tools/improv/api';
+                this.deviceId = getDeviceId();
+            }
+            async _fetch(path, opts = {}) {
+                const r = await fetch(this.base + path, {
+                    ...opts,
+                    headers: { 'Content-Type': 'application/json', 'X-Device-Id': this.deviceId, ...(opts.headers || {}) }
+                });
+                if (!r.ok) throw new Error('API ' + r.status);
+                return r.json();
+            }
+            save(session) { return this._fetch('/sessions.php', { method: 'POST', body: JSON.stringify(session) }); }
+            list() { return this._fetch('/sessions.php'); }
+            get(id) { return this._fetch('/sessions.php?id=' + encodeURIComponent(id)); }
+            delete(id) { return this._fetch('/sessions.php?id=' + encodeURIComponent(id), { method: 'DELETE' }); }
+        }
+
+        SQL schema for future:
+        CREATE TABLE improv_sessions (
+            id VARCHAR(64) PRIMARY KEY,
+            device_id VARCHAR(64) NOT NULL,
+            user_id INT NULL,
+            datetime DATETIME NOT NULL,
+            scale_id VARCHAR(64),
+            root_midi TINYINT,
+            mode_id VARCHAR(32),
+            level TINYINT,
+            exercise_duration_min TINYINT,
+            presession JSON,
+            post_note TEXT,
+            exercises JSON,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            INDEX (device_id), INDEX (user_id), INDEX (datetime)
+        );
+        */
+
         // ---- INIT ----
         async function init() {
             try {
@@ -2645,7 +2711,8 @@
                 return;
             }
 
-            state.history = JSON.parse(localStorage.getItem('improv_history') || '[]');
+            SessionStore.init();
+            state.history = await SessionStore.list();
 
             const savedScale = localStorage.getItem('improv_scale');
             if (savedScale && DATA.scaleMap.has(savedScale)) state.scale = savedScale;
