@@ -451,6 +451,26 @@
             border-bottom-color: var(--accent);
         }
 
+        .param-development {
+            margin-top: 4px;
+            font-style: italic;
+            color: var(--text3);
+            font-size: 16px;
+        }
+
+        .param-notation {
+            margin-top: 4px;
+            font-style: italic;
+            color: var(--text3);
+            font-size: 14px;
+        }
+
+        .param-bpm {
+            margin-top: 4px;
+            color: var(--accent2);
+            font-size: 14px;
+        }
+
         /* TOOLTIP */
         [data-tip] {
             position: relative;
@@ -1691,15 +1711,45 @@
                     if (!p) return;
                     const item = document.createElement('div');
                     item.className = 'param-item';
+
                     const labelEl = document.createElement('div');
                     labelEl.className = 'param-label';
                     labelEl.textContent = p.label;
+                    item.appendChild(labelEl);
+
                     const valueEl = document.createElement('div');
                     valueEl.className = 'param-value';
                     valueEl.dataset.tip = p.value.tip || '';
                     valueEl.textContent = p.value.label;
-                    item.appendChild(labelEl);
                     item.appendChild(valueEl);
+
+                    if (p.development) {
+                        const devEl = document.createElement('div');
+                        devEl.className = 'param-development';
+                        devEl.textContent = p.development.label || p.development;
+                        item.appendChild(devEl);
+                    }
+
+                    if (p.value.notation) {
+                        const notEl = document.createElement('div');
+                        notEl.className = 'param-notation';
+                        const notations = p.value.notation;
+                        notEl.textContent = notations.length === 1
+                            ? notations[0]
+                            : (Math.random() < 0.5 ? pick(notations) : notations.join(' · '));
+                        item.appendChild(notEl);
+                    }
+
+                    if (p.value.bpm) {
+                        const [lo, hi] = p.value.bpm;
+                        const chosen = lo + Math.floor(Math.random() * (hi - lo + 1));
+                        p.value.chosenBpm = chosen;
+                        const bpmEl = document.createElement('div');
+                        bpmEl.className = 'param-bpm';
+                        bpmEl.textContent = `♩ = ${chosen}`;
+                        item.appendChild(bpmEl);
+                    }
+
                     grid.appendChild(item);
                 });
 
