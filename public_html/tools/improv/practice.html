@@ -471,6 +471,67 @@
             font-size: 14px;
         }
 
+        /* PRE-SESSION */
+        .presession-card {
+            max-width: 600px;
+            margin: 40px auto;
+            padding: 32px;
+            background: var(--surface);
+            border: 1px solid var(--border);
+        }
+
+        .presession-title {
+            font-size: 28px;
+            margin-bottom: 24px;
+            color: var(--accent);
+            font-weight: 400;
+        }
+
+        .presession-question {
+            margin-bottom: 20px;
+        }
+
+        .presession-question label {
+            display: block;
+            margin-bottom: 8px;
+            font-style: italic;
+            color: var(--text2);
+        }
+
+        .presession-question textarea {
+            width: 100%;
+            padding: 12px;
+            background: var(--bg2);
+            border: 1px solid var(--border);
+            color: var(--text);
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 16px;
+            resize: vertical;
+            box-sizing: border-box;
+        }
+
+        .presession-actions {
+            display: flex;
+            gap: 12px;
+            justify-content: flex-end;
+            margin-top: 24px;
+        }
+
+        .btn-ghost {
+            padding: 10px 24px;
+            background: transparent;
+            color: var(--text2);
+            border: 1px solid var(--border);
+            cursor: pointer;
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 16px;
+        }
+
+        .btn-ghost:hover {
+            color: var(--text);
+            border-color: var(--text2);
+        }
+
         /* METRONOME */
         .metronome-control {
             display: flex;
@@ -1040,9 +1101,30 @@
                 </div>
 
                 <div class="btn-row" style="margin-top:40px;">
-                    <button class="btn btn-primary" onclick="startSession()">Начать сессию →</button>
+                    <button class="btn btn-primary" onclick="goToPresession()">Начать сессию →</button>
                 </div>
 
+            </div>
+        </div>
+
+        <!-- VIEW: PRE-SESSION -->
+        <div class="view" id="view-presession">
+            <div class="fade-in">
+                <div class="presession-card">
+                    <h2 class="presession-title">Перед практикой</h2>
+                    <div class="presession-question">
+                        <label>В каком я сейчас состоянии?</label>
+                        <textarea id="presession-state" rows="3" placeholder="..."></textarea>
+                    </div>
+                    <div class="presession-question">
+                        <label>Что мне сегодня хочется сыграть?</label>
+                        <textarea id="presession-intent" rows="3" placeholder="..."></textarea>
+                    </div>
+                    <div class="presession-actions">
+                        <button class="btn-ghost" id="btn-presession-skip">Пропустить</button>
+                        <button class="btn btn-primary" id="btn-presession-continue">Начать практику</button>
+                    </div>
+                </div>
             </div>
         </div>
 
@@ -2175,6 +2257,29 @@
             document.getElementById('ex-duration-display').textContent = `${state.exerciseDurationMin} мин`;
             localStorage.setItem('improv_exDuration', state.exerciseDurationMin);
             applyDefaultDuration();
+        });
+
+        function goToPresession() {
+            document.getElementById('presession-state').value = '';
+            document.getElementById('presession-intent').value = '';
+            showView('presession');
+        }
+
+        document.getElementById('btn-presession-skip').addEventListener('click', () => {
+            state.presession = null;
+            showView('session');
+            startSession();
+        });
+
+        document.getElementById('btn-presession-continue').addEventListener('click', () => {
+            const stt = document.getElementById('presession-state').value.trim();
+            const int = document.getElementById('presession-intent').value.trim();
+            state.presession = (stt || int)
+                ? { state: stt, intent: int, date: new Date().toISOString() }
+                : null;
+            if (state.presession) localStorage.setItem('improv_presession', JSON.stringify(state.presession));
+            showView('session');
+            startSession();
         });
 
         document.getElementById('metronome-toggle').addEventListener('click', e => {
