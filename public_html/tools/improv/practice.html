@@ -471,6 +471,65 @@
             font-size: 14px;
         }
 
+        /* PERFORMANCE */
+        .performance-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: baseline;
+            margin-bottom: 24px;
+        }
+
+        .performance-actions {
+            display: flex;
+            gap: 12px;
+        }
+
+        .performance-empty {
+            text-align: center;
+            padding: 60px 20px;
+            color: var(--text2);
+            font-style: italic;
+        }
+
+        .performance-list {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .performance-item {
+            display: flex;
+            gap: 16px;
+            align-items: center;
+            padding: 16px;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            cursor: pointer;
+        }
+
+        .performance-item:hover {
+            background: var(--surface2);
+            border-color: var(--accent);
+        }
+
+        .performance-item-num {
+            color: var(--text3);
+            font-size: 14px;
+            min-width: 24px;
+        }
+
+        .performance-item-name {
+            flex: 1;
+            color: var(--accent);
+            font-size: 18px;
+        }
+
+        .performance-item-meta {
+            color: var(--text2);
+            font-size: 13px;
+            font-style: italic;
+        }
+
         /* PRE-SESSION */
         .presession-card {
             max-width: 600px;
@@ -1075,6 +1134,7 @@
             <div class="nav-links">
                 <button class="nav-link active" onclick="showView('setup')">Начало</button>
                 <button class="nav-link" onclick="showView('session')">Сессия</button>
+                <button class="nav-link" onclick="showView('performance')">Перфоманс</button>
                 <button class="nav-link" onclick="showView('history')">История</button>
             </div>
         </div>
@@ -1178,6 +1238,24 @@
                         <button class="btn btn-primary" id="btn-presession-continue">Начать практику</button>
                     </div>
                 </div>
+            </div>
+        </div>
+
+        <!-- VIEW: PERFORMANCE -->
+        <div class="view" id="view-performance">
+            <div class="fade-in">
+                <div class="performance-header">
+                    <h2>Перфоманс</h2>
+                    <div class="performance-actions">
+                        <button class="btn-ghost" id="btn-load-performance">Загрузить .json</button>
+                        <input type="file" id="performance-file" accept=".json" style="display:none">
+                        <button class="btn-ghost" id="btn-clear-performance" style="display:none">Очистить</button>
+                    </div>
+                </div>
+                <div id="performance-empty" class="performance-empty">
+                    <p>Загрузи JSON-файл с последовательностью ладов для сегодняшней практики.</p>
+                </div>
+                <div id="performance-list" class="performance-list" style="display:none"></div>
             </div>
         </div>
 
@@ -2425,6 +2503,120 @@
             startSession();
         });
 
+        // ---- PERFORMANCE ----
+        function loadPerformance(json) {
+            if (!json || !Array.isArray(json.scales) || !json.scales.length) {
+                alert('Невалидный перфоманс: нужен массив scales[]');
+                return false;
+            }
+            for (const s of json.scales) {
+                if (!s.scaleId || !DATA.scaleMap.has(s.scaleId)) {
+                    alert(`Лад "${s.scaleId}" не найден в библиотеке`);
+                    return false;
+                }
+                if (typeof s.rootMidi !== 'number') {
+                    alert(`Лад "${s.scaleId}": нет rootMidi`);
+                    return false;
+                }
+            }
+            state.performance = json;
+            localStorage.setItem('improv_performance', JSON.stringify(json));
+            renderPerformance();
+            return true;
+        }
+
+        function renderPerformance() {
+            const empty = document.getElementById('performance-empty');
+            const listEl = document.getElementById('performance-list');
+            const clearBtn = document.getElementById('btn-clear-performance');
+            if (!state.performance) {
+                empty.style.display = 'block';
+                listEl.style.display = 'none';
+                clearBtn.style.display = 'none';
+                return;
+            }
+            empty.style.display = 'none';
+            listEl.style.display = 'flex';
+            clearBtn.style.display = 'inline-block';
+            listEl.innerHTML = '';
+            state.performance.scales.forEach((s, i) => {
+                const rawScale = DATA.scaleMap.get(s.scaleId);
+                const div = document.createElement('div');
+                div.className = 'performance-item';
+                const numSpan = document.createElement('span');
+                numSpan.className = 'performance-item-num';
+                numSpan.textContent = `${i + 1}.`;
+                const nameSpan = document.createElement('span');
+                nameSpan.className = 'performance-item-name';
+                nameSpan.textContent = rawScale ? rawScale.name_ru : s.scaleId;
+                const meta = [
+                    s.level ? `У${s.level}` : null,
+                    s.tempoBpm ? `♩ = ${s.tempoBpm}` : null,
+                    s.mode ? DATA.modes[s.mode]?.label : null
+                ].filter(Boolean).join(' · ');
+                const metaSpan = document.createElement('span');
+                metaSpan.className = 'performance-item-meta';
+                metaSpan.textContent = meta;
+                div.appendChild(numSpan);
+                div.appendChild(nameSpan);
+                div.appendChild(metaSpan);
+                div.addEventListener('click', () => startFromPerformanceItem(s));
+                listEl.appendChild(div);
+            });
+        }
+
+        function startFromPerformanceItem(item) {
+            const def = state.performance?.defaults || {};
+            state.scale = item.scaleId;
+            state.rootMidi = item.rootMidi;
+            state.level = item.level || def.level || 1;
+            state.mode = item.mode || def.mode || 'flash';
+            state.exerciseDurationMin = item.exerciseDurationMin || def.exerciseDurationMin
+                || DATA.modes[state.mode]?.exerciseDurationDefault || 3;
+            localStorage.setItem('improv_scale', state.scale);
+            localStorage.setItem('improv_level', state.level);
+            localStorage.setItem('improv_mode', state.mode);
+            const scale = getScale(state.scale);
+            document.getElementById('current-scale-name').textContent = scale ? scale.name : state.scale;
+            buildKeyboard();
+            refreshModeCards();
+            enforceLevelByMode();
+            applyDefaultDuration();
+            document.querySelectorAll('.level-btn').forEach(b => {
+                b.classList.toggle('active', parseInt(b.dataset.level) === state.level);
+            });
+            const levelData = DATA.levels?.[String(state.level)];
+            document.getElementById('level-desc').textContent = levelData?.description || '';
+            showView('setup');
+        }
+
+        document.getElementById('btn-load-performance').addEventListener('click', () => {
+            document.getElementById('performance-file').click();
+        });
+
+        document.getElementById('performance-file').addEventListener('change', e => {
+            const file = e.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = ev => {
+                try {
+                    const json = JSON.parse(ev.target.result);
+                    loadPerformance(json);
+                } catch (err) {
+                    alert('Не JSON: ' + err.message);
+                }
+            };
+            reader.readAsText(file);
+            e.target.value = '';
+        });
+
+        document.getElementById('btn-clear-performance').addEventListener('click', () => {
+            if (!confirm('Удалить загруженный перфоманс?')) return;
+            state.performance = null;
+            localStorage.removeItem('improv_performance');
+            renderPerformance();
+        });
+
         document.getElementById('metronome-toggle').addEventListener('click', e => {
             if (metronome.timer) {
                 metronome.stop();
@@ -2482,6 +2674,7 @@
             refreshModeCards();
             enforceLevelByMode();
             applyDefaultDuration();
+            renderPerformance();
             renderHistory();
         }
         init();
