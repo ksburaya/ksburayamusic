@@ -1,0 +1,1918 @@
+<!DOCTYPE html>
+<html lang="ru">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Тренажёр импровизации</title>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&family=Cormorant:ital,wght@0,300;0,400;1,300&display=swap"
+        rel="stylesheet">
+    <style>
+        :root {
+            --bg: #0e0d0c;
+            --bg2: #141310;
+            --bg3: #1a1916;
+            --surface: #201f1c;
+            --surface2: #272522;
+            --border: rgba(255, 255, 255, 0.07);
+            --border2: rgba(255, 255, 255, 0.13);
+            --text: #e8e4dc;
+            --text2: #9a9487;
+            --text3: #5a5550;
+            --accent: #c8a96e;
+            --accent2: #8b6e3a;
+            --accent-dim: rgba(200, 169, 110, 0.12);
+            --red: #c26b5a;
+            --green: #6b9e6b;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background: var(--bg);
+            color: var(--text);
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 18px;
+            line-height: 1.6;
+            min-height: 100vh;
+        }
+
+        .page {
+            max-width: 780px;
+            margin: 0 auto;
+            padding: 60px 32px 120px;
+        }
+
+        h1 {
+            font-size: 13px;
+            font-weight: 400;
+            letter-spacing: 0.18em;
+            text-transform: uppercase;
+            color: var(--text3);
+            margin-bottom: 64px;
+        }
+
+        h2 {
+            font-size: 28px;
+            font-weight: 300;
+            letter-spacing: 0.02em;
+            color: var(--text);
+            margin-bottom: 8px;
+        }
+
+        h3 {
+            font-size: 20px;
+            font-weight: 400;
+            color: var(--text2);
+            margin-bottom: 24px;
+        }
+
+        .section-divider {
+            border: none;
+            border-top: 1px solid var(--border);
+            margin: 56px 0;
+        }
+
+        /* STEP INDICATOR */
+        .step-indicator {
+            display: flex;
+            gap: 6px;
+            margin-bottom: 48px;
+            align-items: center;
+        }
+
+        .step-dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: var(--text3);
+            transition: all 0.3s;
+        }
+
+        .step-dot.active {
+            background: var(--accent);
+            width: 24px;
+            border-radius: 3px;
+        }
+
+        .step-dot.done {
+            background: var(--accent2);
+        }
+
+        /* MODE SELECTION CARDS */
+        .mode-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1px;
+            background: var(--border);
+            border: 1px solid var(--border);
+            border-radius: 2px;
+            overflow: hidden;
+            margin-bottom: 40px;
+        }
+
+        .mode-card {
+            background: var(--bg2);
+            padding: 28px 24px;
+            cursor: pointer;
+            transition: background 0.2s;
+            position: relative;
+        }
+
+        .mode-card:hover {
+            background: var(--surface);
+        }
+
+        .mode-card.selected {
+            background: var(--surface2);
+        }
+
+        .mode-card.selected::after {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: 2px;
+            background: var(--accent);
+        }
+
+        .mode-icon {
+            font-size: 22px;
+            margin-bottom: 10px;
+            display: block;
+        }
+
+        .mode-title {
+            font-size: 19px;
+            font-weight: 500;
+            color: var(--text);
+            margin-bottom: 4px;
+        }
+
+        .mode-sub {
+            font-size: 14px;
+            color: var(--text3);
+            letter-spacing: 0.06em;
+        }
+
+        /* SCALE SELECTOR */
+        .scale-display {
+            margin-bottom: 32px;
+        }
+
+        .scale-name {
+            font-size: 42px;
+            font-weight: 300;
+            font-style: italic;
+            color: var(--accent);
+            line-height: 1;
+            margin-bottom: 8px;
+            cursor: pointer;
+            display: inline-block;
+        }
+
+        .scale-name:hover {
+            color: var(--text);
+        }
+
+        .scale-hint {
+            font-size: 13px;
+            color: var(--text3);
+            letter-spacing: 0.1em;
+        }
+
+        /* KEYBOARD VISUAL */
+        .keyboard-wrap {
+            margin: 24px 0 32px;
+            overflow-x: auto;
+            padding-bottom: 4px;
+        }
+
+        .keyboard {
+            position: relative;
+            height: 90px;
+            user-select: none;
+            /* width set by JS */
+        }
+
+        .key-white {
+            width: 28px;
+            height: 90px;
+            background: #e8e4dc;
+            border: 1px solid #999;
+            border-radius: 0 0 3px 3px;
+            position: absolute;
+            top: 0;
+            box-sizing: border-box;
+        }
+
+        .key-black {
+            width: 18px;
+            height: 56px;
+            background: #1a1916;
+            border: 1px solid #000;
+            border-radius: 0 0 2px 2px;
+            position: absolute;
+            top: 0;
+            z-index: 2;
+            box-sizing: border-box;
+        }
+
+        .key-dot {
+            position: absolute;
+            bottom: 8px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 7px;
+            height: 7px;
+            border-radius: 50%;
+            background: var(--accent);
+            pointer-events: none;
+            z-index: 4;
+        }
+
+        .key-dot.root {
+            width: 9px;
+            height: 9px;
+            background: var(--accent);
+            box-shadow: 0 0 0 2px #e8e4dc, 0 0 0 3.5px var(--accent);
+            bottom: 7px;
+        }
+
+        .key-black .key-dot {
+            bottom: 6px;
+            background: var(--accent);
+            width: 6px;
+            height: 6px;
+        }
+
+        .key-black .key-dot.root {
+            box-shadow: 0 0 0 2px #1a1916, 0 0 0 3.5px var(--accent);
+        }
+
+        /* LEVEL SELECTOR */
+        .level-row {
+            display: flex;
+            gap: 2px;
+            margin-bottom: 40px;
+        }
+
+        .level-btn {
+            flex: 1;
+            padding: 12px 8px;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 0;
+            color: var(--text2);
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-align: center;
+        }
+
+        .level-btn:first-child {
+            border-radius: 2px 0 0 2px;
+        }
+
+        .level-btn:last-child {
+            border-radius: 0 2px 2px 0;
+        }
+
+        .level-btn:hover {
+            background: var(--surface2);
+            color: var(--text);
+        }
+
+        .level-btn.active {
+            background: var(--accent-dim);
+            border-color: var(--accent2);
+            color: var(--accent);
+        }
+
+        .level-desc {
+            font-size: 14px;
+            color: var(--text3);
+            margin-bottom: 40px;
+            font-style: italic;
+        }
+
+        /* EXERCISE CARD */
+        .exercise-wrap {
+            display: none;
+        }
+
+        .exercise-wrap.visible {
+            display: block;
+        }
+
+        .exercise-header {
+            display: flex;
+            align-items: baseline;
+            justify-content: space-between;
+            margin-bottom: 24px;
+        }
+
+        .exercise-num {
+            font-size: 13px;
+            letter-spacing: 0.12em;
+            color: var(--text3);
+            text-transform: uppercase;
+        }
+
+        .exercise-time {
+            font-size: 13px;
+            color: var(--text3);
+        }
+
+        .exercise-card {
+            background: var(--surface);
+            border: 1px solid var(--border2);
+            border-radius: 2px;
+            padding: 32px 28px;
+            margin-bottom: 16px;
+            position: relative;
+        }
+
+        .exercise-card::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: 1px;
+            background: var(--accent);
+            opacity: 0.5;
+        }
+
+        .exercise-notes {
+            font-size: 32px;
+            font-weight: 300;
+            font-style: italic;
+            color: var(--accent);
+            margin-bottom: 20px;
+            letter-spacing: 0.05em;
+        }
+
+        .param-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+            margin-bottom: 20px;
+        }
+
+        .param-item {
+            padding: 12px 16px;
+            background: var(--bg2);
+            border: 1px solid var(--border);
+            border-radius: 1px;
+        }
+
+        .param-label {
+            font-size: 11px;
+            letter-spacing: 0.12em;
+            color: var(--text3);
+            text-transform: uppercase;
+            margin-bottom: 4px;
+        }
+
+        .param-value {
+            font-size: 18px;
+            font-weight: 400;
+            color: var(--text);
+            cursor: help;
+            border-bottom: 1px dashed var(--text3);
+            display: inline-block;
+        }
+
+        .param-value:hover {
+            border-bottom-color: var(--accent);
+        }
+
+        /* TOOLTIP */
+        [data-tip] {
+            position: relative;
+        }
+
+        [data-tip]:hover::after {
+            content: attr(data-tip);
+            position: absolute;
+            bottom: calc(100% + 8px);
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--surface2);
+            border: 1px solid var(--border2);
+            color: var(--text2);
+            font-size: 13px;
+            font-style: italic;
+            padding: 8px 12px;
+            border-radius: 2px;
+            white-space: nowrap;
+            z-index: 10;
+            pointer-events: none;
+            max-width: 260px;
+            white-space: normal;
+            text-align: center;
+        }
+
+        .exercise-instruction {
+            font-size: 17px;
+            color: var(--text2);
+            line-height: 1.7;
+            font-style: italic;
+            border-top: 1px solid var(--border);
+            padding-top: 16px;
+        }
+
+        /* TIMER */
+        .timer-wrap {
+            margin: 24px 0 32px;
+        }
+
+        .timer-display {
+            font-size: 64px;
+            font-weight: 300;
+            color: var(--text);
+            line-height: 1;
+            margin-bottom: 12px;
+            font-variant-numeric: tabular-nums;
+            font-style: italic;
+        }
+
+        .timer-display.urgent {
+            color: var(--red);
+        }
+
+        .progress-bar {
+            height: 1px;
+            background: var(--border2);
+            border-radius: 0;
+            overflow: hidden;
+            margin-bottom: 8px;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: var(--accent);
+            transition: width 1s linear;
+            width: 100%;
+        }
+
+        .timer-label {
+            font-size: 13px;
+            color: var(--text3);
+            letter-spacing: 0.08em;
+        }
+
+        /* BUTTONS */
+        .btn-row {
+            display: flex;
+            gap: 12px;
+            margin-top: 32px;
+        }
+
+        .btn {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 16px;
+            padding: 12px 28px;
+            border: 1px solid var(--border2);
+            background: transparent;
+            color: var(--text2);
+            cursor: pointer;
+            border-radius: 1px;
+            letter-spacing: 0.06em;
+            transition: all 0.2s;
+        }
+
+        .btn:hover {
+            background: var(--surface);
+            color: var(--text);
+            border-color: var(--text3);
+        }
+
+        .btn-primary {
+            background: var(--accent-dim);
+            border-color: var(--accent2);
+            color: var(--accent);
+        }
+
+        .btn-primary:hover {
+            background: rgba(200, 169, 110, 0.2);
+            color: var(--text);
+        }
+
+        .btn-small {
+            font-size: 13px;
+            padding: 8px 16px;
+            letter-spacing: 0.1em;
+        }
+
+        /* SCALE PICKER MODAL */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(14, 13, 12, 0.9);
+            z-index: 100;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-overlay.open {
+            display: flex;
+        }
+
+        .modal {
+            background: var(--bg2);
+            border: 1px solid var(--border2);
+            border-radius: 2px;
+            padding: 40px;
+            width: 100%;
+            max-width: 560px;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+
+        .modal-title {
+            font-size: 24px;
+            font-weight: 300;
+            color: var(--text2);
+            margin-bottom: 32px;
+        }
+
+        .scale-list {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2px;
+        }
+
+        .scale-option {
+            padding: 14px 18px;
+            background: var(--bg);
+            border: 1px solid transparent;
+            cursor: pointer;
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 17px;
+            font-style: italic;
+            color: var(--text2);
+            text-align: left;
+            transition: all 0.15s;
+            border-radius: 1px;
+        }
+
+        .scale-option:hover {
+            background: var(--surface);
+            color: var(--text);
+            border-color: var(--border2);
+        }
+
+        .scale-option.active {
+            color: var(--accent);
+            border-color: var(--accent2);
+            background: var(--accent-dim);
+        }
+
+        .scale-notes-preview {
+            font-size: 13px;
+            color: var(--text3);
+            font-style: normal;
+            letter-spacing: 0.06em;
+            margin-top: 2px;
+        }
+
+        .scale-section { margin-bottom: 16px; }
+        .scale-section-title { font-size: 13px; color: var(--text3); letter-spacing: 0.05em; text-transform: uppercase; margin-bottom: 10px; }
+        .scale-section details summary { cursor: pointer; font-size: 13px; color: var(--text2); padding: 8px 0; list-style: none; }
+        .scale-section details summary::-webkit-details-marker { display: none; }
+        .scale-section details summary::before { content: '▸ '; }
+        .scale-section details[open] summary::before { content: '▾ '; }
+        .scale-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 2px; }
+
+        /* CONTRAST PAIRS */
+        .contrast-section {
+            margin-top: 32px;
+        }
+
+        .contrast-title {
+            font-size: 13px;
+            letter-spacing: 0.15em;
+            color: var(--text3);
+            text-transform: uppercase;
+            margin-bottom: 16px;
+        }
+
+        .contrast-grid {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .contrast-tag {
+            font-size: 14px;
+            padding: 6px 14px;
+            border: 1px solid var(--border2);
+            color: var(--text2);
+            cursor: pointer;
+            border-radius: 1px;
+            font-style: italic;
+            transition: all 0.15s;
+        }
+
+        .contrast-tag:hover,
+        .contrast-tag.selected {
+            border-color: var(--accent2);
+            color: var(--accent);
+            background: var(--accent-dim);
+        }
+
+        /* SESSION SUMMARY */
+        .summary-card {
+            display: none;
+            background: var(--surface);
+            border: 1px solid var(--border2);
+            border-radius: 2px;
+            padding: 40px 36px;
+            text-align: center;
+        }
+
+        .summary-card.visible {
+            display: block;
+        }
+
+        .summary-big {
+            font-size: 48px;
+            font-weight: 300;
+            font-style: italic;
+            color: var(--accent);
+            margin-bottom: 12px;
+        }
+
+        .summary-text {
+            font-size: 18px;
+            color: var(--text2);
+            font-style: italic;
+            margin-bottom: 32px;
+        }
+
+        /* HISTORY */
+        .history-list {
+            margin-top: 16px;
+        }
+
+        .history-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 10px 0;
+            border-bottom: 1px solid var(--border);
+            font-size: 15px;
+            color: var(--text2);
+            cursor: pointer;
+        }
+
+        .history-item:hover {
+            color: var(--text);
+        }
+
+        .history-date {
+            font-size: 13px;
+            color: var(--text3);
+        }
+
+        /* SECTION STUB */
+        .stub {
+            border: 1px dashed var(--border2);
+            border-radius: 2px;
+            padding: 32px;
+            text-align: center;
+            color: var(--text3);
+            font-style: italic;
+            font-size: 16px;
+            margin: 24px 0;
+        }
+
+        /* FREE FORM SCENARIO */
+        .scenario-card {
+            background: var(--surface);
+            border: 1px solid var(--border2);
+            border-radius: 2px;
+            overflow: hidden;
+        }
+
+        .scenario-section {
+            padding: 20px 24px;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: flex-start;
+            gap: 20px;
+            transition: background 0.2s;
+        }
+
+        .scenario-section.current-section {
+            background: var(--accent-dim);
+            border-left: 2px solid var(--accent);
+        }
+
+        .scenario-time {
+            font-size: 22px;
+            font-weight: 300;
+            color: var(--accent);
+            min-width: 72px;
+            font-variant-numeric: tabular-nums;
+        }
+
+        .scenario-instruction {
+            font-size: 17px;
+            font-style: italic;
+            color: var(--text);
+            line-height: 1.5;
+        }
+
+        .scenario-params {
+            font-size: 14px;
+            color: var(--text3);
+            margin-top: 4px;
+        }
+
+        /* REGISTER VISUAL: strips */
+        .register-bar {
+            display: flex;
+            gap: 3px;
+        }
+
+        .register-seg {
+            flex: 1;
+            height: 6px;
+            background: var(--border2);
+            border-radius: 1px;
+            transition: background 0.3s;
+        }
+
+        .register-seg.lit {
+            background: var(--accent);
+        }
+
+        /* NAV */
+        .top-nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 56px;
+            padding-bottom: 16px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 24px;
+        }
+
+        .nav-link {
+            font-size: 13px;
+            letter-spacing: 0.1em;
+            color: var(--text3);
+            text-transform: uppercase;
+            cursor: pointer;
+            transition: color 0.2s;
+            background: none;
+            border: none;
+            font-family: inherit;
+        }
+
+        .nav-link:hover,
+        .nav-link.active {
+            color: var(--accent);
+        }
+
+        /* Views */
+        .view {
+            display: none;
+        }
+
+        .view.active {
+            display: block;
+        }
+
+        .fade-in {
+            animation: fadeIn 0.4s ease;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(8px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Responsive */
+        @media (max-width: 600px) {
+            .mode-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .param-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .scale-list {
+                grid-template-columns: 1fr;
+            }
+
+            .timer-display {
+                font-size: 48px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="page">
+
+        <div class="top-nav">
+            <div style="font-size:13px; letter-spacing:0.18em; color:var(--text3); text-transform:uppercase;">Тренажёр
+                импровизации</div>
+            <div class="nav-links">
+                <button class="nav-link active" onclick="showView('setup')">Начало</button>
+                <button class="nav-link" onclick="showView('session')">Сессия</button>
+                <button class="nav-link" onclick="showView('history')">История</button>
+            </div>
+        </div>
+
+        <!-- VIEW: SETUP -->
+        <div class="view active" id="view-setup">
+            <div class="fade-in">
+
+                <!-- Scale -->
+                <div class="scale-display">
+                    <div class="scale-name" onclick="openScalePicker()" id="current-scale-name">До мажор</div>
+                    <div class="scale-hint">↑ нажми, чтобы сменить лад</div>
+                </div>
+
+                <!-- Keyboard -->
+                <div class="keyboard-wrap">
+                    <svg id="keyboard" style="display:block;overflow:visible;"></svg>
+                </div>
+
+                <hr class="section-divider" style="margin: 32px 0;">
+
+                <!-- Level -->
+                <h3
+                    style="font-size:14px; letter-spacing:0.15em; text-transform:uppercase; color:var(--text3); margin-bottom:16px;">
+                    Уровень</h3>
+                <div class="level-row" id="level-row">
+                    <button class="level-btn active" data-level="1" onclick="setLevel(1)">У1 · один звук</button>
+                    <button class="level-btn" data-level="2" onclick="setLevel(2)">У2 · два звука</button>
+                    <button class="level-btn" data-level="3" onclick="setLevel(3)">У3 · три–пять</button>
+                    <button class="level-btn" data-level="4" onclick="setLevel(4)">У4 · весь лад</button>
+                </div>
+                <div class="level-desc" id="level-desc">Один звук. Динамика, длительности, штрихи, ритм, регистр,
+                    педаль.</div>
+
+                <hr class="section-divider" style="margin: 32px 0;">
+
+                <!-- Mode -->
+                <h3
+                    style="font-size:14px; letter-spacing:0.15em; text-transform:uppercase; color:var(--text3); margin-bottom:16px;">
+                    Режим</h3>
+                <div class="mode-grid" id="mode-grid">
+                    <div class="mode-card selected" data-mode="vibe" onclick="setMode('vibe')">
+                        <span class="mode-icon">∿</span>
+                        <div class="mode-title">Вайб</div>
+                        <div class="mode-sub">5 минут · войти не задумываясь</div>
+                    </div>
+                    <div class="mode-card" data-mode="explore" onclick="setMode('explore')">
+                        <span class="mode-icon">◎</span>
+                        <div class="mode-title">Исследование</div>
+                        <div class="mode-sub">12 минут · основной режим</div>
+                    </div>
+                    <div class="mode-card" data-mode="deep" onclick="setMode('deep')">
+                        <span class="mode-icon">⊗</span>
+                        <div class="mode-title">Глубокая практика</div>
+                        <div class="mode-sub">30 минут · смешанные уровни</div>
+                    </div>
+                    <div class="mode-card" data-mode="free" onclick="setMode('free')">
+                        <span class="mode-icon">◇</span>
+                        <div class="mode-title">Свободная форма</div>
+                        <div class="mode-sub">сценарий импровизации</div>
+                    </div>
+                </div>
+
+                <!-- Contrast pairs -->
+                <div class="contrast-section" id="contrast-section">
+                    <div class="contrast-title">Оппозиция (необязательно)</div>
+                    <div class="contrast-grid" id="contrast-grid"></div>
+                </div>
+
+                <div class="btn-row" style="margin-top:40px;">
+                    <button class="btn btn-primary" onclick="startSession()">Начать сессию →</button>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- VIEW: SESSION -->
+        <div class="view" id="view-session">
+            <div class="fade-in">
+
+                <div class="step-indicator" id="step-indicator"></div>
+
+                <!-- Exercise display -->
+                <div class="exercise-wrap visible" id="exercise-display">
+
+                    <div class="exercise-header">
+                        <div class="exercise-num" id="exercise-label">Упражнение 1 из 2</div>
+                        <div class="exercise-time" id="exercise-mode-label">Вайб</div>
+                    </div>
+
+                    <div class="exercise-card" id="exercise-card">
+                        <div class="exercise-notes" id="exercise-notes">До</div>
+                        <div class="param-grid" id="param-grid"></div>
+                        <div class="exercise-instruction" id="exercise-instruction"></div>
+                    </div>
+
+                    <!-- Exercise keyboard: 2-oct with task notes lit -->
+                    <div style="margin:16px 0 8px;">
+                        <div
+                            style="font-size:11px; letter-spacing:0.12em; color:var(--text3); margin-bottom:8px; text-transform:uppercase;">
+                            Ноты</div>
+                        <div style="overflow-x:auto;">
+                            <svg id="ex-keyboard" style="display:block;overflow:visible;"></svg>
+                        </div>
+                    </div>
+
+                    <!-- Register visual: strips -->
+                    <div style="margin:16px 0 24px;">
+                        <div
+                            style="font-size:11px; letter-spacing:0.12em; color:var(--text3); margin-bottom:6px; text-transform:uppercase;">
+                            Регистр</div>
+                        <div class="register-bar" id="register-bar">
+                            <div class="register-seg" title="низ"></div>
+                            <div class="register-seg" title="низ"></div>
+                            <div class="register-seg" title="середина"></div>
+                            <div class="register-seg" title="середина"></div>
+                            <div class="register-seg" title="верх"></div>
+                            <div class="register-seg" title="верх"></div>
+                        </div>
+                        <div
+                            style="display:flex;justify-content:space-between;font-size:11px;color:var(--text3);letter-spacing:0.08em;margin-top:4px;">
+                            <span>низ</span><span>середина</span><span>верх</span>
+                        </div>
+                    </div>
+
+                    <!-- Timer -->
+                    <div class="timer-wrap">
+                        <div class="timer-display" id="timer-display">2:00</div>
+                        <div class="progress-bar">
+                            <div class="progress-fill" id="progress-fill"></div>
+                        </div>
+                        <div class="timer-label" id="timer-label">осталось</div>
+                    </div>
+
+                    <div class="btn-row">
+                        <button class="btn btn-primary" onclick="nextExercise()" id="btn-next">Следующее →</button>
+                        <button class="btn btn-small" onclick="skipExercise()">Пропустить</button>
+                        <button class="btn btn-small" onclick="pauseTimer()" id="btn-pause">Пауза</button>
+                    </div>
+                </div>
+
+                <!-- Free form scenario -->
+                <div id="scenario-display" style="display:none;">
+                    <div class="exercise-header">
+                        <div class="exercise-num">Свободная форма</div>
+                        <div class="exercise-time" id="scenario-total-time"></div>
+                    </div>
+                    <div class="timer-wrap">
+                        <div class="timer-display" id="scenario-timer">0:00</div>
+                        <div class="progress-bar">
+                            <div class="progress-fill" id="scenario-progress"></div>
+                        </div>
+                    </div>
+                    <div class="scenario-card" id="scenario-card"></div>
+                    <div class="btn-row" style="margin-top:24px;">
+                        <button class="btn btn-primary" onclick="startScenarioTimer()" id="btn-scenario-start">Начать
+                            →</button>
+                        <button class="btn btn-small" onclick="stopScenario()">Завершить</button>
+                    </div>
+                </div>
+
+                <!-- Summary -->
+                <div class="summary-card" id="summary-card">
+                    <div class="summary-big" id="summary-scale"></div>
+                    <div class="summary-text" id="summary-text"></div>
+                    <div class="btn-row" style="justify-content:center; margin-top:0;">
+                        <button class="btn btn-primary" onclick="resetToSetup()">Новая сессия →</button>
+                        <button class="btn btn-small" onclick="repeatSession()">Повторить этот лад</button>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- VIEW: HISTORY -->
+        <div class="view" id="view-history">
+            <div class="fade-in">
+                <h2 style="margin-bottom:4px;">История ладов</h2>
+                <div style="font-size:16px; color:var(--text3); font-style:italic; margin-bottom:32px;">исследованные
+                </div>
+                <div class="history-list" id="history-list">
+                    <div style="font-size:15px; color:var(--text3); font-style:italic;">Пока пусто.</div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- SCALE PICKER MODAL -->
+    <div class="modal-overlay" id="scale-modal">
+        <div class="modal">
+            <div class="modal-title">Выбери лад</div>
+            <div class="scale-list" id="scale-list"></div>
+            <div class="btn-row" style="margin-top:24px;">
+                <button class="btn btn-small" onclick="closeScalePicker()">Закрыть</button>
+                <button class="btn btn-small btn-primary" onclick="generateRandomScale()">Случайный →</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const DATA = { scales: null, params: null, modes: null, levels: null };
+
+        async function loadData() {
+            const [scalesJson, paramsJson, modesJson, levelsJson] = await Promise.all([
+                fetch('data/scales.json').then(r => r.json()),
+                fetch('data/params.json').then(r => r.json()),
+                fetch('data/modes.json').then(r => r.json()),
+                fetch('data/levels.json').then(r => r.json())
+            ]);
+            DATA.scales = scalesJson.scales;
+            DATA.params = paramsJson;
+            DATA.modes = modesJson;
+            DATA.levels = levelsJson;
+            delete DATA.levels.version;
+            delete DATA.modes.version;
+            delete DATA.params.version;
+        }
+
+        const NOTE_NAMES_RU = ['До','До#','Ре','Ре#','Ми','Фа','Фа#','Соль','Соль#','Ля','Ля#','Си'];
+
+        function getScale(id) {
+            const s = DATA.scales.find(x => x.id === id);
+            if (!s) return null;
+            const semitones = s.intervals_cents
+                .filter(c => c < 1200)
+                .map(c => Math.round(c / 100));
+            const rootMidi = state.rootMidi || 60;
+            const notes = semitones.map(st => NOTE_NAMES_RU[(rootMidi + st) % 12]);
+            return { id: s.id, name: s.name_ru, notes, semitones, root: rootMidi % 12, raw: s };
+        }
+
+        function getVisibleScales() {
+            return DATA.scales.filter(s => s.visible).sort((a, b) => a.order - b.order);
+        }
+
+        function getHiddenScales() {
+            return DATA.scales.filter(s => !s.visible);
+        }
+
+        const CONTRAST_PAIRS = [
+            'rubato ↔ ostinato',
+            'marcato ↔ legato',
+            'staccato ↔ tenuto',
+            'нарастая ↔ затихая',
+            'accel + cresc ↔ rit + dim',
+            'accel + dim ↔ rit + cresc',
+            'плотно ↔ разрежённо',
+            'низ ↔ верх',
+        ];
+
+        const PARAMS = {
+            dinamika: {
+                label: 'Динамика',
+                level1: ['тихо', 'нарастая', 'громко', 'затихая', 'очень тихо'],
+                tips: { 'тихо': 'piano (p) — мягкий, сдержанный звук', 'нарастая': 'crescendo — постепенное усиление', 'громко': 'forte (f) — полный, насыщенный звук', 'затихая': 'decrescendo — постепенное ослабление', 'очень тихо': 'pianissimo (pp) — почти шёпот' }
+            },
+            shtrix: {
+                label: 'Штрих',
+                level1: ['связно', 'отрывисто', 'акцентировано', 'плавно'],
+                tips: { 'связно': 'legato — ноты перетекают друг в друга без разрыва', 'отрывисто': 'staccato — короткий, чёткий звук с паузой после', 'акцентировано': 'marcato (^) — выделенный, подчёркнутый звук', 'плавно': 'tenuto (—) — нота взята полностью, с удержанием' }
+            },
+            ritm: {
+                label: 'Ритм',
+                level1: ['в ритм', 'свободно', 'ускоряя', 'замедляя'],
+                tips: { 'в ритм': 'ostinato — повторяющийся ритмический паттерн', 'свободно': 'rubato — свобода в темпе, "заимствование" времени', 'ускоряя': 'accelerando — постепенное ускорение темпа', 'замедляя': 'ritenuto — постепенное замедление' }
+            },
+            dlitelnost: {
+                label: 'Длительности',
+                level1: ['короткие', 'долгие', 'смешанные', 'очень долгие'],
+                tips: { 'короткие': 'восьмые, шестнадцатые — быстрая смена звуков', 'долгие': 'половинные, целые — тянущиеся звуки', 'смешанные': 'чередование коротких и долгих', 'очень долгие': 'целые ноты, можно добавить педаль' }
+            },
+            registr: {
+                label: 'Регистр',
+                level1: ['низкий', 'средний', 'высокий', 'любой'],
+                tips: { 'низкий': 'нижние две октавы — тёмный, плотный тембр', 'средний': 'центральные октавы — нейтральный, разговорный', 'высокий': 'верхние октавы — прозрачный, светлый', 'любой': 'регистр выбираешь сам по ощущению' }
+            },
+            pedal: {
+                label: 'Педаль',
+                level1: ['без педали', 'педаль всегда', 'по ощущению'],
+                tips: { 'без педали': 'сухой, чёткий звук — хорошо слышна артикуляция', 'педаль всегда': 'всё смешивается в единое облако — размытость, полнота', 'по ощущению': 'меняй педаль когда хочешь' }
+            },
+            dvizhenie: {
+                label: 'Движение рук',
+                level3: ['параллельно', 'в противоположные стороны', 'независимо', 'одна держит — другая движется'],
+                tips: { 'параллельно': 'обе руки движутся в одну сторону', 'в противоположные стороны': 'руки расходятся и сходятся', 'независимо': 'у каждой руки свой ритм и рисунок', 'одна держит — другая движется': 'одна нота педальная, другая импровизирует' }
+            },
+            faktura: {
+                label: 'Фактура',
+                level3: ['арпеджио вверх', 'арпеджио вниз', 'туда-обратно', 'переливы', 'кластер'],
+                tips: { 'арпеджио вверх': 'ноты лада поочерёдно от низкого к высокому', 'арпеджио вниз': 'от высокого к низкому', 'туда-обратно': 'вверх-вниз, как волна', 'переливы': 'быстрое скользящее движение', 'кластер': 'несколько близких нот одновременно' }
+            },
+            plotnost: {
+                label: 'Плотность',
+                level3: ['насыщенно', 'разрежённо'],
+                tips: { 'насыщенно': 'много нот, мало пространства', 'разрежённо': 'мало нот, много тишины между ними' }
+            }
+        };
+
+        let state = {
+            scale: 'ionian_12tet',
+            rootMidi: 60,
+            level: 1,
+            mode: 'flash',
+            contrast: null,
+            exercises: [],
+            currentEx: 0,
+            timerInterval: null,
+            timerSeconds: 0,
+            timerTotal: 0,
+            timerPaused: false,
+            scenarioTimer: null,
+            scenarioSeconds: 0,
+            scenarioDuration: 0,
+            exerciseDurationMin: 3,
+            history: []
+        };
+
+        function pick(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
+        function pickN(arr, n) {
+            const a = [...arr]; const out = [];
+            for (let i = 0; i < n && a.length; i++) { const idx = Math.floor(Math.random() * a.length); out.push(a.splice(idx, 1)[0]); }
+            return out;
+        }
+
+        // ---- KEYBOARD ----
+        // ---- PIANO SVG RENDERER ----
+        // Standard 2-octave layout from C to B (14 white keys)
+        // White key: W wide, H tall. Black key: BW wide, BH tall, centered on boundary.
+        const PW = 30, PH = 90, BW = 18, BH = 56;
+        // White key semitones in order: C D E F G A B
+        const W_SEMI = [0, 2, 4, 5, 7, 9, 11];
+        // Black keys: [preceding white index within octave, semitone within octave]
+        // C#=between C(0)&D(1), D#=between D(1)&E(2), F#=between F(3)&G(4), G#=between G(4)&A(5), A#=between A(5)&B(6)
+        const B_KEYS = [[0, 1], [1, 3], [3, 6], [4, 8], [5, 10]]; // [left white idx, semitone]
+
+        function pianoSVG(svgEl, H, bH, litSet, rootMod, activeMods) {
+            // litSet: Set of semitone mods in scale (show dots)
+            // rootMod: semitone mod of root (show root dot style)
+            // activeMods: Set of semitone mods to highlight as active (fill with accent)
+            const totalW = 14 * PW;
+            svgEl.setAttribute('width', totalW);
+            svgEl.setAttribute('height', H);
+            svgEl.innerHTML = '';
+
+            const ns = 'http://www.w3.org/2000/svg';
+            const accent = '#c8a96e', accent2 = '#8b6e3a', white = '#e8e4dc', black = '#1a1916';
+
+            // Compute white key x positions for 2 octaves
+            const whiteX = []; // index 0..13
+            for (let i = 0; i < 14; i++) whiteX[i] = i * PW;
+
+            // Draw white keys first
+            for (let oct = 0; oct < 2; oct++) {
+                W_SEMI.forEach((semi, wi) => {
+                    const idx = oct * 7 + wi;
+                    const x = whiteX[idx];
+                    const mod = semi; // same mod every octave
+                    const isActive = activeMods && activeMods.has(mod);
+                    const inScale = litSet.has(mod);
+                    const isRoot = mod === rootMod;
+
+                    const rect = document.createElementNS(ns, 'rect');
+                    rect.setAttribute('x', x + 0.5);
+                    rect.setAttribute('y', 0.5);
+                    rect.setAttribute('width', PW - 1);
+                    rect.setAttribute('height', H - 1);
+                    rect.setAttribute('rx', 2);
+                    rect.setAttribute('fill', isActive ? accent : white);
+                    rect.setAttribute('stroke', '#888');
+                    rect.setAttribute('stroke-width', '1');
+                    svgEl.appendChild(rect);
+
+                    if (inScale) {
+                        const cx = x + PW / 2;
+                        const cy = H - 10;
+                        if (isRoot) {
+                            const ring = document.createElementNS(ns, 'circle');
+                            ring.setAttribute('cx', cx); ring.setAttribute('cy', cy);
+                            ring.setAttribute('r', 6);
+                            ring.setAttribute('fill', 'none');
+                            ring.setAttribute('stroke', accent);
+                            ring.setAttribute('stroke-width', '2');
+                            svgEl.appendChild(ring);
+                            const dot = document.createElementNS(ns, 'circle');
+                            dot.setAttribute('cx', cx); dot.setAttribute('cy', cy);
+                            dot.setAttribute('r', 3);
+                            dot.setAttribute('fill', isActive ? black : accent);
+                            svgEl.appendChild(dot);
+                        } else {
+                            const dot = document.createElementNS(ns, 'circle');
+                            dot.setAttribute('cx', cx); dot.setAttribute('cy', cy);
+                            dot.setAttribute('r', 3.5);
+                            dot.setAttribute('fill', isActive ? black : accent);
+                            svgEl.appendChild(dot);
+                        }
+                    }
+                });
+            }
+
+            // Draw black keys on top
+            for (let oct = 0; oct < 2; oct++) {
+                B_KEYS.forEach(([wi, semi]) => {
+                    const leftIdx = oct * 7 + wi;
+                    const x = Math.round(whiteX[leftIdx] + PW - BW / 2);
+                    const mod = semi;
+                    const isActive = activeMods && activeMods.has(mod);
+                    const inScale = litSet.has(mod);
+                    const isRoot = mod === rootMod;
+
+                    const rect = document.createElementNS(ns, 'rect');
+                    rect.setAttribute('x', x);
+                    rect.setAttribute('y', 0);
+                    rect.setAttribute('width', BW);
+                    rect.setAttribute('height', bH);
+                    rect.setAttribute('rx', 2);
+                    rect.setAttribute('fill', isActive ? accent2 : black);
+                    rect.setAttribute('stroke', '#000');
+                    rect.setAttribute('stroke-width', '1');
+                    svgEl.appendChild(rect);
+
+                    if (inScale) {
+                        const cx = x + BW / 2;
+                        const cy = bH - 8;
+                        if (isRoot) {
+                            const ring = document.createElementNS(ns, 'circle');
+                            ring.setAttribute('cx', cx); ring.setAttribute('cy', cy);
+                            ring.setAttribute('r', 5);
+                            ring.setAttribute('fill', 'none');
+                            ring.setAttribute('stroke', accent);
+                            ring.setAttribute('stroke-width', '1.5');
+                            svgEl.appendChild(ring);
+                            const dot = document.createElementNS(ns, 'circle');
+                            dot.setAttribute('cx', cx); dot.setAttribute('cy', cy);
+                            dot.setAttribute('r', 2.5);
+                            dot.setAttribute('fill', isActive ? white : accent);
+                            svgEl.appendChild(dot);
+                        } else {
+                            const dot = document.createElementNS(ns, 'circle');
+                            dot.setAttribute('cx', cx); dot.setAttribute('cy', cy);
+                            dot.setAttribute('r', 3);
+                            dot.setAttribute('fill', isActive ? white : accent);
+                            svgEl.appendChild(dot);
+                        }
+                    }
+                });
+            }
+        }
+
+        function buildKeyboard() {
+            const svg = document.getElementById('keyboard');
+            const scale = getScale(state.scale);
+            if (!scale) return;
+            const rootMod = ((scale.root % 12) + 12) % 12;
+            const litSet = new Set(scale.semitones.map(s => ((s % 12) + 12) % 12));
+            pianoSVG(svg, PH, BH, litSet, rootMod, null);
+        }
+
+        function buildExKeyboard(noteNames) {
+            const svg = document.getElementById('ex-keyboard');
+            if (!svg) return;
+            const scale = getScale(state.scale);
+            if (!scale) return;
+            const rootMod = ((scale.root % 12) + 12) % 12;
+            const litSet = new Set(scale.semitones.map(s => ((s % 12) + 12) % 12));
+            const activeMods = new Set(noteNames.map(n => {
+                const idx = scale.notes.indexOf(n);
+                if (idx === -1) return -1;
+                return ((scale.semitones[idx] % 12) + 12) % 12;
+            }).filter(m => m !== -1));
+            const exH = 70, exBH = 43;
+            pianoSVG(svg, exH, exBH, litSet, rootMod, activeMods);
+        }
+        function openScalePicker() {
+            const list = document.getElementById('scale-list');
+            list.innerHTML = '';
+
+            // Visible scales section
+            const visibleDiv = document.createElement('div');
+            visibleDiv.className = 'scale-section';
+            const visibleTitle = document.createElement('div');
+            visibleTitle.className = 'scale-section-title';
+            visibleTitle.textContent = 'Основные';
+            visibleDiv.appendChild(visibleTitle);
+            const visibleGrid = document.createElement('div');
+            visibleGrid.className = 'scale-grid';
+            getVisibleScales().forEach(s => {
+                const btn = document.createElement('button');
+                const scale = getScale(s.id);
+                btn.className = 'scale-option' + (s.id === state.scale ? ' active' : '');
+                btn.innerHTML = `${s.name_ru}<div class="scale-notes-preview">${scale ? scale.notes.join(' · ') : ''}</div>`;
+                btn.onclick = () => { selectScale(s.id); };
+                visibleGrid.appendChild(btn);
+            });
+            visibleDiv.appendChild(visibleGrid);
+            list.appendChild(visibleDiv);
+
+            // Hidden scales collapsible
+            const hiddenScales = getHiddenScales();
+            if (hiddenScales.length > 0) {
+                const details = document.createElement('details');
+                details.className = 'scale-section';
+                const summary = document.createElement('summary');
+                summary.textContent = `Ещё лады (${hiddenScales.length})`;
+                details.appendChild(summary);
+                const hiddenGrid = document.createElement('div');
+                hiddenGrid.className = 'scale-grid';
+                hiddenScales.forEach(s => {
+                    const btn = document.createElement('button');
+                    const scale = getScale(s.id);
+                    btn.className = 'scale-option' + (s.id === state.scale ? ' active' : '');
+                    btn.innerHTML = `${s.name_ru}<div class="scale-notes-preview">${scale ? scale.notes.join(' · ') : ''}</div>`;
+                    btn.onclick = () => { selectScale(s.id); };
+                    hiddenGrid.appendChild(btn);
+                });
+                details.appendChild(hiddenGrid);
+                list.appendChild(details);
+            }
+
+            document.getElementById('scale-modal').classList.add('open');
+        }
+
+        function closeScalePicker() {
+            document.getElementById('scale-modal').classList.remove('open');
+        }
+
+        function selectScale(id) {
+            state.scale = id;
+            const scale = getScale(id);
+            document.getElementById('current-scale-name').textContent = scale ? scale.name : id;
+            buildKeyboard();
+            closeScalePicker();
+            saveToStorage();
+        }
+
+        function generateRandomScale() {
+            const all = DATA.scales || [];
+            const visible = all.filter(s => s.visible);
+            if (visible.length > 0) selectScale(pick(visible).id);
+        }
+
+        // ---- LEVEL & MODE ----
+        function setLevel(n) {
+            state.level = n;
+            document.querySelectorAll('.level-btn').forEach(b => {
+                b.classList.toggle('active', parseInt(b.dataset.level) === n);
+            });
+            document.getElementById('level-desc').textContent = DATA.levels && DATA.levels[String(n)] ? DATA.levels[String(n)].description : '';
+        }
+
+        function setMode(m) {
+            state.mode = m;
+            document.querySelectorAll('.mode-card').forEach(c => {
+                c.classList.toggle('selected', c.dataset.mode === m);
+            });
+        }
+
+        // ---- CONTRAST PAIRS ----
+        function buildContrastGrid() {
+            const grid = document.getElementById('contrast-grid');
+            grid.innerHTML = '';
+            CONTRAST_PAIRS.forEach(pair => {
+                const tag = document.createElement('div');
+                tag.className = 'contrast-tag';
+                tag.textContent = pair;
+                tag.onclick = () => {
+                    if (state.contrast === pair) {
+                        state.contrast = null;
+                        tag.classList.remove('selected');
+                    } else {
+                        document.querySelectorAll('.contrast-tag').forEach(t => t.classList.remove('selected'));
+                        state.contrast = pair;
+                        tag.classList.add('selected');
+                    }
+                };
+                grid.appendChild(tag);
+            });
+        }
+
+        // ---- GENERATE EXERCISES ----
+        function generateExercises() {
+            const scale = getScale(state.scale);
+            const notes = scale ? scale.notes : [];
+            const cfg = DATA.modes[state.mode] || {};
+            const exercises = [];
+            const usedNotes = new Set();
+
+            // Determine exercise count from cfg structure
+            let exCount;
+            if (cfg.structure === 'single') {
+                exCount = cfg.exerciseCount || 3;
+            } else if (cfg.progression) {
+                exCount = cfg.progression.reduce((s, p) => s + p.count, 0);
+            } else {
+                exCount = 3;
+            }
+            const exMin = state.exerciseDurationMin;
+            const freeMin = state.exerciseDurationMin;
+
+            for (let i = 0; i < exCount; i++) {
+                let exNotes = [];
+                if (state.level === 1) {
+                    let n;
+                    do { n = pick(notes); } while (usedNotes.has(n) && usedNotes.size < notes.length);
+                    usedNotes.add(n); exNotes = [n];
+                } else if (state.level === 2) {
+                    exNotes = pickN(notes, 2);
+                } else if (state.level === 3) {
+                    const cnt = 3 + Math.floor(Math.random() * 3);
+                    exNotes = pickN(notes, cnt);
+                } else {
+                    exNotes = [...notes];
+                }
+
+                const params = buildParams();
+                const registr = pick(['низкий', 'средний', 'высокий']);
+                const instruction = buildInstruction(exNotes, params, registr);
+
+                exercises.push({
+                    notes: exNotes,
+                    params,
+                    registr,
+                    instruction,
+                    isFree: false,
+                    durationMin: exMin
+                });
+            }
+
+            // Добавляем финальное «свободно» без параметров
+            exercises.push({
+                notes: notes,
+                params: {},
+                registr: 'любой',
+                instruction: '',
+                isFree: true,
+                durationMin: freeMin
+            });
+
+            return exercises;
+        }
+
+        function buildParams() {
+            const result = {};
+
+            // Сначала У3+ параметры (движение рук, фактура)
+            if (state.level >= 3) {
+                result['dvizhenie'] = { label: PARAMS.dvizhenie.label, value: pick(PARAMS.dvizhenie.level3), tips: PARAMS.dvizhenie.tips };
+                result['faktura'] = { label: PARAMS.faktura.label, value: pick(PARAMS.faktura.level3), tips: PARAMS.faktura.tips };
+            }
+
+            // Длительности, ритм
+            result['dlitelnost'] = { label: PARAMS.dlitelnost.label, value: pick(PARAMS.dlitelnost.level1), tips: PARAMS.dlitelnost.tips };
+            result['ritm'] = { label: PARAMS.ritm.label, value: pick(PARAMS.ritm.level1), tips: PARAMS.ritm.tips };
+
+            // Штрих, динамика
+            result['shtrix'] = { label: PARAMS.shtrix.label, value: pick(PARAMS.shtrix.level1), tips: PARAMS.shtrix.tips };
+            result['dinamika'] = { label: PARAMS.dinamika.label, value: pick(PARAMS.dinamika.level1), tips: PARAMS.dinamika.tips };
+
+            // Плотность (У3+), педаль
+            if (state.level >= 3) {
+                result['plotnost'] = { label: PARAMS.plotnost.label, value: pick(PARAMS.plotnost.level3), tips: PARAMS.plotnost.tips };
+            }
+            result['pedal'] = { label: PARAMS.pedal.label, value: pick(PARAMS.pedal.level1), tips: PARAMS.pedal.tips };
+
+            if (state.contrast) {
+                const parts = state.contrast.split(' ↔ ');
+                const side = pick(parts).trim();
+                if (side.includes('ostinato')) result['ritm'] = { ...result['ritm'], value: 'в ритм' };
+                if (side.includes('rubato')) result['ritm'] = { ...result['ritm'], value: 'свободно' };
+                if (side.includes('marcato')) result['shtrix'] = { ...result['shtrix'], value: 'акцентировано' };
+                if (side.includes('legato')) result['shtrix'] = { ...result['shtrix'], value: 'связно' };
+                if (side.includes('staccato')) result['shtrix'] = { ...result['shtrix'], value: 'отрывисто' };
+                if (side.includes('tenuto')) result['shtrix'] = { ...result['shtrix'], value: 'плавно' };
+                if (side.includes('нарастая')) result['dinamika'] = { ...result['dinamika'], value: 'нарастая' };
+                if (side.includes('затихая')) result['dinamika'] = { ...result['dinamika'], value: 'затихая' };
+            }
+
+            if (result['dlitelnost']?.value === 'долгие' && result['shtrix']?.value === 'отрывисто') {
+                result['shtrix'].value = 'связно';
+            }
+
+            return result;
+        }
+
+        function buildInstruction(notes, params, registr) {
+            const noteStr = notes.join(', ');
+            return `${noteStr} — ${registr} регистр. ${params.dlitelnost?.value || ''} ноты, ${params.shtrix?.value || ''}, ${params.dinamika?.value || ''}.`;
+        }
+
+        // ---- SESSION ----
+        function startSession() {
+            state.exercises = generateExercises();
+            state.currentEx = 0;
+            showView('session');
+
+            document.getElementById('exercise-display').style.display = 'block';
+            document.getElementById('scenario-display').style.display = 'none';
+            document.getElementById('summary-card').classList.remove('visible');
+            document.getElementById('exercise-display').style.display = 'block';
+
+            buildStepIndicator();
+            showExercise(0);
+        }
+
+        function buildStepIndicator() {
+            const ind = document.getElementById('step-indicator');
+            ind.innerHTML = '';
+            state.exercises.forEach((_, i) => {
+                const dot = document.createElement('div');
+                dot.className = 'step-dot' + (i === 0 ? ' active' : '');
+                dot.id = 'dot-' + i;
+                ind.appendChild(dot);
+            });
+        }
+
+        function updateStepIndicator() {
+            state.exercises.forEach((_, i) => {
+                const dot = document.getElementById('dot-' + i);
+                if (!dot) return;
+                dot.className = 'step-dot';
+                if (i < state.currentEx) dot.classList.add('done');
+                if (i === state.currentEx) dot.classList.add('active');
+            });
+        }
+
+        function showExercise(idx) {
+            clearTimer();
+            const ex = state.exercises[idx];
+            if (!ex) { showSummary(); return; }
+
+            const total = state.exercises.length;
+            if (ex.isFree) {
+                document.getElementById('exercise-label').textContent = `Свободная игра`;
+                document.getElementById('exercise-mode-label').textContent = DATA.modes[state.mode]?.label || state.mode;
+                document.getElementById('exercise-notes').textContent = '—';
+
+                const grid = document.getElementById('param-grid');
+                grid.innerHTML = '';
+
+                document.getElementById('exercise-instruction').textContent = 'Играй то, что понравилось больше всего за эту сессию. Без условий.';
+            } else {
+                document.getElementById('exercise-label').textContent = `Упражнение ${idx + 1} из ${total - 1}`;
+                document.getElementById('exercise-mode-label').textContent = DATA.modes[state.mode]?.label || state.mode;
+                document.getElementById('exercise-notes').textContent = ex.notes.join('  ·  ');
+
+                const grid = document.getElementById('param-grid');
+                grid.innerHTML = '';
+                Object.values(ex.params).forEach(p => {
+                    const item = document.createElement('div');
+                    item.className = 'param-item';
+                    item.innerHTML = `<div class="param-label">${p.label}</div><div class="param-value" data-tip="${p.tips[p.value] || ''}">${p.value}</div>`;
+                    grid.appendChild(item);
+                });
+
+                document.getElementById('exercise-instruction').textContent = ex.instruction;
+            }
+
+            if (ex.isFree) {
+                const freeScale = getScale(state.scale);
+                buildExKeyboard(freeScale ? freeScale.notes : []);
+            } else {
+                buildExKeyboard(ex.notes);
+            }
+            setRegister(ex.registr);
+            updateStepIndicator();
+
+            const secs = ex.durationMin * 60;
+            startTimer(secs);
+        }
+
+
+        function setRegister(reg) {
+            const segs = document.querySelectorAll('.register-seg');
+            segs.forEach((s, i) => {
+                let lit = false;
+                if (reg === 'любой') lit = true;
+                else if (reg === 'низкий' && i < 2) lit = true;
+                else if (reg === 'средний' && i >= 2 && i < 4) lit = true;
+                else if (reg === 'высокий' && i >= 4) lit = true;
+                s.classList.toggle('lit', lit);
+            });
+        }
+
+        function nextExercise() {
+            clearTimer();
+            state.currentEx++;
+            if (state.currentEx >= state.exercises.length) {
+                showSummary();
+            } else {
+                showExercise(state.currentEx);
+            }
+        }
+
+        function skipExercise() { nextExercise(); }
+
+        function showSummary() {
+            clearTimer();
+            document.getElementById('exercise-display').style.display = 'none';
+            const card = document.getElementById('summary-card');
+            card.classList.add('visible');
+            const summaryScale = getScale(state.scale);
+            document.getElementById('summary-scale').textContent = summaryScale ? summaryScale.name : state.scale;
+            document.getElementById('summary-text').textContent = `Сессия завершена — ${DATA.modes[state.mode]?.label || state.mode}.`;
+
+            saveHistory();
+        }
+
+        function saveHistory() {
+            const scaleObj = getScale(state.scale);
+            const entry = {
+                scale: state.scale,
+                scaleName: scaleObj ? scaleObj.name : state.scale,
+                mode: DATA.modes[state.mode]?.label || state.mode,
+                level: state.level,
+                date: new Date().toLocaleDateString('ru-RU', { day: '2-digit', month: 'long' })
+            };
+            state.history.unshift(entry);
+            if (state.history.length > 30) state.history.pop();
+            localStorage.setItem('improv_history', JSON.stringify(state.history));
+            renderHistory();
+        }
+
+        function renderHistory() {
+            const list = document.getElementById('history-list');
+            if (!state.history.length) {
+                list.innerHTML = '<div style="font-size:15px; color:var(--text3); font-style:italic;">Пока пусто.</div>';
+                return;
+            }
+            list.innerHTML = state.history.map((e, i) =>
+                `<div class="history-item" id="hist-${i}" onclick="toggleHistoryItem(${i}, '${e.scale}')">
+      <span>${e.scaleName || e.scale} — У${e.level} · ${e.mode}</span>
+      <span class="history-date">${e.date}</span>
+    </div>
+    <div class="history-expand" id="hist-expand-${i}" style="display:none; padding:10px 0 16px; border-bottom:1px solid var(--border);">
+      <button class="btn btn-small btn-primary" onclick="practiceWithScale('${e.scale}')">Новая практика с этим ладом →</button>
+    </div>`
+            ).join('');
+        }
+
+        function toggleHistoryItem(idx, scale) {
+            const exp = document.getElementById('hist-expand-' + idx);
+            if (!exp) return;
+            const isOpen = exp.style.display !== 'none';
+            document.querySelectorAll('.history-expand').forEach(el => el.style.display = 'none');
+            if (!isOpen) exp.style.display = 'block';
+        }
+
+        function practiceWithScale(scaleId) {
+            if (DATA.scales && DATA.scales.find(s => s.id === scaleId)) {
+                selectScale(scaleId);
+            }
+            showView('setup');
+        }
+
+        // ---- TIMER ----
+        function startTimer(seconds) {
+            state.timerSeconds = seconds;
+            state.timerTotal = seconds;
+            state.timerPaused = false;
+            updateTimerDisplay();
+            state.timerInterval = setInterval(() => {
+                if (state.timerPaused) return;
+                state.timerSeconds--;
+                updateTimerDisplay();
+                if (state.timerSeconds <= 0) {
+                    clearTimer();
+                    playBell();
+                }
+            }, 1000);
+        }
+
+        function updateTimerDisplay() {
+            const m = Math.floor(state.timerSeconds / 60);
+            const s = state.timerSeconds % 60;
+            const disp = document.getElementById('timer-display');
+            disp.textContent = `${m}:${s.toString().padStart(2, '0')}`;
+            disp.classList.toggle('urgent', state.timerSeconds <= 15);
+            const fill = document.getElementById('progress-fill');
+            fill.style.width = (state.timerSeconds / state.timerTotal * 100) + '%';
+        }
+
+        function clearTimer() {
+            clearInterval(state.timerInterval);
+            state.timerInterval = null;
+        }
+
+        function pauseTimer() {
+            state.timerPaused = !state.timerPaused;
+            document.getElementById('btn-pause').textContent = state.timerPaused ? 'Продолжить' : 'Пауза';
+        }
+
+        function playBell() {
+            try {
+                const ctx = new (window.AudioContext || window.webkitAudioContext)();
+                const buf = ctx.createBuffer(1, ctx.sampleRate * 0.6, ctx.sampleRate);
+                const data = buf.getChannelData(0);
+                for (let i = 0; i < data.length; i++) {
+                    const t = i / ctx.sampleRate;
+                    const env = Math.exp(-8 * t);
+                    data[i] = env * (
+                        Math.sin(2 * Math.PI * 1200 * t) * 0.3 +
+                        Math.sin(2 * Math.PI * 2400 * t) * 0.15 +
+                        Math.sin(2 * Math.PI * 900 * t) * 0.2
+                    );
+                }
+                const src = ctx.createBufferSource();
+                src.buffer = buf;
+                src.connect(ctx.destination);
+                src.start();
+            } catch (e) { }
+        }
+
+        // ---- FREE FORM ----
+        const FREE_SCENARIO_TEMPLATES = [
+            [
+                { time: 60, label: 'Одна нота, rubato', params: 'pp · свободно · очень долгие ноты' },
+                { time: 90, label: 'Добавляются соседние ноты', params: 'нарастая · в ритм · ostinato' },
+                { time: 60, label: 'Кульминация', params: 'ff · насыщенно · акцентировано' },
+                { time: 60, label: 'Возврат к одной ноте', params: 'pp · затихая · свободно' },
+            ],
+            [
+                { time: 45, label: 'Тишина, затем один звук', params: 'pp · очень долгие ноты' },
+                { time: 75, label: 'Разрежённое движение по ладу', params: 'p · арпеджио · rubato' },
+                { time: 90, label: 'Два голоса', params: 'mf · одна держит — другая движется' },
+                { time: 60, label: 'Затихание', params: 'pp · затихая · разрежённо' },
+            ]
+        ];
+
+        function startFreeForm() {
+            showView('session');
+            document.getElementById('exercise-display').style.display = 'none';
+            document.getElementById('summary-card').classList.remove('visible');
+            document.getElementById('scenario-display').style.display = 'block';
+
+            const template = pick(FREE_SCENARIO_TEMPLATES);
+            state.scenarioDuration = template.reduce((a, s) => a + s.time, 0);
+            state.scenarioSeconds = 0;
+            document.getElementById('scenario-total-time').textContent = Math.round(state.scenarioDuration / 60) + ' мин';
+
+            const card = document.getElementById('scenario-card');
+            card.innerHTML = '';
+            let acc = 0;
+            template.forEach((sec, i) => {
+                const div = document.createElement('div');
+                div.className = 'scenario-section';
+                div.id = 'scenario-sec-' + i;
+                div.dataset.start = acc;
+                div.dataset.end = acc + sec.time;
+                const mm = Math.floor(acc / 60), ss = acc % 60;
+                div.innerHTML = `
+      <div class="scenario-time">${mm}:${ss.toString().padStart(2, '0')}</div>
+      <div>
+        <div class="scenario-instruction">${sec.label}</div>
+        <div class="scenario-params">${sec.params}</div>
+      </div>`;
+                card.appendChild(div);
+                acc += sec.time;
+            });
+
+            document.getElementById('scenario-timer').textContent = '0:00';
+            document.getElementById('scenario-progress').style.width = '0%';
+            document.getElementById('btn-scenario-start').textContent = 'Начать →';
+            document.getElementById('btn-scenario-start').onclick = startScenarioTimer;
+        }
+
+        function startScenarioTimer() {
+            document.getElementById('btn-scenario-start').textContent = 'Пауза';
+            document.getElementById('btn-scenario-start').onclick = pauseScenario;
+
+            state.scenarioPaused = false;
+            state.scenarioTimer = setInterval(() => {
+                if (state.scenarioPaused) return;
+                state.scenarioSeconds++;
+                updateScenarioDisplay();
+                if (state.scenarioSeconds >= state.scenarioDuration) {
+                    clearInterval(state.scenarioTimer);
+                    playBell();
+                }
+            }, 1000);
+        }
+
+        function pauseScenario() {
+            state.scenarioPaused = !state.scenarioPaused;
+            document.getElementById('btn-scenario-start').textContent = state.scenarioPaused ? 'Продолжить' : 'Пауза';
+        }
+
+        function updateScenarioDisplay() {
+            const t = state.scenarioSeconds;
+            const m = Math.floor(t / 60), s = t % 60;
+            document.getElementById('scenario-timer').textContent = `${m}:${s.toString().padStart(2, '0')}`;
+            document.getElementById('scenario-progress').style.width = (t / state.scenarioDuration * 100) + '%';
+
+            document.querySelectorAll('.scenario-section').forEach(sec => {
+                const start = parseInt(sec.dataset.start), end = parseInt(sec.dataset.end);
+                sec.classList.toggle('current-section', t >= start && t < end);
+            });
+        }
+
+        function stopScenario() {
+            clearInterval(state.scenarioTimer);
+            document.getElementById('scenario-display').style.display = 'none';
+            const card = document.getElementById('summary-card');
+            card.classList.add('visible');
+            const stopScaleObj = getScale(state.scale);
+            document.getElementById('summary-scale').textContent = stopScaleObj ? stopScaleObj.name : state.scale;
+            document.getElementById('summary-text').textContent = 'Свободная форма завершена.';
+            saveHistory();
+        }
+
+        // ---- NAVIGATION ----
+        function showView(name) {
+            document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+            document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
+            document.getElementById('view-' + name).classList.add('active');
+            const link = document.querySelector(`.nav-link[onclick="showView('${name}')"]`);
+            if (link) link.classList.add('active');
+        }
+
+        function resetToSetup() {
+            clearTimer();
+            clearInterval(state.scenarioTimer);
+            document.getElementById('summary-card').classList.remove('visible');
+            document.getElementById('exercise-display').style.display = 'block';
+            showView('setup');
+        }
+
+        function repeatSession() {
+            startSession();
+        }
+
+        function saveToStorage() {
+            localStorage.setItem('improv_scale', state.scale);
+            localStorage.setItem('improv_level', state.level);
+            if (state.mode) localStorage.setItem('improv_mode', state.mode);
+        }
+
+        // ---- INIT ----
+        async function init() {
+            try {
+                await loadData();
+            } catch (e) {
+                document.body.innerHTML = '<div style="padding:40px;color:#c8a96e;font-family:serif;font-size:20px">Ошибка загрузки данных. Убедитесь, что файл открыт через веб-сервер (не file://).</div>';
+                console.error(e);
+                return;
+            }
+
+            state.history = JSON.parse(localStorage.getItem('improv_history') || '[]');
+
+            // Restore saved state
+            const savedScale = localStorage.getItem('improv_scale');
+            if (savedScale && DATA.scales.find(s => s.id === savedScale)) {
+                state.scale = savedScale;
+            }
+            const savedLevel = localStorage.getItem('improv_level');
+            if (savedLevel) setLevel(parseInt(savedLevel));
+
+            const savedMode = localStorage.getItem('improv_mode');
+            if (savedMode && DATA.modes[savedMode]) state.mode = savedMode;
+
+            // Display initial UI
+            const scale = getScale(state.scale);
+            document.getElementById('current-scale-name').textContent = scale ? scale.name : state.scale;
+            buildKeyboard();
+            buildContrastGrid();
+            renderHistory();
+        }
+        init();
+    </script>
+</body>
+
+</html>
