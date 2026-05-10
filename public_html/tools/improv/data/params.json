@@ -1,4 +1,5 @@
 {
+  "version": 1,
   "dinamika": {
     "id": "dinamika",
     "label": "Динамика",
@@ -26,7 +27,7 @@
       { "id": "adagio",   "label": "медленно",       "bpm": [52, 72],   "tip": "adagio" },
       { "id": "andante",  "label": "шагом",          "bpm": [72, 92],   "tip": "andante" },
       { "id": "moderato", "label": "умеренно",       "bpm": [92, 112],  "tip": "moderato" },
-      { "id": "allegro",  "label": "быстро",         "bpm": [120, 144], "tip": "allegro" },
+      { "id": "allegro",  "label": "быстро",         "bpm": [112, 144], "tip": "allegro" },
       { "id": "vivace",   "label": "живо",           "bpm": [144, 168], "tip": "vivace" }
     ],
     "developmentPool": [
