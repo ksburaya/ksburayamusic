@@ -830,6 +830,18 @@
         .scale-section details[open] summary::before { content: '▾ '; }
         .scale-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 2px; }
 
+        .root-selector { margin-bottom: 20px; padding-bottom: 16px; border-bottom: 1px solid var(--border); }
+        .root-selector-label { font-size: 12px; color: var(--text3); letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 10px; }
+        .root-buttons { display: flex; flex-wrap: wrap; gap: 4px; }
+        .root-btn {
+            padding: 5px 10px; background: var(--bg); border: 1px solid var(--border);
+            color: var(--text2); cursor: pointer; font-family: 'Cormorant Garamond', serif;
+            font-size: 16px; min-width: 38px; text-align: center;
+            transition: all 0.12s; line-height: 1.3;
+        }
+        .root-btn:hover { background: var(--surface); color: var(--text); border-color: var(--border2); }
+        .root-btn.active { background: var(--accent-dim); color: var(--accent); border-color: var(--accent2); }
+
         /* CONTRAST PAIRS */
         .contrast-section {
             margin-top: 32px;
@@ -1398,10 +1410,15 @@
     <div class="modal-overlay" id="scale-modal">
         <div class="modal">
             <div class="modal-title">Выбери лад</div>
+            <div class="root-selector">
+                <div class="root-selector-label">Тоника</div>
+                <div class="root-buttons" id="root-buttons"></div>
+            </div>
             <div class="scale-list" id="scale-list"></div>
             <div class="btn-row" style="margin-top:24px;">
                 <button class="btn btn-small" onclick="closeScalePicker()">Закрыть</button>
-                <button class="btn btn-small btn-primary" onclick="generateRandomScale()">Случайный →</button>
+                <button class="btn btn-small" onclick="setRandomRoot()">Случайная тоника</button>
+                <button class="btn btn-small btn-primary" onclick="generateRandomScale()">Случайный лад →</button>
             </div>
         </div>
     </div>
@@ -1638,6 +1655,7 @@
             const btn = document.createElement('button');
             const scale = getScale(s.id);
             btn.className = 'scale-option' + (s.id === state.scale ? ' active' : '');
+            btn.dataset.scaleId = s.id;
             btn.textContent = s.name_ru;
             const preview = document.createElement('div');
             preview.className = 'scale-notes-preview';
@@ -1648,6 +1666,7 @@
         }
 
         function openScalePicker() {
+            buildRootButtons();
             const list = document.getElementById('scale-list');
             list.innerHTML = '';
 
@@ -1684,10 +1703,16 @@
             document.getElementById('scale-modal').classList.remove('open');
         }
 
+        function refreshScaleName() {
+            const scale = getScale(state.scale);
+            const rootName = NOTE_NAMES_RU[(state.rootMidi || 60) % 12];
+            const el = document.getElementById('current-scale-name');
+            el.textContent = scale ? `${rootName} — ${scale.name}` : state.scale;
+        }
+
         function selectScale(id) {
             state.scale = id;
-            const scale = getScale(id);
-            document.getElementById('current-scale-name').textContent = scale ? scale.name : id;
+            refreshScaleName();
             buildKeyboard();
             closeScalePicker();
             saveToStorage();
@@ -1696,6 +1721,46 @@
         function generateRandomScale() {
             const visible = getVisibleScales();
             if (visible.length > 0) selectScale(pick(visible).id);
+        }
+
+        function setRoot(pitchClass) {
+            state.rootMidi = 60 + pitchClass;
+            localStorage.setItem('improv_root', state.rootMidi);
+            buildRootButtons();
+            buildKeyboard();
+            refreshScaleName();
+            // refresh note previews in already-open picker
+            document.querySelectorAll('.scale-option').forEach(btn => {
+                const preview = btn.querySelector('.scale-notes-preview');
+                if (!preview) return;
+                const scaleId = btn.dataset.scaleId;
+                if (scaleId) {
+                    const s = getScale(scaleId);
+                    preview.textContent = s ? s.notes.join(' · ') : '';
+                }
+            });
+            document.querySelectorAll('.root-btn').forEach(b => {
+                b.classList.toggle('active', parseInt(b.dataset.pc) === pitchClass);
+            });
+        }
+
+        function setRandomRoot() {
+            setRoot(Math.floor(Math.random() * 12));
+        }
+
+        function buildRootButtons() {
+            const container = document.getElementById('root-buttons');
+            if (!container) return;
+            const currentPc = (state.rootMidi || 60) % 12;
+            container.innerHTML = '';
+            NOTE_NAMES_RU.forEach((name, i) => {
+                const btn = document.createElement('button');
+                btn.className = 'root-btn' + (i === currentPc ? ' active' : '');
+                btn.textContent = name;
+                btn.dataset.pc = i;
+                btn.onclick = () => setRoot(i);
+                container.appendChild(btn);
+            });
         }
 
         // ---- LEVEL & MODE ----
@@ -2500,6 +2565,7 @@
             localStorage.setItem('improv_scale', state.scale);
             localStorage.setItem('improv_level', state.level);
             localStorage.setItem('improv_mode', state.mode);
+            localStorage.setItem('improv_root', state.rootMidi);
         }
 
         document.getElementById('ex-duration')?.addEventListener('input', e => {
@@ -2605,8 +2671,7 @@
             localStorage.setItem('improv_scale', state.scale);
             localStorage.setItem('improv_level', state.level);
             localStorage.setItem('improv_mode', state.mode);
-            const scale = getScale(state.scale);
-            document.getElementById('current-scale-name').textContent = scale ? scale.name : state.scale;
+            refreshScaleName();
             buildKeyboard();
             refreshModeCards();
             enforceLevelByMode();
@@ -2743,6 +2808,9 @@
             SessionStore.init();
             state.history = await SessionStore.list();
 
+            const savedRoot = localStorage.getItem('improv_root');
+            if (savedRoot) state.rootMidi = parseInt(savedRoot);
+
             const savedScale = localStorage.getItem('improv_scale');
             if (savedScale && DATA.scaleMap.has(savedScale)) state.scale = savedScale;
 
@@ -2763,8 +2831,7 @@
                 try { state.performance = JSON.parse(savedPerf); } catch (e) { localStorage.removeItem('improv_performance'); }
             }
 
-            const scale = getScale(state.scale);
-            document.getElementById('current-scale-name').textContent = scale ? scale.name : state.scale;
+            refreshScaleName();
             buildKeyboard();
             buildContrastGrid();
             refreshModeCards();
