@@ -1897,10 +1897,17 @@
             return { label: param.label, value, development };
         }
 
-        function pickRegistr(lastRegistrId) {
+        function pickRegistr(lastRegistrIds, level) {
             const all = DATA.params.registr.values;
-            const candidates = all.filter(v => v.id !== lastRegistrId);
-            return pick(candidates.length ? candidates : all);
+            const excluded = Array.isArray(lastRegistrIds) ? lastRegistrIds : (lastRegistrIds ? [lastRegistrIds] : []);
+            const candidates = all.filter(v => !excluded.includes(v.id));
+            const pool = candidates.length ? candidates : all;
+            if (level >= 3 && Math.random() < 0.5 && pool.length >= 2) {
+                const first = pick(pool);
+                const second = pick(pool.filter(v => v.id !== first.id));
+                return [first, second];
+            }
+            return [pick(pool)];
         }
 
         function applyContrast(result, contrast) {
@@ -1995,13 +2002,13 @@
             const freeMin = exMin * (cfg.freePlayMultiplier || 1);
             const exercises = [];
             let lastParams = {};
-            let lastRegistrId = null;
+            let lastRegistrIds = [];
             let lastNotes = null;
 
             steps.forEach(step => {
                 const exNotes = pickNotesForLevel(scale, step.level, lastNotes);
                 const params = buildParams(step.level, lastParams);
-                const registr = pickRegistr(lastRegistrId);
+                const registr = pickRegistr(lastRegistrIds, step.level);
                 const instruction = buildInstruction(exNotes, params, registr);
                 exercises.push({
                     level: step.level,
@@ -2013,7 +2020,7 @@
                     durationMin: exMin
                 });
                 lastParams = params;
-                lastRegistrId = registr.id;
+                lastRegistrIds = registr.map(r => r.id);
                 lastNotes = exNotes;
             });
 
@@ -2046,7 +2053,7 @@
                         time: 0,
                         durationSec: secPerSection,
                         label: 'Войди',
-                        params: `с ${a.params?.dinamika?.value?.label || 'тихо'}, ${a.registr?.label || ''} регистр`
+                        params: `с ${a.params?.dinamika?.value?.label || 'тихо'}, ${Array.isArray(a.registr) ? a.registr.map(r=>r.label).join('+') : (a.registr?.label || '')} регистр`
                     },
                     {
                         time: secPerSection,
@@ -2072,7 +2079,9 @@
 
         function buildInstruction(notes, params, registr) {
             const noteStr = notes.join(', ');
-            const registrLabel = registr?.label || 'любой';
+            const registrLabel = Array.isArray(registr)
+                ? registr.map(r => r.label).join(' + ')
+                : (registr?.label || 'любой');
             const dlit = params.dlitelnost?.value?.label || '';
             const shtr = params.shtrix?.value?.label || '';
             const din = params.dinamika?.value?.label || '';
@@ -2218,15 +2227,14 @@
         }
 
 
-        function setRegister(reg) {
-            const id = reg?.id || reg;
+        function setRegister(regs) {
+            const ids = Array.isArray(regs) ? regs.map(r => r?.id) : (regs ? [regs?.id || regs] : []);
             const segs = document.querySelectorAll('.register-seg');
             segs.forEach((s, i) => {
-                let lit = false;
-                if (!id || id === 'любой') lit = true;
-                else if (id === 'low' && i < 2) lit = true;
-                else if (id === 'middle' && i >= 2 && i < 4) lit = true;
-                else if (id === 'high' && i >= 4) lit = true;
+                let lit = ids.length === 0;
+                if (ids.includes('low') && i < 2) lit = true;
+                if (ids.includes('middle') && i >= 2 && i < 4) lit = true;
+                if (ids.includes('high') && i >= 4) lit = true;
                 s.classList.toggle('lit', lit);
             });
         }
@@ -2297,7 +2305,7 @@
                 exercises: state.exercises.filter(e => !e.isFree).map(e => ({
                     level: e.level,
                     notes: e.notes,
-                    registr: e.registr?.id || null,
+                    registr: Array.isArray(e.registr) ? e.registr.map(r => r?.id) : (e.registr?.id || null),
                     params: Object.fromEntries(
                         Object.entries(e.params).map(([k, p]) => [k, {
                             value: p?.value?.id,
