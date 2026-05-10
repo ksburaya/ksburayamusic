@@ -1,0 +1,12 @@
+{
+  "version": 1,
+  "title": "Утренняя практика",
+  "author": "ksburaya",
+  "created_at": "2026-05-10",
+  "defaults": { "mode": "flash", "level": 2, "exerciseDurationMin": 3 },
+  "scales": [
+    { "modeId": "ionian_12tet",      "rootMidi": 60 },
+    { "modeId": "dorian_12tet",      "rootMidi": 62, "level": 3, "tempoBpm": 80 },
+    { "modeId": "aeolian_12tet",     "rootMidi": 57, "mode": "explore" }
+  ]
+}

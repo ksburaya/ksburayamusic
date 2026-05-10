@@ -1,0 +1,119 @@
+{
+  "dinamika": {
+    "id": "dinamika",
+    "label": "Динамика",
+    "values": [
+      { "id": "pp",    "label": "очень тихо",      "development": null, "tip": "pianissimo (pp)" },
+      { "id": "p",     "label": "тихо",            "development": null, "tip": "piano (p)" },
+      { "id": "mp",    "label": "умеренно тихо",   "development": null, "tip": "mezzo-piano (mp)" },
+      { "id": "mf",    "label": "умеренно громко", "development": null, "tip": "mezzo-forte (mf)" },
+      { "id": "f",     "label": "громко",          "development": null, "tip": "forte (f)" },
+      { "id": "ff",    "label": "очень громко",    "development": null, "tip": "fortissimo (ff)" },
+      { "id": "cresc", "label": "тихо",            "development": "нарастая", "tip": "crescendo" },
+      { "id": "dim",   "label": "громко",          "development": "затихая",  "tip": "decrescendo" }
+    ],
+    "developmentPool": [
+      { "id": "cresc", "label": "нарастая", "tip": "crescendo" },
+      { "id": "dim",   "label": "затихая",  "tip": "decrescendo" }
+    ],
+    "developmentChance": 0.3
+  },
+  "temp": {
+    "id": "temp",
+    "label": "Темп",
+    "values": [
+      { "id": "largo",    "label": "очень медленно", "bpm": [40, 52],   "tip": "largo" },
+      { "id": "adagio",   "label": "медленно",       "bpm": [52, 72],   "tip": "adagio" },
+      { "id": "andante",  "label": "шагом",          "bpm": [72, 92],   "tip": "andante" },
+      { "id": "moderato", "label": "умеренно",       "bpm": [92, 112],  "tip": "moderato" },
+      { "id": "allegro",  "label": "быстро",         "bpm": [120, 144], "tip": "allegro" },
+      { "id": "vivace",   "label": "живо",           "bpm": [144, 168], "tip": "vivace" }
+    ],
+    "developmentPool": [
+      { "id": "accel", "label": "ускоряя",  "tip": "accelerando" },
+      { "id": "rit",   "label": "замедляя", "tip": "ritenuto" }
+    ],
+    "developmentChance": 0.25
+  },
+  "shtrix": {
+    "id": "shtrix",
+    "label": "Штрих",
+    "values": [
+      { "id": "legato",   "label": "связно",        "tip": "legato" },
+      { "id": "staccato", "label": "отрывисто",     "tip": "staccato" },
+      { "id": "marcato",  "label": "акцентировано", "tip": "marcato (^)" },
+      { "id": "tenuto",   "label": "плавно",        "tip": "tenuto (—)" }
+    ]
+  },
+  "ritm": {
+    "id": "ritm",
+    "label": "Ритм",
+    "values": [
+      { "id": "ostinato", "label": "в ритм",   "tip": "ostinato" },
+      { "id": "rubato",   "label": "свободно", "tip": "rubato" }
+    ]
+  },
+  "dlitelnost": {
+    "id": "dlitelnost",
+    "label": "Длительности",
+    "values": [
+      { "id": "whole",    "label": "очень долгие",       "notation": ["1/1"],         "tip": "целые" },
+      { "id": "half",     "label": "долгие",             "notation": ["1/2"],         "tip": "половинные" },
+      { "id": "quarter",  "label": "средние",            "notation": ["1/4"],         "tip": "четверти" },
+      { "id": "eighth",   "label": "короткие",           "notation": ["1/8"],         "tip": "восьмые" },
+      { "id": "mix_slow", "label": "долгие + средние",   "notation": ["1/2", "1/4"], "tip": "половинные и четверти" },
+      { "id": "mix_fast", "label": "средние + короткие", "notation": ["1/4", "1/8"], "tip": "четверти и восьмые" },
+      { "id": "fast",     "label": "быстрые",            "notation": ["1/8", "1/16"],"tip": "восьмые и шестнадцатые" }
+    ]
+  },
+  "registr": {
+    "id": "registr",
+    "label": "Регистр",
+    "values": [
+      { "id": "low",    "label": "низкий",  "tip": "нижние две октавы" },
+      { "id": "middle", "label": "средний", "tip": "центральные октавы" },
+      { "id": "high",   "label": "высокий", "tip": "верхние октавы" }
+    ]
+  },
+  "pedal": {
+    "id": "pedal",
+    "label": "Педаль",
+    "values": [
+      { "id": "none",   "label": "без педали",    "tip": "сухой звук" },
+      { "id": "always", "label": "педаль всегда", "tip": "всё смешивается" },
+      { "id": "feel",   "label": "по ощущению",   "tip": "меняй когда хочешь" }
+    ]
+  },
+  "dvizhenie": {
+    "id": "dvizhenie",
+    "label": "Движение рук",
+    "minLevel": 3,
+    "values": [
+      { "id": "parallel",    "label": "параллельно",                   "tip": "обе руки в одну сторону" },
+      { "id": "contrary",    "label": "в противоположные стороны",     "tip": "руки расходятся и сходятся" },
+      { "id": "independent", "label": "независимо",                    "tip": "у каждой руки свой ритм" },
+      { "id": "pedal_note",  "label": "одна держит — другая движется", "tip": "одна нота держится, другая импровизирует" }
+    ]
+  },
+  "faktura": {
+    "id": "faktura",
+    "label": "Фактура",
+    "minLevel": 3,
+    "values": [
+      { "id": "arp_up",   "label": "арпеджио вверх", "tip": "от низкого к высокому" },
+      { "id": "arp_down", "label": "арпеджио вниз",  "tip": "от высокого к низкому" },
+      { "id": "wave",     "label": "туда-обратно",   "tip": "вверх-вниз волной" },
+      { "id": "shimmer",  "label": "переливы",       "tip": "быстрое скользящее движение" },
+      { "id": "cluster",  "label": "кластер",        "tip": "несколько близких нот одновременно" }
+    ]
+  },
+  "plotnost": {
+    "id": "plotnost",
+    "label": "Плотность",
+    "minLevel": 3,
+    "values": [
+      { "id": "dense",  "label": "насыщенно",  "tip": "много нот, мало пространства" },
+      { "id": "sparse", "label": "разрежённо", "tip": "мало нот, много тишины" }
+    ]
+  }
+}

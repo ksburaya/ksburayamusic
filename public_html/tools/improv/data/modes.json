@@ -1,0 +1,51 @@
+{
+  "flash": {
+    "id": "flash",
+    "label": "Быстрый",
+    "description": "Один уровень, N упражнений + свободная игра.",
+    "allowedLevels": [1, 2, 3],
+    "blockedLevels": [4, 5],
+    "structure": "single",
+    "exerciseCount": 3,
+    "exerciseDurationDefault": 3,
+    "exerciseDurationMin": 2,
+    "exerciseDurationMax": 10,
+    "freePlayMultiplier": 1
+  },
+  "explore": {
+    "id": "explore",
+    "label": "Исследование",
+    "description": "Прогрессия У1 → У2 → У3, по 2 упражнения на уровень + свободная игра.",
+    "allowedLevels": null,
+    "blockedLevels": [],
+    "structure": "progression",
+    "progression": [
+      { "level": 1, "count": 2 },
+      { "level": 2, "count": 2 },
+      { "level": 3, "count": 2 }
+    ],
+    "exerciseDurationDefault": 4,
+    "exerciseDurationMin": 2,
+    "exerciseDurationMax": 10,
+    "freePlayMultiplier": 1
+  },
+  "immersion": {
+    "id": "immersion",
+    "label": "Погружение",
+    "description": "Полная прогрессия У1 → У5, по 2 упражнения на уровень + удвоенная свободная игра.",
+    "allowedLevels": null,
+    "blockedLevels": [],
+    "structure": "progression_with_scenario",
+    "progression": [
+      { "level": 1, "count": 2 },
+      { "level": 2, "count": 2 },
+      { "level": 3, "count": 2 },
+      { "level": 4, "count": 2 },
+      { "level": 5, "count": 2 }
+    ],
+    "exerciseDurationDefault": 5,
+    "exerciseDurationMin": 3,
+    "exerciseDurationMax": 10,
+    "freePlayMultiplier": 2
+  }
+}
