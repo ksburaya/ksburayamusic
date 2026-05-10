@@ -1059,15 +1059,13 @@
             DATA.params = paramsJson;
             DATA.modes = modesJson;
             DATA.levels = levelsJson;
-            delete DATA.levels.version;
-            delete DATA.modes.version;
-            delete DATA.params.version;
+            DATA.scaleMap = new Map(DATA.scales.map(s => [s.id, s]));
         }
 
         const NOTE_NAMES_RU = ['До','До#','Ре','Ре#','Ми','Фа','Фа#','Соль','Соль#','Ля','Ля#','Си'];
 
         function getScale(id) {
-            const s = DATA.scales.find(x => x.id === id);
+            const s = DATA.scaleMap ? DATA.scaleMap.get(id) : DATA.scales?.find(x => x.id === id);
             if (!s) return null;
             const semitones = s.intervals_cents
                 .filter(c => c < 1200)
@@ -1096,53 +1094,7 @@
             'низ ↔ верх',
         ];
 
-        const PARAMS = {
-            dinamika: {
-                label: 'Динамика',
-                level1: ['тихо', 'нарастая', 'громко', 'затихая', 'очень тихо'],
-                tips: { 'тихо': 'piano (p) — мягкий, сдержанный звук', 'нарастая': 'crescendo — постепенное усиление', 'громко': 'forte (f) — полный, насыщенный звук', 'затихая': 'decrescendo — постепенное ослабление', 'очень тихо': 'pianissimo (pp) — почти шёпот' }
-            },
-            shtrix: {
-                label: 'Штрих',
-                level1: ['связно', 'отрывисто', 'акцентировано', 'плавно'],
-                tips: { 'связно': 'legato — ноты перетекают друг в друга без разрыва', 'отрывисто': 'staccato — короткий, чёткий звук с паузой после', 'акцентировано': 'marcato (^) — выделенный, подчёркнутый звук', 'плавно': 'tenuto (—) — нота взята полностью, с удержанием' }
-            },
-            ritm: {
-                label: 'Ритм',
-                level1: ['в ритм', 'свободно', 'ускоряя', 'замедляя'],
-                tips: { 'в ритм': 'ostinato — повторяющийся ритмический паттерн', 'свободно': 'rubato — свобода в темпе, "заимствование" времени', 'ускоряя': 'accelerando — постепенное ускорение темпа', 'замедляя': 'ritenuto — постепенное замедление' }
-            },
-            dlitelnost: {
-                label: 'Длительности',
-                level1: ['короткие', 'долгие', 'смешанные', 'очень долгие'],
-                tips: { 'короткие': 'восьмые, шестнадцатые — быстрая смена звуков', 'долгие': 'половинные, целые — тянущиеся звуки', 'смешанные': 'чередование коротких и долгих', 'очень долгие': 'целые ноты, можно добавить педаль' }
-            },
-            registr: {
-                label: 'Регистр',
-                level1: ['низкий', 'средний', 'высокий', 'любой'],
-                tips: { 'низкий': 'нижние две октавы — тёмный, плотный тембр', 'средний': 'центральные октавы — нейтральный, разговорный', 'высокий': 'верхние октавы — прозрачный, светлый', 'любой': 'регистр выбираешь сам по ощущению' }
-            },
-            pedal: {
-                label: 'Педаль',
-                level1: ['без педали', 'педаль всегда', 'по ощущению'],
-                tips: { 'без педали': 'сухой, чёткий звук — хорошо слышна артикуляция', 'педаль всегда': 'всё смешивается в единое облако — размытость, полнота', 'по ощущению': 'меняй педаль когда хочешь' }
-            },
-            dvizhenie: {
-                label: 'Движение рук',
-                level3: ['параллельно', 'в противоположные стороны', 'независимо', 'одна держит — другая движется'],
-                tips: { 'параллельно': 'обе руки движутся в одну сторону', 'в противоположные стороны': 'руки расходятся и сходятся', 'независимо': 'у каждой руки свой ритм и рисунок', 'одна держит — другая движется': 'одна нота педальная, другая импровизирует' }
-            },
-            faktura: {
-                label: 'Фактура',
-                level3: ['арпеджио вверх', 'арпеджио вниз', 'туда-обратно', 'переливы', 'кластер'],
-                tips: { 'арпеджио вверх': 'ноты лада поочерёдно от низкого к высокому', 'арпеджио вниз': 'от высокого к низкому', 'туда-обратно': 'вверх-вниз, как волна', 'переливы': 'быстрое скользящее движение', 'кластер': 'несколько близких нот одновременно' }
-            },
-            plotnost: {
-                label: 'Плотность',
-                level3: ['насыщенно', 'разрежённо'],
-                tips: { 'насыщенно': 'много нот, мало пространства', 'разрежённо': 'мало нот, много тишины между ними' }
-            }
-        };
+        // PARAMS removed — now loaded from data/params.json into DATA.params
 
         let state = {
             scale: 'ionian_12tet',
@@ -1160,6 +1112,10 @@
             scenarioSeconds: 0,
             scenarioDuration: 0,
             exerciseDurationMin: 3,
+            metronomeFreq: 'quarter',
+            metronomeRunning: false,
+            presession: null,
+            performance: null,
             history: []
         };
 
@@ -1318,11 +1274,23 @@
             const exH = 70, exBH = 43;
             pianoSVG(svg, exH, exBH, litSet, rootMod, activeMods);
         }
+        function createScaleButton(s) {
+            const btn = document.createElement('button');
+            const scale = getScale(s.id);
+            btn.className = 'scale-option' + (s.id === state.scale ? ' active' : '');
+            btn.textContent = s.name_ru;
+            const preview = document.createElement('div');
+            preview.className = 'scale-notes-preview';
+            preview.textContent = scale ? scale.notes.join(' · ') : '';
+            btn.appendChild(preview);
+            btn.onclick = () => { selectScale(s.id); };
+            return btn;
+        }
+
         function openScalePicker() {
             const list = document.getElementById('scale-list');
             list.innerHTML = '';
 
-            // Visible scales section
             const visibleDiv = document.createElement('div');
             visibleDiv.className = 'scale-section';
             const visibleTitle = document.createElement('div');
@@ -1331,22 +1299,10 @@
             visibleDiv.appendChild(visibleTitle);
             const visibleGrid = document.createElement('div');
             visibleGrid.className = 'scale-grid';
-            getVisibleScales().forEach(s => {
-                const btn = document.createElement('button');
-                const scale = getScale(s.id);
-                btn.className = 'scale-option' + (s.id === state.scale ? ' active' : '');
-                btn.textContent = s.name_ru;
-                const preview = document.createElement('div');
-                preview.className = 'scale-notes-preview';
-                preview.textContent = scale ? scale.notes.join(' · ') : '';
-                btn.appendChild(preview);
-                btn.onclick = () => { selectScale(s.id); };
-                visibleGrid.appendChild(btn);
-            });
+            getVisibleScales().forEach(s => visibleGrid.appendChild(createScaleButton(s)));
             visibleDiv.appendChild(visibleGrid);
             list.appendChild(visibleDiv);
 
-            // Hidden scales collapsible
             const hiddenScales = getHiddenScales();
             if (hiddenScales.length > 0) {
                 const details = document.createElement('details');
@@ -1356,18 +1312,7 @@
                 details.appendChild(summary);
                 const hiddenGrid = document.createElement('div');
                 hiddenGrid.className = 'scale-grid';
-                hiddenScales.forEach(s => {
-                    const btn = document.createElement('button');
-                    const scale = getScale(s.id);
-                    btn.className = 'scale-option' + (s.id === state.scale ? ' active' : '');
-                    btn.textContent = s.name_ru;
-                    const preview = document.createElement('div');
-                    preview.className = 'scale-notes-preview';
-                    preview.textContent = scale ? scale.notes.join(' · ') : '';
-                    btn.appendChild(preview);
-                    btn.onclick = () => { selectScale(s.id); };
-                    hiddenGrid.appendChild(btn);
-                });
+                hiddenScales.forEach(s => hiddenGrid.appendChild(createScaleButton(s)));
                 details.appendChild(hiddenGrid);
                 list.appendChild(details);
             }
@@ -1389,8 +1334,7 @@
         }
 
         function generateRandomScale() {
-            const all = DATA.scales || [];
-            const visible = all.filter(s => s.visible);
+            const visible = getVisibleScales();
             if (visible.length > 0) selectScale(pick(visible).id);
         }
 
@@ -1400,7 +1344,8 @@
             document.querySelectorAll('.level-btn').forEach(b => {
                 b.classList.toggle('active', parseInt(b.dataset.level) === n);
             });
-            document.getElementById('level-desc').textContent = DATA.levels && DATA.levels[String(n)] ? DATA.levels[String(n)].description : '';
+            const levelData = DATA.levels?.[String(n)];
+            document.getElementById('level-desc').textContent = levelData?.description || '';
         }
 
         function setMode(m) {
@@ -1433,45 +1378,105 @@
         }
 
         // ---- GENERATE EXERCISES ----
+        function buildModeProgression(cfg, selectedLevel) {
+            if (cfg.structure === 'single') {
+                return Array.from({ length: cfg.exerciseCount || 3 }, () => ({ level: selectedLevel }));
+            }
+            return cfg.progression.flatMap(p =>
+                Array.from({ length: p.count }, () => ({ level: p.level }))
+            );
+        }
+
+        function pickNotesForLevel(scale, level, lastNotes) {
+            const notes = scale.notes;
+            const lvlData = DATA.levels[String(level)];
+            const noteCount = lvlData ? lvlData.noteCount : 1;
+            if (noteCount === 1) {
+                const candidates = lastNotes ? notes.filter(n => !lastNotes.includes(n)) : notes;
+                return [pick(candidates.length ? candidates : notes)];
+            }
+            if (noteCount === 'all') return [...notes];
+            if (Array.isArray(noteCount)) {
+                const cnt = noteCount[0] + Math.floor(Math.random() * (noteCount[1] - noteCount[0] + 1));
+                return pickN(notes, Math.min(cnt, notes.length));
+            }
+            return pickN(notes, Math.min(noteCount, notes.length));
+        }
+
+        function pickParamValue(paramKey, lastParams) {
+            const param = DATA.params[paramKey];
+            if (!param) return null;
+            const lastId = lastParams[paramKey]?.value?.id;
+            const candidates = param.values.filter(v => v.id !== lastId);
+            const value = pick(candidates.length ? candidates : param.values);
+            let development = value.development || null;
+            if (!development && param.developmentPool && Math.random() < (param.developmentChance || 0)) {
+                development = pick(param.developmentPool);
+            }
+            return { label: param.label, value, development };
+        }
+
+        function pickRegistr(lastRegistrId) {
+            const all = DATA.params.registr.values;
+            const candidates = all.filter(v => v.id !== lastRegistrId);
+            return pick(candidates.length ? candidates : all);
+        }
+
+        function applyContrast(result, contrast) {
+            if (!contrast) return;
+            const side = pick(contrast.split(' ↔ ')).trim();
+            const map = {
+                'ostinato': ['ritm', 'ostinato'], 'rubato': ['ritm', 'rubato'],
+                'marcato': ['shtrix', 'marcato'], 'legato': ['shtrix', 'legato'],
+                'staccato': ['shtrix', 'staccato'], 'tenuto': ['shtrix', 'tenuto']
+            };
+            Object.keys(map).forEach(keyword => {
+                if (side.includes(keyword)) {
+                    const [paramKey, valueId] = map[keyword];
+                    const value = DATA.params[paramKey]?.values.find(v => v.id === valueId);
+                    if (value && result[paramKey]) result[paramKey] = { ...result[paramKey], value };
+                }
+            });
+        }
+
+        function applyDurationStrokeRule(result) {
+            const dlId = result.dlitelnost?.value?.id;
+            const shId = result.shtrix?.value?.id;
+            if ((dlId === 'half' || dlId === 'whole') && shId === 'staccato') {
+                const legato = DATA.params.shtrix?.values.find(v => v.id === 'legato');
+                if (legato) result.shtrix = { ...result.shtrix, value: legato };
+            }
+        }
+
+        function buildParams(level, lastParams = {}) {
+            const result = {};
+            const keys = ['dlitelnost', 'temp', 'shtrix', 'dinamika', 'ritm', 'pedal'];
+            if (level >= 3) keys.push('dvizhenie', 'faktura', 'plotnost');
+            keys.forEach(k => { result[k] = pickParamValue(k, lastParams); });
+            applyContrast(result, state.contrast);
+            applyDurationStrokeRule(result);
+            return result;
+        }
+
         function generateExercises() {
             const scale = getScale(state.scale);
             const notes = scale ? scale.notes : [];
             const cfg = DATA.modes[state.mode] || {};
-            const exercises = [];
-            const usedNotes = new Set();
-
-            // Determine exercise count from cfg structure
-            let exCount;
-            if (cfg.structure === 'single') {
-                exCount = cfg.exerciseCount || 3;
-            } else if (cfg.progression) {
-                exCount = cfg.progression.reduce((s, p) => s + p.count, 0);
-            } else {
-                exCount = 3;
-            }
+            const steps = buildModeProgression(cfg, state.level);
             const exMin = state.exerciseDurationMin;
-            const freeMin = state.exerciseDurationMin;
+            const freeMin = exMin * (cfg.freePlayMultiplier || 1);
+            const exercises = [];
+            let lastParams = {};
+            let lastRegistrId = null;
+            let lastNotes = null;
 
-            for (let i = 0; i < exCount; i++) {
-                let exNotes = [];
-                if (state.level === 1) {
-                    let n;
-                    do { n = pick(notes); } while (usedNotes.has(n) && usedNotes.size < notes.length);
-                    usedNotes.add(n); exNotes = [n];
-                } else if (state.level === 2) {
-                    exNotes = pickN(notes, 2);
-                } else if (state.level === 3) {
-                    const cnt = 3 + Math.floor(Math.random() * 3);
-                    exNotes = pickN(notes, cnt);
-                } else {
-                    exNotes = [...notes];
-                }
-
-                const params = buildParams();
-                const registr = pick(['низкий', 'средний', 'высокий']);
+            steps.forEach(step => {
+                const exNotes = pickNotesForLevel(scale, step.level, lastNotes);
+                const params = buildParams(step.level, lastParams);
+                const registr = pickRegistr(lastRegistrId);
                 const instruction = buildInstruction(exNotes, params, registr);
-
                 exercises.push({
+                    level: step.level,
                     notes: exNotes,
                     params,
                     registr,
@@ -1479,67 +1484,37 @@
                     isFree: false,
                     durationMin: exMin
                 });
-            }
+                lastParams = params;
+                lastRegistrId = registr.id;
+                lastNotes = exNotes;
+            });
 
-            // Добавляем финальное «свободно» без параметров
             exercises.push({
-                notes: notes,
+                level: null,
+                notes,
                 params: {},
-                registr: 'любой',
+                registr: null,
                 instruction: '',
                 isFree: true,
+                scenario: cfg.structure === 'progression_with_scenario'
+                    ? buildFinalScenario(exercises, freeMin) : null,
                 durationMin: freeMin
             });
 
             return exercises;
         }
 
-        function buildParams() {
-            const result = {};
-
-            // Сначала У3+ параметры (движение рук, фактура)
-            if (state.level >= 3) {
-                result['dvizhenie'] = { label: PARAMS.dvizhenie.label, value: pick(PARAMS.dvizhenie.level3), tips: PARAMS.dvizhenie.tips };
-                result['faktura'] = { label: PARAMS.faktura.label, value: pick(PARAMS.faktura.level3), tips: PARAMS.faktura.tips };
-            }
-
-            // Длительности, ритм
-            result['dlitelnost'] = { label: PARAMS.dlitelnost.label, value: pick(PARAMS.dlitelnost.level1), tips: PARAMS.dlitelnost.tips };
-            result['ritm'] = { label: PARAMS.ritm.label, value: pick(PARAMS.ritm.level1), tips: PARAMS.ritm.tips };
-
-            // Штрих, динамика
-            result['shtrix'] = { label: PARAMS.shtrix.label, value: pick(PARAMS.shtrix.level1), tips: PARAMS.shtrix.tips };
-            result['dinamika'] = { label: PARAMS.dinamika.label, value: pick(PARAMS.dinamika.level1), tips: PARAMS.dinamika.tips };
-
-            // Плотность (У3+), педаль
-            if (state.level >= 3) {
-                result['plotnost'] = { label: PARAMS.plotnost.label, value: pick(PARAMS.plotnost.level3), tips: PARAMS.plotnost.tips };
-            }
-            result['pedal'] = { label: PARAMS.pedal.label, value: pick(PARAMS.pedal.level1), tips: PARAMS.pedal.tips };
-
-            if (state.contrast) {
-                const parts = state.contrast.split(' ↔ ');
-                const side = pick(parts).trim();
-                if (side.includes('ostinato')) result['ritm'] = { ...result['ritm'], value: 'в ритм' };
-                if (side.includes('rubato')) result['ritm'] = { ...result['ritm'], value: 'свободно' };
-                if (side.includes('marcato')) result['shtrix'] = { ...result['shtrix'], value: 'акцентировано' };
-                if (side.includes('legato')) result['shtrix'] = { ...result['shtrix'], value: 'связно' };
-                if (side.includes('staccato')) result['shtrix'] = { ...result['shtrix'], value: 'отрывисто' };
-                if (side.includes('tenuto')) result['shtrix'] = { ...result['shtrix'], value: 'плавно' };
-                if (side.includes('нарастая')) result['dinamika'] = { ...result['dinamika'], value: 'нарастая' };
-                if (side.includes('затихая')) result['dinamika'] = { ...result['dinamika'], value: 'затихая' };
-            }
-
-            if (result['dlitelnost']?.value === 'долгие' && result['shtrix']?.value === 'отрывисто') {
-                result['shtrix'].value = 'связно';
-            }
-
-            return result;
+        function buildFinalScenario(exercises, totalMin) {
+            return null; // implemented in Task 10
         }
 
         function buildInstruction(notes, params, registr) {
             const noteStr = notes.join(', ');
-            return `${noteStr} — ${registr} регистр. ${params.dlitelnost?.value || ''} ноты, ${params.shtrix?.value || ''}, ${params.dinamika?.value || ''}.`;
+            const registrLabel = registr?.label || 'любой';
+            const dlit = params.dlitelnost?.value?.label || '';
+            const shtr = params.shtrix?.value?.label || '';
+            const din = params.dinamika?.value?.label || '';
+            return `${noteStr} — ${registrLabel} регистр. ${dlit} ноты, ${shtr}, ${din}.`;
         }
 
         // ---- SESSION ----
@@ -1601,9 +1576,18 @@
                 const grid = document.getElementById('param-grid');
                 grid.innerHTML = '';
                 Object.values(ex.params).forEach(p => {
+                    if (!p) return;
                     const item = document.createElement('div');
                     item.className = 'param-item';
-                    item.innerHTML = `<div class="param-label">${p.label}</div><div class="param-value" data-tip="${p.tips[p.value] || ''}">${p.value}</div>`;
+                    const labelEl = document.createElement('div');
+                    labelEl.className = 'param-label';
+                    labelEl.textContent = p.label;
+                    const valueEl = document.createElement('div');
+                    valueEl.className = 'param-value';
+                    valueEl.dataset.tip = p.value.tip || '';
+                    valueEl.textContent = p.value.label;
+                    item.appendChild(labelEl);
+                    item.appendChild(valueEl);
                     grid.appendChild(item);
                 });
 
@@ -1625,13 +1609,14 @@
 
 
         function setRegister(reg) {
+            const id = reg?.id || reg;
             const segs = document.querySelectorAll('.register-seg');
             segs.forEach((s, i) => {
                 let lit = false;
-                if (reg === 'любой') lit = true;
-                else if (reg === 'низкий' && i < 2) lit = true;
-                else if (reg === 'средний' && i >= 2 && i < 4) lit = true;
-                else if (reg === 'высокий' && i >= 4) lit = true;
+                if (!id || id === 'любой') lit = true;
+                else if (id === 'low' && i < 2) lit = true;
+                else if (id === 'middle' && i >= 2 && i < 4) lit = true;
+                else if (id === 'high' && i >= 4) lit = true;
                 s.classList.toggle('lit', lit);
             });
         }
@@ -1900,7 +1885,7 @@
         function saveToStorage() {
             localStorage.setItem('improv_scale', state.scale);
             localStorage.setItem('improv_level', state.level);
-            if (state.mode) localStorage.setItem('improv_mode', state.mode);
+            localStorage.setItem('improv_mode', state.mode);
         }
 
         // ---- INIT ----
@@ -1915,18 +1900,15 @@
 
             state.history = JSON.parse(localStorage.getItem('improv_history') || '[]');
 
-            // Restore saved state
             const savedScale = localStorage.getItem('improv_scale');
-            if (savedScale && DATA.scales.find(s => s.id === savedScale)) {
-                state.scale = savedScale;
-            }
+            if (savedScale && DATA.scaleMap.has(savedScale)) state.scale = savedScale;
+
             const savedLevel = localStorage.getItem('improv_level');
             if (savedLevel) setLevel(parseInt(savedLevel));
 
             const savedMode = localStorage.getItem('improv_mode');
             if (savedMode && DATA.modes[savedMode]) state.mode = savedMode;
 
-            // Display initial UI
             const scale = getScale(state.scale);
             document.getElementById('current-scale-name').textContent = scale ? scale.name : state.scale;
             buildKeyboard();
