@@ -1335,7 +1335,11 @@
                 const btn = document.createElement('button');
                 const scale = getScale(s.id);
                 btn.className = 'scale-option' + (s.id === state.scale ? ' active' : '');
-                btn.innerHTML = `${s.name_ru}<div class="scale-notes-preview">${scale ? scale.notes.join(' · ') : ''}</div>`;
+                btn.textContent = s.name_ru;
+                const preview = document.createElement('div');
+                preview.className = 'scale-notes-preview';
+                preview.textContent = scale ? scale.notes.join(' · ') : '';
+                btn.appendChild(preview);
                 btn.onclick = () => { selectScale(s.id); };
                 visibleGrid.appendChild(btn);
             });
@@ -1356,7 +1360,11 @@
                     const btn = document.createElement('button');
                     const scale = getScale(s.id);
                     btn.className = 'scale-option' + (s.id === state.scale ? ' active' : '');
-                    btn.innerHTML = `${s.name_ru}<div class="scale-notes-preview">${scale ? scale.notes.join(' · ') : ''}</div>`;
+                    btn.textContent = s.name_ru;
+                    const preview = document.createElement('div');
+                    preview.className = 'scale-notes-preview';
+                    preview.textContent = scale ? scale.notes.join(' · ') : '';
+                    btn.appendChild(preview);
                     btn.onclick = () => { selectScale(s.id); };
                     hiddenGrid.appendChild(btn);
                 });
@@ -1673,15 +1681,29 @@
                 list.innerHTML = '<div style="font-size:15px; color:var(--text3); font-style:italic;">Пока пусто.</div>';
                 return;
             }
-            list.innerHTML = state.history.map((e, i) =>
-                `<div class="history-item" id="hist-${i}" onclick="toggleHistoryItem(${i}, '${e.scale}')">
-      <span>${e.scaleName || e.scale} — У${e.level} · ${e.mode}</span>
-      <span class="history-date">${e.date}</span>
-    </div>
-    <div class="history-expand" id="hist-expand-${i}" style="display:none; padding:10px 0 16px; border-bottom:1px solid var(--border);">
-      <button class="btn btn-small btn-primary" onclick="practiceWithScale('${e.scale}')">Новая практика с этим ладом →</button>
-    </div>`
-            ).join('');
+            list.innerHTML = '';
+            state.history.forEach((e, i) => {
+                const itemDiv = document.createElement('div');
+                itemDiv.className = 'history-item';
+                itemDiv.id = 'hist-' + i;
+                itemDiv.innerHTML = `<span>${e.scaleName || e.scale} — У${e.level} · ${e.mode}</span><span class="history-date">${e.date}</span>`;
+                itemDiv.addEventListener('click', () => toggleHistoryItem(i, e.scale));
+                list.appendChild(itemDiv);
+
+                const expandDiv = document.createElement('div');
+                expandDiv.className = 'history-expand';
+                expandDiv.id = 'hist-expand-' + i;
+                expandDiv.style.display = 'none';
+                expandDiv.style.padding = '10px 0 16px';
+                expandDiv.style.borderBottom = '1px solid var(--border)';
+
+                const btn = document.createElement('button');
+                btn.className = 'btn btn-small btn-primary';
+                btn.textContent = 'Новая практика с этим ладом →';
+                btn.addEventListener('click', () => practiceWithScale(e.scale));
+                expandDiv.appendChild(btn);
+                list.appendChild(expandDiv);
+            });
         }
 
         function toggleHistoryItem(idx, scale) {
@@ -1886,7 +1908,7 @@
             try {
                 await loadData();
             } catch (e) {
-                document.body.innerHTML = '<div style="padding:40px;color:#c8a96e;font-family:serif;font-size:20px">Ошибка загрузки данных. Убедитесь, что файл открыт через веб-сервер (не file://).</div>';
+                document.body.innerHTML = `<div style="padding:40px;color:#c8a96e;font-family:serif;font-size:20px">Ошибка загрузки данных: ${e.message || e}. Убедитесь, что файл открыт через веб-сервер (не file://).</div>`;
                 console.error(e);
                 return;
             }
