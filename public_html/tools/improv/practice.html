@@ -815,7 +815,7 @@
             border: 1px solid var(--border2);
             border-radius: 2px;
             padding: 40px 36px;
-            text-align: center;
+            text-align: left;
         }
 
         .summary-card.visible {
@@ -834,7 +834,39 @@
             font-size: 18px;
             color: var(--text2);
             font-style: italic;
-            margin-bottom: 32px;
+            margin-bottom: 24px;
+        }
+
+        .summary-section {
+            margin-top: 24px;
+            padding-top: 24px;
+            border-top: 1px solid var(--border);
+        }
+
+        .summary-section-title {
+            font-size: 16px;
+            color: var(--text2);
+            margin-bottom: 12px;
+            font-weight: 400;
+            letter-spacing: 0.06em;
+        }
+
+        .summary-section p {
+            margin: 6px 0;
+            color: var(--text);
+            font-size: 15px;
+        }
+
+        #summary-postnote {
+            width: 100%;
+            padding: 12px;
+            background: var(--bg2);
+            border: 1px solid var(--border);
+            color: var(--text);
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 16px;
+            resize: vertical;
+            box-sizing: border-box;
         }
 
         /* HISTORY */
@@ -843,10 +875,8 @@
         }
 
         .history-item {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 10px 0;
+            display: block;
+            padding: 12px 0;
             border-bottom: 1px solid var(--border);
             font-size: 15px;
             color: var(--text2);
@@ -857,9 +887,32 @@
             color: var(--text);
         }
 
+        .hist-head {
+            display: flex;
+            gap: 16px;
+            align-items: baseline;
+            flex-wrap: wrap;
+        }
+
         .history-date {
             font-size: 13px;
             color: var(--text3);
+        }
+
+        .hist-scale {
+            color: var(--accent);
+            font-size: 18px;
+        }
+
+        .hist-mode {
+            color: var(--text2);
+            font-size: 14px;
+        }
+
+        .hist-pre, .hist-post {
+            margin-top: 6px;
+            color: var(--text2);
+            font-size: 14px;
         }
 
         /* SECTION STUB */
@@ -1229,8 +1282,19 @@
                 <div class="summary-card" id="summary-card">
                     <div class="summary-big" id="summary-scale"></div>
                     <div class="summary-text" id="summary-text"></div>
-                    <div class="btn-row" style="justify-content:center; margin-top:0;">
-                        <button class="btn btn-primary" onclick="resetToSetup()">Новая сессия →</button>
+                    <div id="summary-presession" class="summary-section" style="display:none">
+                        <h3 class="summary-section-title">Намерение сессии</h3>
+                        <p><em>Состояние:</em> <span id="summary-pre-state"></span></p>
+                        <p><em>Хотел сыграть:</em> <span id="summary-pre-intent"></span></p>
+                    </div>
+                    <div class="summary-section">
+                        <h3 class="summary-section-title">Что получилось?</h3>
+                        <textarea id="summary-postnote" rows="4" placeholder="Заметки после практики..."></textarea>
+                    </div>
+                    <div class="btn-row" style="justify-content:flex-end; margin-top:16px;">
+                        <button class="btn btn-primary" id="btn-summary-save">Сохранить и завершить</button>
+                    </div>
+                    <div class="btn-row" style="justify-content:center; margin-top:8px;">
                         <button class="btn btn-small" onclick="repeatSession()">Повторить этот лад</button>
                     </div>
                 </div>
@@ -1946,26 +2010,68 @@
         function showSummary() {
             clearTimer();
             document.getElementById('exercise-display').style.display = 'none';
+            document.getElementById('scenario-display').style.display = 'none';
             const card = document.getElementById('summary-card');
             card.classList.add('visible');
             const summaryScale = getScale(state.scale);
             document.getElementById('summary-scale').textContent = summaryScale ? summaryScale.name : state.scale;
-            document.getElementById('summary-text').textContent = `Сессия завершена — ${DATA.modes[state.mode]?.label || state.mode}.`;
-
-            saveHistory();
+            document.getElementById('summary-text').textContent =
+                `Сессия завершена. У${state.level}, ${DATA.modes[state.mode]?.label || state.mode}.`;
+            document.getElementById('summary-postnote').value = '';
+            if (state.presession) {
+                document.getElementById('summary-presession').style.display = 'block';
+                document.getElementById('summary-pre-state').textContent = state.presession.state || '—';
+                document.getElementById('summary-pre-intent').textContent = state.presession.intent || '—';
+            } else {
+                document.getElementById('summary-presession').style.display = 'none';
+            }
         }
 
-        function saveHistory() {
+        document.getElementById('btn-summary-save').addEventListener('click', () => {
+            const postNote = document.getElementById('summary-postnote').value.trim();
+            saveHistory(postNote);
+            showView('history');
+        });
+
+        function getDeviceId() {
+            let id = localStorage.getItem('improv_deviceId');
+            if (!id) {
+                id = (crypto.randomUUID ? crypto.randomUUID() : 'dev-' + Date.now().toString(36));
+                localStorage.setItem('improv_deviceId', id);
+            }
+            return id;
+        }
+
+        function saveHistory(postNote) {
             const scaleObj = getScale(state.scale);
             const entry = {
-                scale: state.scale,
+                id: crypto.randomUUID ? crypto.randomUUID() : Date.now().toString(36),
+                deviceId: getDeviceId(),
+                date: new Date().toLocaleDateString('ru-RU', { day: '2-digit', month: 'long' }),
+                datetime: new Date().toISOString(),
+                scaleId: state.scale,
                 scaleName: scaleObj ? scaleObj.name : state.scale,
-                mode: DATA.modes[state.mode]?.label || state.mode,
+                rootMidi: state.rootMidi,
+                modeId: state.mode,
+                modeName: DATA.modes[state.mode]?.label || state.mode,
                 level: state.level,
-                date: new Date().toLocaleDateString('ru-RU', { day: '2-digit', month: 'long' })
+                exerciseDurationMin: state.exerciseDurationMin,
+                presession: state.presession || null,
+                postNote: postNote || null,
+                exercises: state.exercises.filter(e => !e.isFree).map(e => ({
+                    level: e.level,
+                    notes: e.notes,
+                    registr: e.registr?.id || null,
+                    params: Object.fromEntries(
+                        Object.entries(e.params).map(([k, p]) => [k, {
+                            value: p?.value?.id,
+                            development: p?.development?.id || p?.development?.label || null
+                        }])
+                    )
+                }))
             };
             state.history.unshift(entry);
-            if (state.history.length > 30) state.history.pop();
+            if (state.history.length > 100) state.history.pop();
             localStorage.setItem('improv_history', JSON.stringify(state.history));
             renderHistory();
         }
@@ -1978,11 +2084,51 @@
             }
             list.innerHTML = '';
             state.history.forEach((e, i) => {
+                const scaleId = e.scaleId || e.scale;
+                const scaleName = e.scaleName || e.scale || 'неизвестно';
+                const modeName = e.modeName || e.mode || '';
+
                 const itemDiv = document.createElement('div');
                 itemDiv.className = 'history-item';
                 itemDiv.id = 'hist-' + i;
-                itemDiv.innerHTML = `<span>${e.scaleName || e.scale} — У${e.level} · ${e.mode}</span><span class="history-date">${e.date}</span>`;
-                itemDiv.addEventListener('click', () => toggleHistoryItem(i, e.scale));
+
+                const headDiv = document.createElement('div');
+                headDiv.className = 'hist-head';
+                const dateSpan = document.createElement('span');
+                dateSpan.className = 'history-date';
+                dateSpan.textContent = e.date;
+                const scaleSpan = document.createElement('span');
+                scaleSpan.className = 'hist-scale';
+                scaleSpan.textContent = scaleName;
+                const modeSpan = document.createElement('span');
+                modeSpan.className = 'hist-mode';
+                modeSpan.textContent = `У${e.level} · ${modeName}`;
+                headDiv.appendChild(dateSpan);
+                headDiv.appendChild(scaleSpan);
+                headDiv.appendChild(modeSpan);
+                itemDiv.appendChild(headDiv);
+
+                if (e.presession?.intent) {
+                    const preDiv = document.createElement('div');
+                    preDiv.className = 'hist-pre';
+                    const em = document.createElement('em');
+                    em.textContent = 'Намерение: ';
+                    preDiv.appendChild(em);
+                    preDiv.appendChild(document.createTextNode(e.presession.intent));
+                    itemDiv.appendChild(preDiv);
+                }
+
+                if (e.postNote) {
+                    const postDiv = document.createElement('div');
+                    postDiv.className = 'hist-post';
+                    const em = document.createElement('em');
+                    em.textContent = 'Итог: ';
+                    postDiv.appendChild(em);
+                    postDiv.appendChild(document.createTextNode(e.postNote));
+                    itemDiv.appendChild(postDiv);
+                }
+
+                itemDiv.addEventListener('click', () => toggleHistoryItem(i, scaleId));
                 list.appendChild(itemDiv);
 
                 const expandDiv = document.createElement('div');
@@ -1991,17 +2137,16 @@
                 expandDiv.style.display = 'none';
                 expandDiv.style.padding = '10px 0 16px';
                 expandDiv.style.borderBottom = '1px solid var(--border)';
-
                 const btn = document.createElement('button');
                 btn.className = 'btn btn-small btn-primary';
                 btn.textContent = 'Новая практика с этим ладом →';
-                btn.addEventListener('click', () => practiceWithScale(e.scale));
+                btn.addEventListener('click', () => practiceWithScale(scaleId));
                 expandDiv.appendChild(btn);
                 list.appendChild(expandDiv);
             });
         }
 
-        function toggleHistoryItem(idx, scale) {
+        function toggleHistoryItem(idx) {
             const exp = document.getElementById('hist-expand-' + idx);
             if (!exp) return;
             const isOpen = exp.style.display !== 'none';
@@ -2010,9 +2155,7 @@
         }
 
         function practiceWithScale(scaleId) {
-            if (DATA.scales && DATA.scales.find(s => s.id === scaleId)) {
-                selectScale(scaleId);
-            }
+            if (DATA.scaleMap?.has(scaleId)) selectScale(scaleId);
             showView('setup');
         }
 
