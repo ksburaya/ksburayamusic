@@ -1920,12 +1920,53 @@
             });
         }
 
-        function applyDurationStrokeRule(result) {
-            const dlId = result.dlitelnost?.value?.id;
-            const shId = result.shtrix?.value?.id;
-            if ((dlId === 'half' || dlId === 'whole') && shId === 'staccato') {
-                const legato = DATA.params.shtrix?.values.find(v => v.id === 'legato');
-                if (legato) result.shtrix = { ...result.shtrix, value: legato };
+        // ---- PARAM CONSTRAINTS ----
+        // Each rule: when ALL `when` conditions match (value id in list), re-pick `param`
+        // excluding `exclude` ids. Add new musical contradictions here.
+        const PARAM_CONSTRAINTS = [
+            {
+                // Staccato на долгих нотах — физически невозможно, заменять на legato
+                when: { dlitelnost: ['half', 'whole'] },
+                param: 'shtrix',
+                exclude: ['staccato']
+            },
+            {
+                // Арпеджио (любое) и движение в противоположные стороны — противоречие:
+                // арпеджио предполагает унисонное горизонтальное движение
+                when: { faktura: ['arp_up', 'arp_down', 'wave'] },
+                param: 'dvizhenie',
+                exclude: ['contrary']
+            },
+            {
+                // Быстрые длительности + живой темп + staccato → не разреженно:
+                // физически невозможно сыграть быстро, отрывисто и редко одновременно
+                when: { dlitelnost: ['mix_fast', 'eighth', 'fast'], temp: ['vivace', 'allegro'], shtrix: ['staccato', 'marcato'] },
+                param: 'plotnost',
+                exclude: ['sparse']
+            },
+            {
+                // Педальный звук (одна рука держит) несовместим с независимым движением рук
+                when: { dvizhenie: ['pedal_note'] },
+                param: 'faktura',
+                exclude: ['shimmer', 'cluster']
+            }
+        ];
+
+        function applyConstraints(result) {
+            for (const rule of PARAM_CONSTRAINTS) {
+                if (!result[rule.param]) continue;
+                const matches = Object.entries(rule.when).every(([key, ids]) => {
+                    const allowed = Array.isArray(ids) ? ids : [ids];
+                    return allowed.includes(result[key]?.value?.id);
+                });
+                if (!matches) continue;
+                if (!rule.exclude.includes(result[rule.param].value?.id)) continue;
+                const param = DATA.params[rule.param];
+                if (!param) continue;
+                const candidates = param.values.filter(v => !rule.exclude.includes(v.id));
+                if (candidates.length > 0) {
+                    result[rule.param] = { ...result[rule.param], value: pick(candidates) };
+                }
             }
         }
 
@@ -1935,7 +1976,7 @@
             if (level >= 3) keys.push('dvizhenie', 'faktura', 'plotnost');
             keys.forEach(k => { result[k] = pickParamValue(k, lastParams); });
             applyContrast(result, state.contrast);
-            applyDurationStrokeRule(result);
+            applyConstraints(result);
             return result;
         }
 
