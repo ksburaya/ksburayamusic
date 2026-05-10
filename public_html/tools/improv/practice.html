@@ -1640,8 +1640,8 @@
             const svg = document.getElementById('keyboard');
             const scale = getScale(state.scale);
             if (!scale) return;
-            const rootMod = ((scale.root % 12) + 12) % 12;
-            const litSet = new Set(scale.semitones.map(s => ((s % 12) + 12) % 12));
+            const rootMod = scale.root;
+            const litSet = new Set(scale.semitones.map(s => (scale.root + s) % 12));
             pianoSVG(svg, PH, BH, litSet, rootMod, null);
         }
 
@@ -1650,12 +1650,12 @@
             if (!svg) return;
             const scale = getScale(state.scale);
             if (!scale) return;
-            const rootMod = ((scale.root % 12) + 12) % 12;
-            const litSet = new Set(scale.semitones.map(s => ((s % 12) + 12) % 12));
+            const rootMod = scale.root;
+            const litSet = new Set(scale.semitones.map(s => (scale.root + s) % 12));
             const activeMods = new Set(noteNames.map(n => {
                 const idx = scale.notes.indexOf(n);
                 if (idx === -1) return -1;
-                return ((scale.semitones[idx] % 12) + 12) % 12;
+                return (scale.root + scale.semitones[idx]) % 12;
             }).filter(m => m !== -1));
             const exH = 70, exBH = 43;
             pianoSVG(svg, exH, exBH, litSet, rootMod, activeMods);
