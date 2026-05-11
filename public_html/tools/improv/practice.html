@@ -48,6 +48,33 @@
             padding: 60px 32px 120px;
         }
 
+        @media (min-width: 1100px) {
+            .page { max-width: 1180px; padding: 40px 48px 60px; }
+        }
+
+        .ex-cols { display: block; }
+        .setup-cols { display: block; }
+
+        @media (min-width: 1100px) {
+            .ex-cols {
+                display: grid;
+                grid-template-columns: minmax(420px, 1fr) minmax(420px, 1fr);
+                gap: 40px;
+                align-items: start;
+            }
+            .ex-col-right > div:first-child { margin-top: 0; }
+            .exercise-card { margin-bottom: 0; }
+
+            .setup-cols {
+                display: grid;
+                grid-template-columns: minmax(420px, 1fr) minmax(420px, 1fr);
+                gap: 48px;
+                align-items: start;
+            }
+            .setup-cols .mode-grid { grid-template-columns: 1fr; }
+            .setup-col-left .section-divider { display: none; }
+        }
+
         h1 {
             font-size: 13px;
             font-weight: 400;
@@ -1162,81 +1189,87 @@
         <!-- VIEW: SETUP -->
         <div class="view active" id="view-setup">
             <div class="fade-in">
+                <div class="setup-cols">
 
-                <!-- Scale -->
-                <div class="scale-display">
-                    <div class="scale-name" onclick="openScalePicker()" id="current-scale-name">До мажор</div>
-                    <div class="scale-hint">↑ нажми, чтобы сменить лад</div>
-                </div>
+                    <!-- Left column: scale, keyboard, level -->
+                    <div class="setup-col-left">
+                        <!-- Scale -->
+                        <div class="scale-display">
+                            <div class="scale-name" onclick="openScalePicker()" id="current-scale-name">До мажор</div>
+                            <div class="scale-hint">↑ нажми, чтобы сменить лад</div>
+                        </div>
 
-                <!-- Keyboard -->
-                <div class="keyboard-wrap">
-                    <svg id="keyboard" style="display:block;overflow:visible;"></svg>
-                </div>
+                        <!-- Keyboard -->
+                        <div class="keyboard-wrap">
+                            <svg id="keyboard" style="display:block;overflow:visible;"></svg>
+                        </div>
 
-                <hr class="section-divider" style="margin: 32px 0;">
+                        <hr class="section-divider" style="margin: 32px 0;">
 
-                <!-- Level -->
-                <h3
-                    style="font-size:14px; letter-spacing:0.15em; text-transform:uppercase; color:var(--text3); margin-bottom:16px;">
-                    Уровень</h3>
-                <div class="level-row" id="level-row">
-                    <button class="level-btn active" data-level="1" onclick="setLevel(1)">У1</button>
-                    <button class="level-btn" data-level="2" onclick="setLevel(2)">У2</button>
-                    <button class="level-btn" data-level="3" onclick="setLevel(3)">У3</button>
-                    <button class="level-btn" data-level="4" onclick="setLevel(4)">У4</button>
-                    <button class="level-btn" data-level="5" onclick="setLevel(5)">У5</button>
-                </div>
-                <div class="level-desc" id="level-desc">Один звук. Динамика, длительности, штрихи, ритм, регистр,
-                    педаль.</div>
+                        <!-- Level -->
+                        <h3
+                            style="font-size:14px; letter-spacing:0.15em; text-transform:uppercase; color:var(--text3); margin-bottom:16px;">
+                            Уровень</h3>
+                        <div class="level-row" id="level-row">
+                            <button class="level-btn active" data-level="1" onclick="setLevel(1)">У1</button>
+                            <button class="level-btn" data-level="2" onclick="setLevel(2)">У2</button>
+                            <button class="level-btn" data-level="3" onclick="setLevel(3)">У3</button>
+                            <button class="level-btn" data-level="4" onclick="setLevel(4)">У4</button>
+                            <button class="level-btn" data-level="5" onclick="setLevel(5)">У5</button>
+                        </div>
+                        <div class="level-desc" id="level-desc">Один звук. Динамика, длительности, штрихи, ритм, регистр,
+                            педаль.</div>
+                    </div><!-- /setup-col-left -->
 
-                <hr class="section-divider" style="margin: 32px 0;">
+                    <!-- Right column: mode, duration, start -->
+                    <div class="setup-col-right">
+                        <!-- Mode -->
+                        <h3
+                            style="font-size:14px; letter-spacing:0.15em; text-transform:uppercase; color:var(--text3); margin-bottom:16px;">
+                            Режим</h3>
+                        <div class="mode-grid" id="mode-grid">
+                            <div class="mode-card selected" data-mode="flash" onclick="setMode('flash')">
+                                <div class="mode-title">Быстрый</div>
+                                <div class="mode-sub">Один уровень, N упражнений + свободно.</div>
+                                <div class="mode-meta">У1 · У2 · У3</div>
+                            </div>
+                            <div class="mode-card" data-mode="explore" onclick="setMode('explore')">
+                                <div class="mode-title">Исследование</div>
+                                <div class="mode-sub">У1 → У2 → У3, по 2 упражнения.</div>
+                                <div class="mode-meta">7 частей</div>
+                            </div>
+                            <div class="mode-card" data-mode="immersion" onclick="setMode('immersion')">
+                                <div class="mode-title">Погружение</div>
+                                <div class="mode-sub">Полная прогрессия У1 → У5 + сценарная свободная игра.</div>
+                                <div class="mode-meta">11 частей</div>
+                            </div>
+                        </div>
 
-                <!-- Mode -->
-                <h3
-                    style="font-size:14px; letter-spacing:0.15em; text-transform:uppercase; color:var(--text3); margin-bottom:16px;">
-                    Режим</h3>
-                <div class="mode-grid" id="mode-grid">
-                    <div class="mode-card selected" data-mode="flash" onclick="setMode('flash')">
-                        <div class="mode-title">Быстрый</div>
-                        <div class="mode-sub">Один уровень, N упражнений + свободно.</div>
-                        <div class="mode-meta">У1 · У2 · У3</div>
-                    </div>
-                    <div class="mode-card" data-mode="explore" onclick="setMode('explore')">
-                        <div class="mode-title">Исследование</div>
-                        <div class="mode-sub">У1 → У2 → У3, по 2 упражнения.</div>
-                        <div class="mode-meta">7 частей</div>
-                    </div>
-                    <div class="mode-card" data-mode="immersion" onclick="setMode('immersion')">
-                        <div class="mode-title">Погружение</div>
-                        <div class="mode-sub">Полная прогрессия У1 → У5 + сценарная свободная игра.</div>
-                        <div class="mode-meta">11 частей</div>
-                    </div>
-                </div>
+                        <div id="mode-warning" class="mode-warning" style="display:none">
+                            В быстром режиме доступны только У1, У2, У3.
+                        </div>
 
-                <div id="mode-warning" class="mode-warning" style="display:none">
-                    В быстром режиме доступны только У1, У2, У3.
-                </div>
+                        <div class="duration-control">
+                            <label class="duration-label">Длительность одной части</label>
+                            <div class="duration-row">
+                                <input type="range" id="ex-duration" min="2" max="10" step="1" value="3">
+                                <span id="ex-duration-display">3 мин</span>
+                            </div>
+                            <div class="duration-hint" id="duration-hint"></div>
+                        </div>
 
-                <div class="duration-control">
-                    <label class="duration-label">Длительность одной части</label>
-                    <div class="duration-row">
-                        <input type="range" id="ex-duration" min="2" max="10" step="1" value="3">
-                        <span id="ex-duration-display">3 мин</span>
-                    </div>
-                    <div class="duration-hint" id="duration-hint"></div>
-                </div>
+                        <!-- Contrast pairs -->
+                        <div class="contrast-section" id="contrast-section" style="display:none">
+                            <div class="contrast-title">Оппозиция (необязательно)</div>
+                            <div class="contrast-grid" id="contrast-grid"></div>
+                        </div>
 
-                <!-- Contrast pairs -->
-                <div class="contrast-section" id="contrast-section" style="display:none">
-                    <div class="contrast-title">Оппозиция (необязательно)</div>
-                    <div class="contrast-grid" id="contrast-grid"></div>
-                </div>
+                        <div class="btn-row" style="margin-top:40px;">
+                            <button class="btn btn-primary" onclick="goToPresession()">Начать сессию →</button>
+                        </div>
+                    </div><!-- /setup-col-right -->
 
-                <div class="btn-row" style="margin-top:40px;">
-                    <button class="btn btn-primary" onclick="goToPresession()">Начать сессию →</button>
-                </div>
-
+                </div><!-- /setup-cols -->
             </div>
         </div>
 
@@ -1287,74 +1320,84 @@
 
                 <!-- Exercise display -->
                 <div class="exercise-wrap visible" id="exercise-display">
+                    <div class="ex-cols">
 
-                    <div class="exercise-header">
-                        <div class="exercise-num" id="exercise-label">Упражнение 1 из 2</div>
-                        <div class="exercise-time" id="exercise-mode-label">Вайб</div>
-                    </div>
+                        <!-- Left column: exercise card -->
+                        <div class="ex-col-left">
+                            <div class="exercise-header">
+                                <div class="exercise-num" id="exercise-label">Упражнение 1 из 2</div>
+                                <div class="exercise-time" id="exercise-mode-label">Вайб</div>
+                            </div>
 
-                    <div class="exercise-card" id="exercise-card">
-                        <div class="exercise-notes" id="exercise-notes">До</div>
-                        <div class="param-grid" id="param-grid"></div>
-                        <div class="exercise-instruction" id="exercise-instruction"></div>
-                    </div>
-
-                    <!-- Exercise keyboard: 2-oct with task notes lit -->
-                    <div style="margin:16px 0 8px;">
-                        <div
-                            style="font-size:11px; letter-spacing:0.12em; color:var(--text3); margin-bottom:8px; text-transform:uppercase;">
-                            Ноты</div>
-                        <div style="overflow-x:auto;">
-                            <svg id="ex-keyboard" style="display:block;overflow:visible;"></svg>
+                            <div class="exercise-card" id="exercise-card">
+                                <div class="exercise-notes" id="exercise-notes">До</div>
+                                <div class="param-grid" id="param-grid"></div>
+                                <div class="exercise-instruction" id="exercise-instruction"></div>
+                            </div>
                         </div>
-                    </div>
 
-                    <!-- Register visual: strips -->
-                    <div style="margin:16px 0 24px;">
-                        <div
-                            style="font-size:11px; letter-spacing:0.12em; color:var(--text3); margin-bottom:6px; text-transform:uppercase;">
-                            Регистр</div>
-                        <div class="register-bar" id="register-bar">
-                            <div class="register-seg" title="низ"></div>
-                            <div class="register-seg" title="низ"></div>
-                            <div class="register-seg" title="середина"></div>
-                            <div class="register-seg" title="середина"></div>
-                            <div class="register-seg" title="верх"></div>
-                            <div class="register-seg" title="верх"></div>
-                        </div>
-                        <div
-                            style="display:flex;justify-content:space-between;font-size:11px;color:var(--text3);letter-spacing:0.08em;margin-top:4px;">
-                            <span>низ</span><span>середина</span><span>верх</span>
-                        </div>
-                    </div>
+                        <!-- Right column: keyboard, register, metronome, timer, buttons -->
+                        <div class="ex-col-right">
 
-                    <!-- Metronome -->
-                    <div class="metronome-control">
-                        <button id="metronome-toggle" class="meta-btn">▶ Метроном</button>
-                        <select id="metronome-freq" class="meta-select">
-                            <option value="whole">целые</option>
-                            <option value="half">половинки</option>
-                            <option value="quarter" selected>четверти</option>
-                            <option value="eighth">восьмые</option>
-                        </select>
-                        <input type="range" id="metronome-vol" class="meta-vol" min="0" max="1" step="0.05" value="0.7" title="Громкость">
-                        <span id="metronome-bpm-display" class="meta-bpm"></span>
-                    </div>
+                            <!-- Exercise keyboard: 2-oct with task notes lit -->
+                            <div style="margin:0 0 8px;">
+                                <div
+                                    style="font-size:11px; letter-spacing:0.12em; color:var(--text3); margin-bottom:8px; text-transform:uppercase;">
+                                    Ноты</div>
+                                <div style="overflow-x:auto;">
+                                    <svg id="ex-keyboard" style="display:block;overflow:visible;"></svg>
+                                </div>
+                            </div>
 
-                    <!-- Timer -->
-                    <div class="timer-wrap">
-                        <div class="timer-display" id="timer-display">2:00</div>
-                        <div class="progress-bar">
-                            <div class="progress-fill" id="progress-fill"></div>
-                        </div>
-                        <div class="timer-label" id="timer-label">осталось</div>
-                    </div>
+                            <!-- Register visual: strips -->
+                            <div style="margin:16px 0 24px;">
+                                <div
+                                    style="font-size:11px; letter-spacing:0.12em; color:var(--text3); margin-bottom:6px; text-transform:uppercase;">
+                                    Регистр</div>
+                                <div class="register-bar" id="register-bar">
+                                    <div class="register-seg" title="низ"></div>
+                                    <div class="register-seg" title="низ"></div>
+                                    <div class="register-seg" title="середина"></div>
+                                    <div class="register-seg" title="середина"></div>
+                                    <div class="register-seg" title="верх"></div>
+                                    <div class="register-seg" title="верх"></div>
+                                </div>
+                                <div
+                                    style="display:flex;justify-content:space-between;font-size:11px;color:var(--text3);letter-spacing:0.08em;margin-top:4px;">
+                                    <span>низ</span><span>середина</span><span>верх</span>
+                                </div>
+                            </div>
 
-                    <div class="btn-row">
-                        <button class="btn btn-primary" onclick="nextExercise()" id="btn-next">Следующее →</button>
-                        <button class="btn btn-small" onclick="skipExercise()">Пропустить</button>
-                        <button class="btn btn-small" onclick="pauseTimer()" id="btn-pause">Пауза</button>
-                    </div>
+                            <!-- Metronome -->
+                            <div class="metronome-control">
+                                <button id="metronome-toggle" class="meta-btn">▶ Метроном</button>
+                                <select id="metronome-freq" class="meta-select">
+                                    <option value="whole">целые</option>
+                                    <option value="half">половинки</option>
+                                    <option value="quarter" selected>четверти</option>
+                                    <option value="eighth">восьмые</option>
+                                </select>
+                                <input type="range" id="metronome-vol" class="meta-vol" min="0" max="1" step="0.05" value="0.7" title="Громкость">
+                                <span id="metronome-bpm-display" class="meta-bpm"></span>
+                            </div>
+
+                            <!-- Timer -->
+                            <div class="timer-wrap">
+                                <div class="timer-display" id="timer-display">2:00</div>
+                                <div class="progress-bar">
+                                    <div class="progress-fill" id="progress-fill"></div>
+                                </div>
+                                <div class="timer-label" id="timer-label">осталось</div>
+                            </div>
+
+                            <div class="btn-row">
+                                <button class="btn btn-primary" onclick="nextExercise()" id="btn-next">Следующее →</button>
+                                <button class="btn btn-small" onclick="skipExercise()">Пропустить</button>
+                                <button class="btn btn-small" onclick="pauseTimer()" id="btn-pause">Пауза</button>
+                            </div>
+
+                        </div><!-- /ex-col-right -->
+                    </div><!-- /ex-cols -->
                 </div>
 
                 <!-- Free form scenario -->
@@ -1914,9 +1957,7 @@
             if (!contrast) return;
             const side = pick(contrast.split(' ↔ ')).trim();
             const map = {
-                'ostinato': ['ritm', 'ostinato'], 'rubato': ['ritm', 'rubato'],
-                'marcato': ['shtrix', 'marcato'], 'legato': ['shtrix', 'legato'],
-                'staccato': ['shtrix', 'staccato'], 'tenuto': ['shtrix', 'tenuto']
+                'ostinato': ['ritm', 'ostinato'], 'rubato': ['ritm', 'rubato']
             };
             Object.keys(map).forEach(keyword => {
                 if (side.includes(keyword)) {
@@ -1932,36 +1973,11 @@
         // excluding `exclude` ids. Add new musical contradictions here.
         const PARAM_CONSTRAINTS = [
             {
-                // Staccato на долгих нотах — физически невозможно, заменять на legato
-                when: { dlitelnost: ['half', 'whole'] },
-                param: 'shtrix',
-                exclude: ['staccato']
-            },
-            {
                 // Арпеджио и движение в противоположные стороны — противоречие:
                 // арпеджио предполагает унисонное горизонтальное движение обеих рук
                 when: { faktura: ['arp', 'wave'] },
                 param: 'dvizhenie',
                 exclude: ['contrary']
-            },
-            {
-                // Wave (туда-обратно) — быстрая фактура, несовместима с очень медленным темпом и разреженностью
-                when: { faktura: ['wave'], temp: ['largo'] },
-                param: 'plotnost',
-                exclude: ['sparse']
-            },
-            {
-                // Быстрые длительности + живой темп + staccato → не разреженно:
-                // физически невозможно сыграть быстро, отрывисто и редко одновременно
-                when: { dlitelnost: ['mix_fast', 'eighth', 'fast'], temp: ['vivace', 'allegro'], shtrix: ['staccato', 'marcato'] },
-                param: 'plotnost',
-                exclude: ['sparse']
-            },
-            {
-                // Педальный звук (одна рука держит) несовместим с независимым движением рук
-                when: { dvizhenie: ['pedal_note'] },
-                param: 'faktura',
-                exclude: ['shimmer', 'cluster']
             }
         ];
 
@@ -1985,8 +2001,8 @@
 
         function buildParams(level, lastParams = {}) {
             const result = {};
-            const keys = ['dlitelnost', 'temp', 'shtrix', 'dinamika', 'ritm', 'pedal'];
-            if (level >= 3) keys.push('dvizhenie', 'faktura', 'plotnost');
+            const keys = ['dlitelnost', 'temp', 'dinamika', 'ritm', 'pedal'];
+            if (level >= 3) keys.push('dvizhenie', 'faktura');
             keys.forEach(k => { result[k] = pickParamValue(k, lastParams); });
             applyContrast(result, state.contrast);
             applyConstraints(result);
@@ -2065,7 +2081,7 @@
                         time: secPerSection * 2,
                         durationSec: secPerSection,
                         label: 'Контраст',
-                        params: `смени на ${b.params?.shtrix?.value?.label || ''}, ${b.params?.dinamika?.value?.label || ''}`.trim()
+                        params: `смени на ${b.params?.faktura?.value?.label || b.params?.dinamika?.value?.label || ''}`.trim()
                     },
                     {
                         time: secPerSection * 3,
@@ -2083,9 +2099,8 @@
                 ? registr.map(r => r.label).join(' + ')
                 : (registr?.label || 'любой');
             const dlit = params.dlitelnost?.value?.label || '';
-            const shtr = params.shtrix?.value?.label || '';
             const din = params.dinamika?.value?.label || '';
-            return `${noteStr} — ${registrLabel} регистр. ${dlit} ноты, ${shtr}, ${din}.`;
+            return `${noteStr} — ${registrLabel} регистр. ${dlit} ноты, ${din}.`;
         }
 
         // ---- SESSION ----
@@ -2221,6 +2236,15 @@
                 document.getElementById('metronome-bpm-display').textContent = `♩ = ${tempBpm}`;
             } else {
                 document.getElementById('metronome-bpm-display').textContent = '';
+            }
+            const dlitToFreq = {
+                'whole': 'whole', 'half': 'half', 'quarter': 'quarter',
+                'eighth': 'eighth', 'mix_slow': 'quarter', 'mix_fast': 'eighth', 'fast': 'eighth'
+            };
+            const autoFreq = dlitToFreq[ex.params?.dlitelnost?.value?.id];
+            if (autoFreq) {
+                state.metronomeFreq = autoFreq;
+                localStorage.setItem('improv_metronomeFreq', autoFreq);
             }
             metronome.setFrequency(state.metronomeFreq);
             document.getElementById('metronome-freq').value = state.metronomeFreq;

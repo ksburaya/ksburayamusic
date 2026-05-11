@@ -36,16 +36,6 @@
     ],
     "developmentChance": 0.25
   },
-  "shtrix": {
-    "id": "shtrix",
-    "label": "Штрих",
-    "values": [
-      { "id": "legato",   "label": "связно",        "tip": "legato" },
-      { "id": "staccato", "label": "отрывисто",     "tip": "staccato" },
-      { "id": "marcato",  "label": "акцентировано", "tip": "marcato (^)" },
-      { "id": "tenuto",   "label": "плавно",        "tip": "tenuto (—)" }
-    ]
-  },
   "ritm": {
     "id": "ritm",
     "label": "Ритм",
@@ -104,16 +94,10 @@
       { "id": "arp",     "label": "арпеджио",       "tip": "последовательно по звукам" },
       { "id": "wave",    "label": "туда-обратно",   "tip": "вверх-вниз волной" },
       { "id": "shimmer",  "label": "переливы",       "tip": "быстрое скользящее движение" },
-      { "id": "cluster",  "label": "кластер",        "tip": "несколько близких нот одновременно" }
-    ]
-  },
-  "plotnost": {
-    "id": "plotnost",
-    "label": "Плотность",
-    "minLevel": 3,
-    "values": [
-      { "id": "dense",  "label": "насыщенно",  "tip": "много нот, мало пространства" },
-      { "id": "sparse", "label": "разрежённо", "tip": "мало нот, много тишины" }
+      { "id": "cluster",    "label": "кластер",   "tip": "несколько близких нот одновременно" },
+      { "id": "sozvuchiya", "label": "созвучия",  "tip": "несколько одновременно звучащих нот" },
+      { "id": "melody",     "label": "мелодия",   "tip": "одна линия из нот" },
+      { "id": "free",       "label": "свободная", "tip": "любая фактура по слуху" }
     ]
   }
 }
