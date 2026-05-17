@@ -6,23 +6,42 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Тренажёр импровизации</title>
     <link
-        href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&family=Cormorant:ital,wght@0,300;0,400;1,300&display=swap"
+        href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&family=Cormorant:ital,wght@0,300;0,400;1,300&family=Inter+Tight:wght@300;400;500;600&display=swap"
         rel="stylesheet">
     <style>
         :root {
-            --bg: #0e0d0c;
-            --bg2: #141310;
-            --bg3: #1a1916;
-            --surface: #201f1c;
-            --surface2: #272522;
-            --border: rgba(255, 255, 255, 0.07);
-            --border2: rgba(255, 255, 255, 0.13);
-            --text: #e8e4dc;
-            --text2: #9a9487;
-            --text3: #5a5550;
-            --accent: #c8a96e;
-            --accent2: #8b6e3a;
-            --accent-dim: rgba(200, 169, 110, 0.12);
+            /* v2 design-template palette */
+            --ink: #1c1814;
+            --ink-2: #4a4339;
+            --ink-3: #7a7062;
+            --paper: #f4ede0;
+            --paper-2: #ebe2cf;
+            --paper-3: #ddd1b5;
+            --paper-deep: #cfc09e;
+            --clay: #8a4a2a;
+            --clay-2: #a85c39;
+            --clay-line: rgba(138,74,42,0.30);
+            --clay-soft: rgba(138,74,42,0.10);
+            --gold: #b39661;
+            --gold-soft: rgba(179,150,97,0.18);
+            --sage: #4a6b4a;
+            --slate: #3a4a5c;
+            --rule: rgba(28,24,20,0.12);
+            --rule-strong: rgba(28,24,20,0.22);
+            /* v1 compat aliases — keep existing v1 CSS working */
+            --bg: var(--paper);
+            --bg2: var(--paper-2);
+            --bg3: var(--paper-3);
+            --surface: var(--paper-2);
+            --surface2: var(--paper-3);
+            --border: var(--rule);
+            --border2: var(--rule-strong);
+            --text: var(--ink);
+            --text2: var(--ink-2);
+            --text3: var(--ink-3);
+            --accent: var(--clay);
+            --accent2: var(--gold);
+            --accent-dim: var(--clay-soft);
             --red: #c26b5a;
             --green: #6b9e6b;
         }
@@ -446,56 +465,75 @@
         .param-grid {
             display: grid;
             grid-template-columns: 1fr 1fr;
-            gap: 16px;
+            gap: 12px;
             margin-bottom: 20px;
         }
 
         .param-item {
-            padding: 12px 16px;
-            background: var(--bg2);
-            border: 1px solid var(--border);
-            border-radius: 1px;
+            padding: 18px 20px;
+            border-radius: 2px;
+            position: relative;
+            background: var(--paper-2);
+            color: var(--ink);
+            border: none;
         }
+        .param-item[data-param="dinamika"]   { background: #d6a83a; color: #1c1814; }
+        .param-item[data-param="temp"]       { background: #8a4a2a; color: #faf2dc; }
+        .param-item[data-param="dlitelnost"] { background: #2f3e4f; color: #ece5d2; }
+        .param-item[data-param="ritm"]       { background: #4a6b4a; color: #ece5d2; }
+        .param-item[data-param="registr"]    { background: #c8b08c; color: #1c1814; }
+        .param-item[data-param="dvizhenie"]  { background: #b06038; color: #faf2dc; }
+        .param-item[data-param="faktura"]    { background: #4a7b8b; color: #ece5d2; }
 
         .param-label {
             font-size: 11px;
-            letter-spacing: 0.12em;
-            color: var(--text3);
+            letter-spacing: 0.24em;
             text-transform: uppercase;
-            margin-bottom: 4px;
+            font-weight: 700;
+            color: currentColor;
+            opacity: 0.7;
+            margin-bottom: 6px;
         }
 
         .param-value {
-            font-size: 18px;
-            font-weight: 400;
-            color: var(--text);
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 36px;
+            font-style: italic;
+            font-weight: 500;
+            line-height: 1.05;
+            color: currentColor;
             cursor: help;
-            border-bottom: 1px dashed var(--text3);
-            display: inline-block;
+            display: block;
+            border-bottom: none;
         }
 
-        .param-value:hover {
-            border-bottom-color: var(--accent);
-        }
+        .param-value:hover { opacity: 0.85; }
 
         .param-development {
-            margin-top: 4px;
+            margin-top: 3px;
+            font-family: 'Cormorant Garamond', serif;
             font-style: italic;
-            color: var(--text3);
-            font-size: 16px;
+            color: currentColor;
+            opacity: 0.85;
+            font-size: 22px;
+            line-height: 1.1;
         }
 
         .param-notation {
             margin-top: 4px;
             font-style: italic;
-            color: var(--text3);
+            color: currentColor;
+            opacity: 0.65;
             font-size: 14px;
+            letter-spacing: 0.04em;
         }
 
         .param-bpm {
             margin-top: 4px;
-            color: var(--accent2);
-            font-size: 14px;
+            color: currentColor;
+            opacity: 0.72;
+            font-size: 15px;
+            letter-spacing: 0.04em;
         }
 
         /* PERFORMANCE */
@@ -1169,13 +1207,661 @@
                 font-size: 48px;
             }
         }
+
+        /* ======================================================
+           V2 VIEWS — overlay the entire viewport
+           ====================================================== */
+        .v2-view {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            z-index: 20;
+            background: var(--paper);
+            display: none;
+            flex-direction: column;
+            font-family: 'Cormorant Garamond', serif;
+            overflow-y: auto;
+        }
+        .v2-view.active { display: flex; }
+
+        /* Dark header bar */
+        .v2-top {
+            background: var(--ink);
+            color: #e8e4dc;
+            padding: 0 32px;
+            height: 56px;
+            min-height: 56px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-shrink: 0;
+        }
+        .v2-top-left {
+            font-size: 12px;
+            letter-spacing: 0.2em;
+            text-transform: uppercase;
+            opacity: 0.75;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .v2-top-left a {
+            color: inherit;
+            text-decoration: none;
+            opacity: 0.6;
+            cursor: pointer;
+        }
+        .v2-top-left a:hover { opacity: 1; }
+        .v2-top-sep { opacity: 0.3; }
+        .v2-top-right {
+            display: flex;
+            align-items: center;
+            gap: 18px;
+        }
+        .v2-stage-badge {
+            font-size: 12px;
+            letter-spacing: 0.15em;
+            text-transform: uppercase;
+            color: #b39661;
+        }
+        /* Notation toggle */
+        .v2-notation-toggle {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            background: rgba(255,255,255,0.08);
+            border-radius: 2px;
+            padding: 4px 10px;
+            cursor: pointer;
+            font-size: 12px;
+            letter-spacing: 0.1em;
+            color: #e8e4dc;
+            border: none;
+            font-family: 'Cormorant Garamond', serif;
+            transition: background 0.15s;
+        }
+        .v2-notation-toggle:hover { background: rgba(255,255,255,0.14); }
+        .v2-notation-toggle .nt-active { color: #b39661; font-weight: 600; }
+
+        /* ---- Scale Map ---- */
+        .v2-map-body {
+            flex: 1;
+            padding: 40px 32px 60px;
+            max-width: 1100px;
+            width: 100%;
+            margin: 0 auto;
+        }
+        .v2-map-title {
+            font-size: 13px;
+            letter-spacing: 0.2em;
+            text-transform: uppercase;
+            color: var(--ink-3);
+            margin-bottom: 32px;
+        }
+        .v2-scale-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 16px;
+        }
+        .v2-scale-card {
+            background: var(--paper-2);
+            border: 1px solid var(--rule);
+            border-radius: 2px;
+            padding: 20px 20px 16px;
+            cursor: pointer;
+            transition: background 0.15s, border-color 0.15s;
+            position: relative;
+        }
+        .v2-scale-card:hover {
+            background: var(--paper-3);
+            border-color: var(--rule-strong);
+        }
+        .v2-scale-card-name {
+            font-size: 22px;
+            font-weight: 300;
+            font-style: italic;
+            color: var(--ink);
+            margin-bottom: 4px;
+        }
+        .v2-scale-card-sub {
+            font-size: 11px;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            color: var(--ink-3);
+        }
+        .v2-scale-card-status {
+            margin-top: 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .v2-status-dot {
+            width: 7px;
+            height: 7px;
+            border-radius: 50%;
+            background: var(--rule-strong);
+            flex-shrink: 0;
+        }
+        .v2-status-dot.in-progress { background: var(--gold); }
+        .v2-status-dot.done { background: var(--sage); }
+        .v2-status-text {
+            font-size: 11px;
+            color: var(--ink-3);
+            letter-spacing: 0.06em;
+        }
+        .v2-tonic-chips {
+            margin-top: 8px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 4px;
+        }
+        .v2-tonic-chip {
+            font-size: 10px;
+            letter-spacing: 0.08em;
+            padding: 2px 6px;
+            border-radius: 2px;
+            background: var(--paper-3);
+            color: var(--ink-2);
+        }
+        .v2-tonic-chip.done { background: var(--sage); color: #fff; }
+        .v2-tonic-chip.in-progress { background: var(--gold); color: var(--ink); }
+
+        /* ---- Tonic Select ---- */
+        .v2-tonic-body {
+            flex: 1;
+            padding: 40px 32px 60px;
+            max-width: 600px;
+            width: 100%;
+            margin: 0 auto;
+        }
+        .v2-tonic-title {
+            font-size: 28px;
+            font-weight: 300;
+            font-style: italic;
+            color: var(--ink);
+            margin-bottom: 6px;
+        }
+        .v2-tonic-sub {
+            font-size: 13px;
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+            color: var(--ink-3);
+            margin-bottom: 32px;
+        }
+        .v2-tonic-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px;
+            margin-bottom: 32px;
+        }
+        .v2-tonic-btn {
+            background: var(--paper-2);
+            border: 1px solid var(--rule);
+            border-radius: 2px;
+            padding: 16px 8px;
+            font-size: 18px;
+            font-family: 'Cormorant Garamond', serif;
+            font-style: italic;
+            color: var(--ink);
+            cursor: pointer;
+            text-align: center;
+            transition: background 0.15s, border-color 0.15s;
+            position: relative;
+        }
+        .v2-tonic-btn:hover { background: var(--paper-3); border-color: var(--rule-strong); }
+        .v2-tonic-btn.selected {
+            background: var(--clay);
+            border-color: var(--clay);
+            color: #faf2dc;
+        }
+        .v2-tonic-btn .tonic-status {
+            display: block;
+            font-size: 9px;
+            font-style: normal;
+            letter-spacing: 0.08em;
+            margin-top: 4px;
+            opacity: 0.7;
+        }
+        .v2-tonic-btn.prev-done .tonic-status { color: var(--sage); opacity: 1; }
+        .v2-tonic-btn.prev-progress .tonic-status { color: var(--gold); opacity: 1; }
+
+        /* ---- Introduction layout ---- */
+        .v2-intro-body {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            min-height: 0;
+        }
+
+        /* Path choice screen */
+        .v2-path-screen {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 40px 32px;
+            gap: 24px;
+        }
+        .v2-path-title {
+            font-size: 22px;
+            font-weight: 300;
+            font-style: italic;
+            color: var(--ink);
+            text-align: center;
+        }
+        .v2-path-toggle {
+            display: flex;
+            border: 1px solid var(--rule-strong);
+            border-radius: 2px;
+            overflow: hidden;
+        }
+        .v2-path-opt {
+            padding: 12px 28px;
+            font-size: 14px;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            cursor: pointer;
+            background: var(--paper-2);
+            color: var(--ink-2);
+            border: none;
+            font-family: 'Cormorant Garamond', serif;
+            transition: background 0.15s;
+        }
+        .v2-path-opt.active {
+            background: var(--clay);
+            color: #faf2dc;
+        }
+        .v2-path-notes {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            justify-content: center;
+            max-width: 480px;
+        }
+        .v2-path-note-btn {
+            padding: 12px 20px;
+            font-size: 20px;
+            font-family: 'Cormorant Garamond', serif;
+            font-style: italic;
+            background: var(--paper-2);
+            border: 1px solid var(--rule);
+            border-radius: 2px;
+            cursor: pointer;
+            color: var(--ink);
+            transition: background 0.15s;
+        }
+        .v2-path-note-btn.selected {
+            background: var(--clay);
+            border-color: var(--clay);
+            color: #faf2dc;
+        }
+        .v2-path-note-btn.excluded {
+            opacity: 0.35;
+            cursor: default;
+        }
+        .v2-path-confirm {
+            padding: 12px 36px;
+            background: var(--clay);
+            color: #faf2dc;
+            border: none;
+            border-radius: 2px;
+            font-size: 13px;
+            letter-spacing: 0.15em;
+            text-transform: uppercase;
+            cursor: pointer;
+            font-family: 'Cormorant Garamond', serif;
+            transition: background 0.15s;
+        }
+        .v2-path-confirm:hover { background: var(--clay-2); }
+        .v2-path-confirm:disabled { opacity: 0.4; cursor: default; }
+
+        /* Stage screen */
+        .v2-stage-screen {
+            flex: 1;
+            display: grid;
+            grid-template-rows: 1fr auto auto;
+            min-height: 0;
+        }
+        .v2-hero {
+            display: grid;
+            grid-template-columns: 1fr auto 1fr;
+            gap: 0;
+            padding: 32px 32px 24px;
+            align-items: start;
+        }
+        .v2-hero-left {
+            padding-right: 24px;
+            border-right: 1px solid var(--rule);
+        }
+        .v2-hero-center {
+            text-align: center;
+            padding: 0 40px;
+        }
+        .v2-hero-right {
+            padding-left: 24px;
+            border-left: 1px solid var(--rule);
+        }
+        .v2-col-label {
+            font-size: 11px;
+            letter-spacing: 0.2em;
+            text-transform: uppercase;
+            color: var(--ink-3);
+            margin-bottom: 10px;
+        }
+        .v2-piano-svg {
+            display: block;
+            max-width: 100%;
+            height: auto;
+            margin: 0 auto;
+            filter: drop-shadow(0 2px 6px rgba(28,24,20,0.12));
+        }
+        .v2-path-piano-wrap {
+            display: flex;
+            justify-content: center;
+            width: 100%;
+            padding: 8px 0;
+        }
+        .v2-notes-sep { color: var(--clay); }
+        .v2-notes-sub {
+            font-size: 16px;
+            letter-spacing: 0.1em;
+            color: var(--ink-3);
+            margin-top: 8px;
+            font-style: normal;
+        }
+        .v2-interval {
+            font-size: 20px;
+            font-style: italic;
+            color: var(--ink-2);
+            margin-bottom: 16px;
+        }
+        .v2-scale-row {
+            font-size: 13px;
+            letter-spacing: 0.06em;
+            color: var(--ink-3);
+            line-height: 2;
+        }
+        .v2-scale-note { display: inline-block; }
+        .v2-scale-note.active {
+            color: var(--clay);
+            font-weight: 600;
+        }
+        .v2-instruction {
+            font-size: 18px;
+            font-style: italic;
+            color: var(--ink-2);
+            line-height: 1.5;
+            text-align: right;
+        }
+
+        /* Faktura hint */
+        .v2-faktura-hint {
+            padding: 16px 32px;
+            background: var(--paper-2);
+            border-top: 1px solid var(--rule);
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+        .v2-faktura-text {
+            flex: 1;
+            font-size: 17px;
+            font-style: italic;
+            color: var(--ink-2);
+        }
+        .v2-faktura-refresh {
+            background: none;
+            border: 1px solid var(--rule-strong);
+            border-radius: 2px;
+            width: 32px; height: 32px;
+            display: flex; align-items: center; justify-content: center;
+            cursor: pointer;
+            color: var(--ink-3);
+            font-size: 16px;
+            transition: background 0.15s;
+            flex-shrink: 0;
+        }
+        .v2-faktura-refresh:hover { background: var(--paper-3); }
+
+        /* Bottom bar */
+        .v2-bottom {
+            padding: 16px 32px;
+            background: var(--paper);
+            border-top: 1px solid var(--rule);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-shrink: 0;
+        }
+        .v2-timer {
+            font-size: 28px;
+            font-style: italic;
+            color: var(--ink-3);
+            font-weight: 300;
+            min-width: 80px;
+        }
+        .v2-bottom-btns {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+        }
+        .v2-btn {
+            padding: 10px 28px;
+            font-size: 13px;
+            letter-spacing: 0.15em;
+            text-transform: uppercase;
+            border-radius: 2px;
+            cursor: pointer;
+            font-family: 'Cormorant Garamond', serif;
+            transition: background 0.15s;
+            border: 1px solid var(--rule-strong);
+            background: var(--paper-2);
+            color: var(--ink-2);
+        }
+        .v2-btn:hover { background: var(--paper-3); }
+        .v2-btn-primary {
+            background: var(--clay);
+            color: #faf2dc;
+            border-color: var(--clay);
+        }
+        .v2-btn-primary:hover { background: var(--clay-2); border-color: var(--clay-2); }
+
+        /* Done screen */
+        .v2-done-screen {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 60px 32px;
+            text-align: center;
+            gap: 20px;
+        }
+        .v2-done-title {
+            font-size: 36px;
+            font-weight: 300;
+            font-style: italic;
+            color: var(--ink);
+        }
+        .v2-done-sub {
+            font-size: 16px;
+            color: var(--ink-3);
+            letter-spacing: 0.08em;
+            max-width: 400px;
+        }
+        .v2-done-btns {
+            display: flex;
+            gap: 12px;
+            margin-top: 16px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        /* Pause overlay */
+        .v2-pause-overlay {
+            display: none;
+            position: absolute;
+            inset: 0;
+            background: rgba(244,237,224,0.92);
+            z-index: 5;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 20px;
+        }
+        .v2-pause-overlay.visible { display: flex; }
+        .v2-pause-label {
+            font-size: 18px;
+            letter-spacing: 0.2em;
+            text-transform: uppercase;
+            color: var(--ink-3);
+        }
+
+        /* Practice select view */
+        .v2-practice-body {
+            flex: 1;
+            padding: 40px 48px;
+            display: flex;
+            flex-direction: column;
+            gap: 32px;
+            max-width: 800px;
+            margin: 0 auto;
+            width: 100%;
+        }
+        .v2-practice-modes {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 16px;
+        }
+        .v2-mode-card {
+            padding: 20px 16px;
+            background: var(--paper-2);
+            border: 1px solid var(--rule);
+            border-radius: 2px;
+            text-align: left;
+            cursor: pointer;
+            font-family: 'Cormorant Garamond', serif;
+            transition: background 0.15s, border-color 0.15s;
+        }
+        .v2-mode-card.active {
+            background: var(--paper-3);
+            border-color: var(--clay);
+            border-left: 3px solid var(--clay);
+        }
+        .v2-mode-title {
+            font-size: 18px;
+            font-weight: 500;
+            color: var(--ink);
+            margin-bottom: 6px;
+        }
+        .v2-mode-sub {
+            font-size: 14px;
+            font-style: italic;
+            color: var(--ink-3);
+            line-height: 1.4;
+        }
+        .v2-practice-settings {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        .v2-practice-row {
+            display: flex;
+            align-items: center;
+            gap: 24px;
+        }
+        .v2-practice-row .v2-col-label {
+            width: 160px;
+            flex-shrink: 0;
+            margin-bottom: 0;
+        }
+        .v2-practice-level-row {
+            display: flex;
+            gap: 8px;
+        }
+        .v2-level-btn {
+            padding: 8px 16px;
+            font-size: 14px;
+            font-family: 'Cormorant Garamond', serif;
+            letter-spacing: 0.08em;
+            background: var(--paper-2);
+            border: 1px solid var(--rule);
+            border-radius: 2px;
+            cursor: pointer;
+            color: var(--ink-2);
+            transition: background 0.15s;
+        }
+        .v2-level-btn.active {
+            background: var(--clay);
+            border-color: var(--clay);
+            color: #faf2dc;
+        }
+        .v2-level-btn.locked, .v2-level-btn:disabled {
+            opacity: 0.3;
+            cursor: default;
+        }
+        .v2-practice-dur-row {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .v2-practice-dur-row input[type="range"] {
+            width: 160px;
+            accent-color: var(--clay);
+        }
+        .v2-practice-footer {
+            display: flex;
+            gap: 12px;
+            margin-top: auto;
+        }
+
+        /* Section 2 stub */
+        .v2-section2-stub {
+            margin: 40px 48px 32px;
+            padding: 28px 32px;
+            background: var(--paper-2);
+            border: 1px solid var(--rule);
+            opacity: 0.5;
+        }
+        .v2-section2-label {
+            font-size: 11px;
+            letter-spacing: 0.2em;
+            text-transform: uppercase;
+            color: var(--ink-3);
+            margin-bottom: 6px;
+        }
+        .v2-section2-title {
+            font-size: 22px;
+            font-style: italic;
+            color: var(--ink);
+        }
+        .v2-section2-note {
+            font-size: 13px;
+            color: var(--ink-3);
+            margin-top: 4px;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+        }
+
+        @media (max-width: 700px) {
+            .v2-hero { grid-template-columns: 1fr; padding: 20px 16px; }
+            .v2-hero-left { border-right: none; border-bottom: 1px solid var(--rule); padding-right: 0; padding-bottom: 16px; margin-bottom: 16px; }
+            .v2-hero-right { border-left: none; padding-left: 0; margin-top: 16px; }
+            .v2-hero-center { padding: 16px 0; }
+            .v2-tonic-grid { grid-template-columns: repeat(3, 1fr); }
+            .v2-map-body { padding: 24px 16px 40px; }
+            .v2-practice-body { padding: 24px 16px; }
+            .v2-practice-modes { grid-template-columns: 1fr; }
+            .v2-practice-row { flex-direction: column; align-items: flex-start; gap: 10px; }
+            .v2-practice-row .v2-col-label { width: auto; }
+        }
     </style>
 </head>
 
 <body>
     <div class="page">
 
-        <div class="top-nav">
+        <div class="top-nav" style="display:none">
             <div style="font-size:13px; letter-spacing:0.18em; color:var(--text3); text-transform:uppercase;">Тренажёр
                 импровизации</div>
             <div class="nav-links">
@@ -1475,21 +2161,1043 @@
         </div>
     </div>
 
+    <!-- ===== V2 VIEW: SCALE MAP ===== -->
+    <div class="v2-view" id="view-scale-map">
+        <div class="v2-top">
+            <div class="v2-top-left">
+                <span>Тренажёр</span>
+                <span class="v2-top-sep">·</span>
+                <span>Разработка лада</span>
+            </div>
+            <div class="v2-top-right">
+                <button class="v2-notation-toggle" id="v2-notation-toggle-map" onclick="v2ToggleNotation()">
+                    <span id="v2-nt-label-map">Си ⇄ B</span>
+                </button>
+            </div>
+        </div>
+        <div class="v2-map-body">
+            <div class="v2-map-title">Выбери лад для работы</div>
+            <div class="v2-scale-grid" id="v2-scale-grid"></div>
+        </div>
+        <div class="v2-section2-stub">
+            <div class="v2-section2-label">Секция 2</div>
+            <div class="v2-section2-title">EIS-приёмы</div>
+            <div class="v2-section2-note">Скоро</div>
+        </div>
+    </div>
+
+    <!-- ===== V2 VIEW: TONIC SELECT ===== -->
+    <div class="v2-view" id="view-tonic-select">
+        <div class="v2-top">
+            <div class="v2-top-left">
+                <a onclick="v2ShowMap()">Тренажёр</a>
+                <span class="v2-top-sep">·</span>
+                <span id="v2-tonic-breadcrumb">Эолийский</span>
+            </div>
+            <div class="v2-top-right">
+                <button class="v2-notation-toggle" onclick="v2ToggleNotation()">
+                    <span id="v2-nt-label-tonic">Си ⇄ B</span>
+                </button>
+            </div>
+        </div>
+        <div class="v2-tonic-body">
+            <div class="v2-tonic-title" id="v2-tonic-scale-name">Эолийский</div>
+            <div class="v2-tonic-sub">Выбери тонику</div>
+            <div class="v2-tonic-grid" id="v2-tonic-grid"></div>
+            <div style="display:flex;gap:12px;flex-wrap:wrap;">
+                <button class="v2-btn v2-btn-primary" id="v2-tonic-start-btn" onclick="v2StartIntro()" disabled>Начать знакомство</button>
+                <button class="v2-btn v2-btn-primary" id="v2-tonic-practice-btn" onclick="v2GoToPractice()" disabled style="display:none">К практике →</button>
+                <button class="v2-btn" onclick="v2ShowMap()">Назад</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== V2 VIEW: PRACTICE SELECT ===== -->
+    <div class="v2-view" id="view-practice-select">
+        <div class="v2-top">
+            <div class="v2-top-left">
+                <a onclick="v2ShowMap()">Тренажёр</a>
+                <span class="v2-top-sep">·</span>
+                <span>Практика</span>
+                <span class="v2-top-sep">·</span>
+                <span id="v2-practice-scale-label">–</span>
+            </div>
+            <div class="v2-top-right">
+                <button class="v2-notation-toggle" onclick="v2ToggleNotation()">
+                    <span id="v2-nt-label-practice">Си ⇄ B</span>
+                </button>
+            </div>
+        </div>
+        <div class="v2-practice-body">
+            <div class="v2-practice-modes" id="v2-practice-modes"></div>
+            <div class="v2-practice-settings">
+                <div class="v2-practice-row">
+                    <div class="v2-col-label">Уровень</div>
+                    <div class="v2-practice-level-row" id="v2-practice-level-row"></div>
+                </div>
+                <div class="v2-practice-row">
+                    <div class="v2-col-label">Длительность части</div>
+                    <div class="v2-practice-dur-row">
+                        <input type="range" id="v2-practice-duration" min="2" max="10" step="1" value="3">
+                        <span id="v2-practice-duration-label">3 мин</span>
+                    </div>
+                </div>
+            </div>
+            <div class="v2-practice-footer">
+                <button class="v2-btn" onclick="v2ShowMap()">← Карта ладов</button>
+                <button class="v2-btn v2-btn-primary" onclick="v2StartPractice()">Начать сессию →</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== V2 VIEW: INTRODUCTION ===== -->
+    <div class="v2-view" id="view-introduction" style="position:relative">
+        <div class="v2-top">
+            <div class="v2-top-left">
+                <a onclick="v2ShowMap()">Тренажёр</a>
+                <span class="v2-top-sep">·</span>
+                <span>Знакомство</span>
+                <span class="v2-top-sep">·</span>
+                <span id="v2-intro-scale-label">Си — эолийский</span>
+            </div>
+            <div class="v2-top-right">
+                <span class="v2-stage-badge" id="v2-stage-badge">ЭТАП 1 / 5</span>
+                <button class="v2-notation-toggle" onclick="v2ToggleNotation()">
+                    <span id="v2-nt-label-intro">Си ⇄ B</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- Path choice sub-screen -->
+        <div class="v2-intro-body" id="v2-path-screen" style="display:none">
+            <div class="v2-path-screen">
+                <div class="v2-path-title" id="v2-path-title">Выбери следующий звук</div>
+                <div class="v2-path-toggle">
+                    <button class="v2-path-opt active" id="v2-path-ear" onclick="v2SetPathMode('ear')">На слух</button>
+                    <button class="v2-path-opt" id="v2-path-random" onclick="v2SetPathMode('random')">Случайно</button>
+                </div>
+                <div class="v2-path-piano-wrap"><svg id="v2-piano-path" class="v2-piano-svg"></svg></div>
+                <button class="v2-path-confirm" id="v2-path-confirm" onclick="v2ConfirmPath()" disabled>Выбрал</button>
+            </div>
+        </div>
+
+        <!-- Stage sub-screen -->
+        <div class="v2-stage-screen" id="v2-stage-screen" style="display:none">
+            <div class="v2-hero">
+                <div class="v2-hero-left">
+                    <div class="v2-col-label">Звуки задания</div>
+                    <div class="v2-interval" id="v2-interval-label"></div>
+                    <div class="v2-scale-row" id="v2-scale-row"></div>
+                </div>
+                <div class="v2-hero-center">
+                    <svg id="v2-piano-stage" class="v2-piano-svg"></svg>
+                    <div class="v2-notes-sub" id="v2-notes-sub"></div>
+                </div>
+                <div class="v2-hero-right">
+                    <div class="v2-col-label">Инструкция</div>
+                    <div class="v2-instruction" id="v2-instruction"></div>
+                </div>
+            </div>
+            <div class="v2-faktura-hint">
+                <div class="v2-faktura-text" id="v2-faktura-text">...</div>
+                <button class="v2-faktura-refresh" title="Обновить подсказку" onclick="v2RefreshHint()">↻</button>
+            </div>
+            <div class="v2-bottom">
+                <div class="v2-timer" id="v2-session-timer">0:00</div>
+                <div class="v2-bottom-btns">
+                    <button class="v2-btn" id="v2-pause-btn" onclick="v2TogglePause()">Пауза</button>
+                    <button class="v2-btn v2-btn-primary" onclick="v2NextStage()">Дальше →</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Done sub-screen -->
+        <div class="v2-done-screen" id="v2-done-screen" style="display:none">
+            <div class="v2-done-title">Знакомство пройдено</div>
+            <div class="v2-done-sub" id="v2-done-sub">Ты прошёл все 5 этапов. Теперь этот лад доступен для практики.</div>
+            <div class="v2-done-btns">
+                <button class="v2-btn" onclick="v2ShowMap()">К карте ладов</button>
+                <button class="v2-btn v2-btn-primary" onclick="v2PracticeComingSoon()">К режимам практики</button>
+            </div>
+        </div>
+
+        <!-- Pause overlay -->
+        <div class="v2-pause-overlay" id="v2-pause-overlay">
+            <div class="v2-pause-label">Пауза</div>
+            <button class="v2-btn v2-btn-primary" onclick="v2TogglePause()">Продолжить</button>
+        </div>
+    </div>
+
     <script>
-        const DATA = { scales: null, params: null, modes: null, levels: null };
+        const DATA = { scales: null, params: null, modes: null, levels: null, fakturaPhrases: null };
 
         async function loadData() {
-            const [scalesJson, paramsJson, modesJson, levelsJson] = await Promise.all([
+            const [scalesJson, paramsJson, modesJson, levelsJson, fakturaPhrases] = await Promise.all([
                 fetch('data/scales.json').then(r => r.json()),
                 fetch('data/params.json').then(r => r.json()),
                 fetch('data/modes.json').then(r => r.json()),
-                fetch('data/levels.json').then(r => r.json())
+                fetch('data/levels.json').then(r => r.json()),
+                fetch('data/faktura-phrases.json').then(r => r.json())
             ]);
             DATA.scales = scalesJson.scales;
             DATA.params = paramsJson;
             DATA.modes = modesJson;
             DATA.levels = levelsJson;
+            DATA.fakturaPhrases = fakturaPhrases;
             DATA.scaleMap = new Map(DATA.scales.map(s => [s.id, s]));
+        }
+
+        // ============================================================
+        // V2: NOTE NOTATION MODULE
+        // ============================================================
+        const NOTE_SHARPS_RU = ['До','До#','Ре','Ре#','Ми','Фа','Фа#','Соль','Соль#','Ля','Ля#','Си'];
+        const NOTE_FLATS_RU  = ['До','Реb','Ре','Миb','Ми','Фа','Соль b','Соль','Ляb','Ля','Сиb','Си'];
+        const NOTE_SHARPS_EN = ['C','C#','D','D#','E','F','F#','G','G#','A','A#','B'];
+        const NOTE_FLATS_EN  = ['C','Db','D','Eb','E','F','Gb','G','Ab','A','Bb','B'];
+
+        // Returns note name for pitch class 0-11 given accidentals preference and notation mode
+        function v2NoteName(pc, accPref, notationMode) {
+            const useFlats = accPref === 'flats';
+            const useCyrillic = (notationMode || v2State.settings.note_notation) !== 'latin';
+            if (useCyrillic) return useFlats ? NOTE_FLATS_RU[pc] : NOTE_SHARPS_RU[pc];
+            return useFlats ? NOTE_FLATS_EN[pc] : NOTE_SHARPS_EN[pc];
+        }
+
+        // Get semitones array from scale object
+        function v2GetSemitones(scale) {
+            return scale.intervals_cents
+                .filter(c => c < 1200)
+                .map(c => Math.round(c / 100));
+        }
+
+        // Get note names for a scale from given tonic MIDI pitch class
+        function v2GetScaleNotes(scaleId, tonicPc) {
+            const scale = DATA.scaleMap.get(scaleId);
+            if (!scale) return [];
+            const semitones = v2GetSemitones(scale);
+            const acc = scale.accidentals_preference || 'sharps';
+            return semitones.map(st => ({
+                pc: (tonicPc + st) % 12,
+                name: v2NoteName((tonicPc + st) % 12, acc)
+            }));
+        }
+
+        // Scale display name (tonic + scale name)
+        function v2ScaleDisplayName(scaleId, tonicPc) {
+            const scale = DATA.scaleMap.get(scaleId);
+            if (!scale) return '';
+            const acc = scale.accidentals_preference || 'sharps';
+            const tonicName = v2NoteName(tonicPc, acc);
+            const scaleName = v2State.settings.note_notation === 'latin' ? scale.name_en : scale.name_ru;
+            return `${tonicName} — ${scaleName}`;
+        }
+
+        // Interval name between two notes (simplified for 2-note case)
+        const INTERVAL_NAMES = [
+            'унисон','малая секунда','большая секунда','малая терция',
+            'большая терция','чистая кварта','тритон','чистая квинта',
+            'малая секста','большая секста','малая септима','большая септима'
+        ];
+        function v2IntervalName(pc1, pc2) {
+            const diff = ((pc2 - pc1) + 12) % 12;
+            return INTERVAL_NAMES[diff] || '';
+        }
+
+        // Stage instruction texts
+        const STAGE_INSTRUCTIONS = {
+            1: 'Услышь, как эта нота звучит сама по себе — как точка опоры.',
+            2: 'Сопоставь два звука как разговор двух голосов.',
+            3: 'Послушай, как три звука создают своё пространство.',
+            4: 'Четыре звука — уже целая картина. Изучи её.',
+            5: 'Весь лад перед тобой. Играй свободно, слушай каждую ступень.'
+        };
+
+        // ============================================================
+        // V2: STATE & localStorage
+        // ============================================================
+        const V2_STORAGE_KEY = 'improv_v2_state';
+
+        const v2State = {
+            settings: {
+                note_notation: 'cyrillic',
+                hint_refresh_interval_minutes: 4
+            },
+            lads: {}
+        };
+
+        function v2LoadState() {
+            try {
+                const raw = localStorage.getItem(V2_STORAGE_KEY);
+                if (raw) {
+                    const parsed = JSON.parse(raw);
+                    if (parsed.settings) Object.assign(v2State.settings, parsed.settings);
+                    if (parsed.lads) v2State.lads = parsed.lads;
+                }
+            } catch (e) { console.warn('v2LoadState error', e); }
+        }
+
+        function v2SaveState() {
+            try {
+                localStorage.setItem(V2_STORAGE_KEY, JSON.stringify(v2State));
+            } catch (e) { console.warn('v2SaveState error', e); }
+        }
+
+        function v2LadKey(scaleId, tonicPc) { return `${scaleId}__${tonicPc}`; }
+
+        function v2GetLadState(scaleId, tonicPc) {
+            const key = v2LadKey(scaleId, tonicPc);
+            if (!v2State.lads[key]) {
+                v2State.lads[key] = {
+                    introduction: { completed: false, current_stage: 1, notes_chosen_per_stage: {} },
+                    last_practice_mode: null
+                };
+            }
+            return v2State.lads[key];
+        }
+
+        function v2GetLadsSummary(scaleId) {
+            const result = {};
+            for (const [key, val] of Object.entries(v2State.lads)) {
+                if (key.startsWith(scaleId + '__')) {
+                    const tonicPc = parseInt(key.split('__')[1]);
+                    result[tonicPc] = val.introduction;
+                }
+            }
+            return result;
+        }
+
+        // ============================================================
+        // V2: HASH ROUTER
+        // ============================================================
+        const V2_VIEWS = ['view-scale-map', 'view-tonic-select', 'view-practice-select', 'view-introduction'];
+
+        function v2ShowView(id) {
+            V2_VIEWS.forEach(v => {
+                const el = document.getElementById(v);
+                if (el) el.classList.toggle('active', v === id);
+            });
+        }
+
+        function v2ShowMap() {
+            v2IntroCleanup();
+            v2RenderMap();
+            v2ShowView('view-scale-map');
+            history.replaceState(null, '', '#/map');
+        }
+
+        let v2CurrentScale = null;
+        let v2CurrentTonic = null;
+
+        function v2OpenTonicSelect(scaleId) {
+            v2CurrentScale = scaleId;
+            v2CurrentTonic = null;
+            const scale = DATA.scaleMap.get(scaleId);
+            const name = v2State.settings.note_notation === 'latin' ? scale.name_en : scale.name_ru;
+            document.getElementById('v2-tonic-breadcrumb').textContent = name;
+            document.getElementById('v2-tonic-scale-name').textContent = name;
+            v2RenderTonicGrid(scaleId);
+            v2ShowView('view-tonic-select');
+            history.replaceState(null, '', `#/tonic?lad=${scaleId}`);
+        }
+
+        function v2StartIntro() {
+            if (!v2CurrentScale || v2CurrentTonic === null) return;
+            const lad = v2GetLadState(v2CurrentScale, v2CurrentTonic);
+            const stage = lad.introduction.current_stage || 1;
+            v2OpenIntro(v2CurrentScale, v2CurrentTonic, stage);
+        }
+
+        function v2OpenIntro(scaleId, tonicPc, stage) {
+            v2CurrentScale = scaleId;
+            v2CurrentTonic = tonicPc;
+            v2IntroCleanup();
+            v2RenderIntroHeader();
+            v2ShowView('view-introduction');
+            history.replaceState(null, '', `#/intro?lad=${scaleId}&tonic=${tonicPc}&stage=${stage}`);
+            v2RunStage(stage);
+        }
+
+        function v2HandleHash() {
+            const hash = location.hash;
+            if (!hash || hash === '#/' || hash === '#/map') {
+                v2ShowMap();
+                return;
+            }
+            if (hash.startsWith('#/tonic')) {
+                const p = new URLSearchParams(hash.split('?')[1] || '');
+                const lad = p.get('lad');
+                if (lad && DATA.scaleMap.has(lad)) { v2OpenTonicSelect(lad); return; }
+            }
+            if (hash.startsWith('#/intro')) {
+                const p = new URLSearchParams(hash.split('?')[1] || '');
+                const lad = p.get('lad');
+                const tonic = parseInt(p.get('tonic'));
+                const stage = parseInt(p.get('stage')) || 1;
+                if (lad && DATA.scaleMap.has(lad) && !isNaN(tonic)) {
+                    v2OpenIntro(lad, tonic, stage);
+                    return;
+                }
+            }
+            if (hash.startsWith('#/practice')) {
+                const p = new URLSearchParams(hash.split('?')[1] || '');
+                const lad = p.get('lad');
+                const tonic = parseInt(p.get('tonic'));
+                if (lad && DATA.scaleMap.has(lad) && !isNaN(tonic)) {
+                    v2OpenPracticeSelect(lad, tonic);
+                    return;
+                }
+            }
+            v2ShowMap();
+        }
+
+        // ============================================================
+        // V2: NOTATION TOGGLE
+        // ============================================================
+        function v2ToggleNotation() {
+            v2State.settings.note_notation = v2State.settings.note_notation === 'cyrillic' ? 'latin' : 'cyrillic';
+            v2SaveState();
+            v2RefreshNotationLabels();
+            // re-render current active view
+            const activeMap = document.getElementById('view-scale-map').classList.contains('active');
+            const activeTonic = document.getElementById('view-tonic-select').classList.contains('active');
+            const activePractice = document.getElementById('view-practice-select').classList.contains('active');
+            const activeIntro = document.getElementById('view-introduction').classList.contains('active');
+            if (activeMap) v2RenderMap();
+            if (activeTonic && v2CurrentScale) v2RenderTonicGrid(v2CurrentScale);
+            if (activePractice) v2RenderPracticeSelect();
+            if (activeIntro) {
+                v2RenderIntroHeader();
+                if (document.getElementById('v2-stage-screen').style.display !== 'none') v2RenderStageContent();
+                if (document.getElementById('v2-path-screen').style.display !== 'none') v2RenderPathPiano(v2IntroStage, null);
+            }
+        }
+
+        function v2RefreshNotationLabels() {
+            const label = v2State.settings.note_notation === 'cyrillic' ? 'Си ⇄ B' : 'B ⇄ Си';
+            document.querySelectorAll('[id^="v2-nt-label"]').forEach(el => { el.textContent = label; });
+        }
+
+        // ============================================================
+        // V2: SCALE MAP
+        // ============================================================
+        function v2RenderMap() {
+            const grid = document.getElementById('v2-scale-grid');
+            if (!grid || !DATA.scales) return;
+            v2RefreshNotationLabels();
+            const visible = DATA.scales.filter(s => s.visible).sort((a, b) => a.order - b.order);
+            grid.innerHTML = '';
+            visible.forEach(scale => {
+                const summary = v2GetLadsSummary(scale.id);
+                const tonicEntries = Object.entries(summary);
+                const hasDone = tonicEntries.some(([, v]) => v.completed);
+                const hasProgress = tonicEntries.some(([, v]) => !v.completed && v.current_stage > 1);
+
+                let statusClass = '';
+                let statusText = 'не начат';
+                if (hasDone) { statusClass = 'done'; statusText = 'знакомство пройдено'; }
+                else if (hasProgress) { statusClass = 'in-progress'; statusText = 'в процессе'; }
+
+                const name = v2State.settings.note_notation === 'latin' ? scale.name_en : scale.name_ru;
+                const card = document.createElement('div');
+                card.className = 'v2-scale-card';
+                card.onclick = () => v2OpenTonicSelect(scale.id);
+
+                let tonicChipsHtml = '';
+                if (tonicEntries.length > 0) {
+                    tonicChipsHtml = `<div class="v2-tonic-chips">` +
+                        tonicEntries.map(([pc, intro]) => {
+                            const acc = scale.accidentals_preference || 'sharps';
+                            const tName = v2NoteName(parseInt(pc), acc);
+                            const cls = intro.completed ? 'done' : 'in-progress';
+                            return `<span class="v2-tonic-chip ${cls}">${tName}</span>`;
+                        }).join('') + `</div>`;
+                }
+
+                card.innerHTML = `
+                    <div class="v2-scale-card-name">${name}</div>
+                    <div class="v2-scale-card-status">
+                        <div class="v2-status-dot ${statusClass}"></div>
+                        <span class="v2-status-text">${statusText}</span>
+                    </div>
+                    ${tonicChipsHtml}
+                `;
+                grid.appendChild(card);
+            });
+        }
+
+        // ============================================================
+        // V2: TONIC SELECT
+        // ============================================================
+        function v2RenderTonicGrid(scaleId) {
+            const scale = DATA.scaleMap.get(scaleId);
+            if (!scale) return;
+            const acc = scale.accidentals_preference || 'sharps';
+            const summary = v2GetLadsSummary(scaleId);
+            const grid = document.getElementById('v2-tonic-grid');
+            grid.innerHTML = '';
+            for (let pc = 0; pc < 12; pc++) {
+                const name = v2NoteName(pc, acc);
+                const intro = summary[pc];
+                let statusText = '';
+                let extraClass = '';
+                if (intro) {
+                    if (intro.completed) { statusText = 'пройдено'; extraClass = 'prev-done'; }
+                    else if (intro.current_stage > 1) { statusText = `этап ${intro.current_stage}/5`; extraClass = 'prev-progress'; }
+                }
+                const btn = document.createElement('button');
+                btn.className = `v2-tonic-btn ${extraClass}`;
+                btn.innerHTML = `${name}${statusText ? `<span class="tonic-status">${statusText}</span>` : ''}`;
+                btn.onclick = () => v2SelectTonic(pc);
+                grid.appendChild(btn);
+            }
+            document.getElementById('v2-tonic-start-btn').disabled = true;
+            v2RefreshNotationLabels();
+        }
+
+        function v2SelectTonic(pc) {
+            v2CurrentTonic = pc;
+            document.querySelectorAll('.v2-tonic-btn').forEach((btn, i) => {
+                btn.classList.toggle('selected', i === pc);
+            });
+            const lad = v2GetLadState(v2CurrentScale, pc);
+            const done = lad.introduction.completed;
+            const startBtn = document.getElementById('v2-tonic-start-btn');
+            startBtn.disabled = false;
+            startBtn.textContent = done ? 'Повторить знакомство' : 'Начать знакомство';
+            const practiceBtn = document.getElementById('v2-tonic-practice-btn');
+            practiceBtn.style.display = done ? '' : 'none';
+            practiceBtn.disabled = !done;
+        }
+
+        function v2GoToPractice() {
+            if (v2CurrentTonic !== null) v2OpenPracticeSelect(v2CurrentScale, v2CurrentTonic);
+        }
+
+        // ============================================================
+        // V2: INTRODUCTION FLOW
+        // ============================================================
+        let v2IntroStage = 1;
+        let v2IntroNotes = [];   // {pc, name} for current stage
+        let v2PathMode = 'ear';
+        let v2PathSelected = []; // pitch classes chosen on path screen
+        let v2SessionTimerInterval = null;
+        let v2SessionSeconds = 0;
+        let v2SessionPaused = false;
+        let v2HintTimerInterval = null;
+        let v2HintPhrase = null;
+        let v2HintPhraseTypes = [];
+        let v2HintPhraseIdx = 0;
+
+        function v2RenderIntroHeader() {
+            if (v2CurrentScale === null || v2CurrentTonic === null) return;
+            const label = v2ScaleDisplayName(v2CurrentScale, v2CurrentTonic);
+            document.getElementById('v2-intro-scale-label').textContent = label;
+            v2RefreshNotationLabels();
+        }
+
+        function v2RunStage(stage) {
+            v2IntroStage = stage;
+            document.getElementById('v2-stage-badge').textContent = `ЭТАП ${stage} / 5`;
+
+            const lad = v2GetLadState(v2CurrentScale, v2CurrentTonic);
+            lad.introduction.current_stage = stage;
+            v2SaveState();
+
+            if (stage === 1) {
+                // Stage 1: tonic only, go straight to stage screen
+                const scale = DATA.scaleMap.get(v2CurrentScale);
+                const acc = scale.accidentals_preference || 'sharps';
+                v2IntroNotes = [{ pc: v2CurrentTonic, name: v2NoteName(v2CurrentTonic, acc) }];
+                v2ShowStageScreen();
+            } else if (stage <= 4) {
+                // Stages 2-4: show path choice first
+                v2PathMode = 'ear';
+                v2PathSelected = [];
+                v2ShowPathScreen(stage);
+            } else {
+                // Stage 5: full scale
+                v2IntroNotes = v2GetScaleNotes(v2CurrentScale, v2CurrentTonic);
+                v2ShowStageScreen();
+            }
+        }
+
+        function v2ShowPathScreen(stage) {
+            document.getElementById('v2-path-screen').style.display = '';
+            document.getElementById('v2-stage-screen').style.display = 'none';
+            document.getElementById('v2-done-screen').style.display = 'none';
+
+            const lad = v2GetLadState(v2CurrentScale, v2CurrentTonic);
+            const prevNotes = v2CollectPrevNotes(lad, stage - 1);
+            const need = stage - prevNotes.length;
+
+            document.getElementById('v2-path-title').textContent =
+                `Этап ${stage}: добавь ${need} звук${need > 1 ? 'а' : ''}`;
+
+            document.getElementById('v2-path-ear').classList.toggle('active', true);
+            document.getElementById('v2-path-random').classList.toggle('active', false);
+            document.getElementById('v2-path-confirm').disabled = true;
+
+            v2RenderPathPiano(stage, prevNotes);
+        }
+
+        function v2RenderPathPiano(stage, prevNotes) {
+            // prevNotes may be passed or re-computed
+            if (!prevNotes) {
+                const lad = v2GetLadState(v2CurrentScale, v2CurrentTonic);
+                prevNotes = v2CollectPrevNotes(lad, stage - 1);
+            }
+            const allNotes = v2GetScaleNotes(v2CurrentScale, v2CurrentTonic);
+            const scalePcs = new Set(allNotes.map(n => n.pc));
+            // Already chosen notes shown as "active" (lighter clay), excluded from new selection
+            const prevPcs = new Set(prevNotes.map(n => n.pc));
+            // Currently selected new notes
+            const selectedPcs = new Set(v2PathSelected);
+
+            const svgEl = document.getElementById('v2-piano-path');
+            const handler = v2PathMode === 'ear'
+                ? (pc) => v2TogglePathNote(pc, stage, prevNotes.length)
+                : null;
+            v2PianoSVG(svgEl, scalePcs, prevPcs, v2CurrentTonic, prevPcs, selectedPcs, handler);
+        }
+
+        function v2CollectPrevNotes(lad, upToStage) {
+            // Stage 1 always has tonic
+            const scale = DATA.scaleMap.get(v2CurrentScale);
+            const acc = scale.accidentals_preference || 'sharps';
+            const notes = [{ pc: v2CurrentTonic, name: v2NoteName(v2CurrentTonic, acc) }];
+
+            for (let s = 2; s <= upToStage; s++) {
+                const chosen = lad.introduction.notes_chosen_per_stage[s];
+                if (chosen && chosen.length > 0) {
+                    chosen.forEach(pc => notes.push({ pc, name: v2NoteName(pc, acc) }));
+                }
+            }
+            return notes;
+        }
+
+        function v2SetPathMode(mode) {
+            v2PathMode = mode;
+            document.getElementById('v2-path-ear').classList.toggle('active', mode === 'ear');
+            document.getElementById('v2-path-random').classList.toggle('active', mode === 'random');
+            v2PathSelected = [];
+
+            if (mode === 'random') {
+                const lad = v2GetLadState(v2CurrentScale, v2CurrentTonic);
+                const prevNotes = v2CollectPrevNotes(lad, v2IntroStage - 1);
+                const allNotes = v2GetScaleNotes(v2CurrentScale, v2CurrentTonic);
+                const available = allNotes.filter(n => !prevNotes.some(p => p.pc === n.pc));
+                const need = v2IntroStage - prevNotes.length;
+                const shuffled = [...available].sort(() => Math.random() - 0.5);
+                v2PathSelected = shuffled.slice(0, need).map(n => n.pc);
+                document.getElementById('v2-path-confirm').disabled = false;
+            } else {
+                document.getElementById('v2-path-confirm').disabled = true;
+            }
+            v2RenderPathPiano(v2IntroStage, null);
+        }
+
+        function v2TogglePathNote(pc, stage, prevCount) {
+            if (v2PathMode !== 'ear') return;
+            const need = stage - prevCount;
+            const idx = v2PathSelected.indexOf(pc);
+            if (idx !== -1) {
+                v2PathSelected.splice(idx, 1);
+            } else {
+                if (v2PathSelected.length >= need) return;
+                v2PathSelected.push(pc);
+            }
+            document.getElementById('v2-path-confirm').disabled = v2PathSelected.length !== need;
+            v2RenderPathPiano(stage, null);
+        }
+
+        function v2ConfirmPath() {
+            if (!v2PathSelected.length) return;
+            const lad = v2GetLadState(v2CurrentScale, v2CurrentTonic);
+            const prevNotes = v2CollectPrevNotes(lad, v2IntroStage - 1);
+
+            // Save chosen notes
+            lad.introduction.notes_chosen_per_stage[v2IntroStage] = [...v2PathSelected];
+            v2SaveState();
+
+            // Build note list for this stage
+            const scale = DATA.scaleMap.get(v2CurrentScale);
+            const acc = scale.accidentals_preference || 'sharps';
+            v2IntroNotes = [...prevNotes, ...v2PathSelected.map(pc => ({ pc, name: v2NoteName(pc, acc) }))];
+
+            v2ShowStageScreen();
+        }
+
+        function v2ShowStageScreen() {
+            document.getElementById('v2-path-screen').style.display = 'none';
+            document.getElementById('v2-stage-screen').style.display = '';
+            document.getElementById('v2-done-screen').style.display = 'none';
+
+            v2RenderStageContent();
+            v2StartSessionTimer();
+            v2InitHintSystem();
+        }
+
+        // ============================================================
+        // V2: PIANO SVG RENDERER (1 octave, C–B layout)
+        // scalePcs: Set of pitch classes in scale (show dots)
+        // activePcs: Set of pcs shown as filled/highlighted (already chosen notes)
+        // tonicPc: pitch class of root (ring + dot style)
+        // excludedPcs: Set of pcs that are not clickable (already chosen)
+        // selectedPcs: Set of pcs currently selected by user (clay fill)
+        // onKeyClick: function(pc) or null for display-only
+        // ============================================================
+        function v2PianoSVG(svgEl, scalePcs, activePcs, tonicPc, excludedPcs, selectedPcs, onKeyClick) {
+            const VPW = 44, VPH = 120, VBW = 26, VBH = 76;
+            const totalW = 7 * VPW;
+            svgEl.setAttribute('viewBox', `0 0 ${totalW} ${VPH}`);
+            svgEl.setAttribute('width', totalW);
+            svgEl.setAttribute('height', VPH);
+            svgEl.innerHTML = '';
+            const ns = 'http://www.w3.org/2000/svg';
+            const whiteX = W_SEMI.map((_, wi) => wi * VPW);
+
+            function keyFill(pc, isWhite) {
+                if (selectedPcs && selectedPcs.has(pc)) return isWhite ? '#8a4a2a' : '#6b3820';
+                if (activePcs && activePcs.has(pc)) return isWhite ? '#c07b57' : '#8b4f30';
+                return isWhite ? '#f0ebe0' : '#1a1814';
+            }
+            function isKeyClickable(pc) {
+                return !!onKeyClick && scalePcs.has(pc) && !(excludedPcs && excludedPcs.has(pc));
+            }
+            function mkCirc(cx, cy, r, fill, stroke, sw) {
+                const c = document.createElementNS(ns, 'circle');
+                c.setAttribute('cx', cx); c.setAttribute('cy', cy); c.setAttribute('r', r);
+                if (fill) c.setAttribute('fill', fill); else c.setAttribute('fill', 'none');
+                if (stroke) { c.setAttribute('stroke', stroke); c.setAttribute('stroke-width', sw || '2'); }
+                c.style.pointerEvents = 'none';
+                return c;
+            }
+
+            // White keys
+            W_SEMI.forEach((pc, wi) => {
+                const x = whiteX[wi];
+                const clickable = isKeyClickable(pc);
+                const rect = document.createElementNS(ns, 'rect');
+                rect.setAttribute('x', x + 0.5); rect.setAttribute('y', 0.5);
+                rect.setAttribute('width', VPW - 1); rect.setAttribute('height', VPH - 1);
+                rect.setAttribute('rx', 3);
+                rect.setAttribute('fill', keyFill(pc, true));
+                rect.setAttribute('stroke', '#999'); rect.setAttribute('stroke-width', '1');
+                if (clickable) { rect.style.cursor = 'pointer'; rect.addEventListener('click', () => onKeyClick(pc)); }
+                svgEl.appendChild(rect);
+                if (scalePcs.has(pc)) {
+                    const cx = x + VPW / 2, cy = VPH - 14;
+                    const isLit = (activePcs && activePcs.has(pc)) || (selectedPcs && selectedPcs.has(pc));
+                    const dotC = isLit ? '#f4ede0' : '#b39661';
+                    if (pc === tonicPc) {
+                        svgEl.appendChild(mkCirc(cx, cy, 7, null, isLit ? '#f4ede0' : '#b39661', '2'));
+                        svgEl.appendChild(mkCirc(cx, cy, 3.5, dotC, null));
+                    } else {
+                        svgEl.appendChild(mkCirc(cx, cy, 4, dotC, null));
+                    }
+                }
+            });
+
+            // Black keys (drawn on top)
+            B_KEYS.forEach(([wi, pc]) => {
+                const x = Math.round(whiteX[wi] + VPW - VBW / 2);
+                const clickable = isKeyClickable(pc);
+                const rect = document.createElementNS(ns, 'rect');
+                rect.setAttribute('x', x); rect.setAttribute('y', 0);
+                rect.setAttribute('width', VBW); rect.setAttribute('height', VBH);
+                rect.setAttribute('rx', 2);
+                rect.setAttribute('fill', keyFill(pc, false));
+                rect.setAttribute('stroke', '#111'); rect.setAttribute('stroke-width', '1');
+                if (clickable) { rect.style.cursor = 'pointer'; rect.addEventListener('click', () => onKeyClick(pc)); }
+                svgEl.appendChild(rect);
+                if (scalePcs.has(pc)) {
+                    const cx = x + VBW / 2, cy = VBH - 10;
+                    const isLit = (activePcs && activePcs.has(pc)) || (selectedPcs && selectedPcs.has(pc));
+                    const dotC = isLit ? '#f4ede0' : '#b39661';
+                    if (pc === tonicPc) {
+                        svgEl.appendChild(mkCirc(cx, cy, 5, null, isLit ? '#f4ede0' : '#b39661', '1.5'));
+                        svgEl.appendChild(mkCirc(cx, cy, 2.5, dotC, null));
+                    } else {
+                        svgEl.appendChild(mkCirc(cx, cy, 3, dotC, null));
+                    }
+                }
+            });
+        }
+
+        function v2RenderStageContent() {
+            const notes = v2IntroNotes;
+            const isCyrillic = v2State.settings.note_notation !== 'latin';
+            const scale = DATA.scaleMap.get(v2CurrentScale);
+            const acc = scale.accidentals_preference || 'sharps';
+
+            // Piano keyboard in center
+            const svgEl = document.getElementById('v2-piano-stage');
+            const allNotes = v2GetScaleNotes(v2CurrentScale, v2CurrentTonic);
+            const scalePcs = new Set(allNotes.map(n => n.pc));
+            const activePcs = new Set(notes.map(n => n.pc));
+            v2PianoSVG(svgEl, scalePcs, activePcs, v2CurrentTonic, null, null, null);
+
+            // Sub-line: latin note names shown only in cyrillic mode
+            const subEl = document.getElementById('v2-notes-sub');
+            if (isCyrillic) {
+                const latNames = notes.map(n => (acc === 'flats' ? NOTE_FLATS_EN : NOTE_SHARPS_EN)[n.pc]);
+                subEl.textContent = latNames.join(' · ');
+                subEl.style.display = '';
+            } else {
+                subEl.style.display = 'none';
+            }
+
+            // Interval label (only if 2 notes)
+            const intEl = document.getElementById('v2-interval-label');
+            if (notes.length === 2) {
+                intEl.textContent = v2IntervalName(notes[0].pc, notes[1].pc);
+                intEl.style.display = '';
+            } else {
+                intEl.style.display = 'none';
+            }
+
+            // Full scale row with active notes highlighted
+            const activeArr = notes.map(n => n.pc);
+            const scaleRowEl = document.getElementById('v2-scale-row');
+            scaleRowEl.innerHTML = allNotes.map(n =>
+                `<span class="v2-scale-note${activeArr.includes(n.pc) ? ' active' : ''}">${n.name}</span>`
+            ).join(`<span style="color:var(--ink-3);margin:0 4px">·</span>`);
+
+            // Instruction
+            document.getElementById('v2-instruction').textContent = STAGE_INSTRUCTIONS[v2IntroStage] || '';
+        }
+
+        // ============================================================
+        // V2: SESSION TIMER
+        // ============================================================
+        function v2StartSessionTimer() {
+            v2StopSessionTimer();
+            v2SessionSeconds = 0;
+            v2SessionPaused = false;
+            v2UpdateTimerDisplay();
+            v2SessionTimerInterval = setInterval(() => {
+                if (!v2SessionPaused) {
+                    v2SessionSeconds++;
+                    v2UpdateTimerDisplay();
+                }
+            }, 1000);
+        }
+
+        function v2StopSessionTimer() {
+            if (v2SessionTimerInterval) { clearInterval(v2SessionTimerInterval); v2SessionTimerInterval = null; }
+        }
+
+        function v2UpdateTimerDisplay() {
+            const m = Math.floor(v2SessionSeconds / 60);
+            const s = v2SessionSeconds % 60;
+            const el = document.getElementById('v2-session-timer');
+            if (el) el.textContent = `${m}:${s.toString().padStart(2, '0')}`;
+        }
+
+        function v2TogglePause() {
+            v2SessionPaused = !v2SessionPaused;
+            const overlay = document.getElementById('v2-pause-overlay');
+            if (overlay) overlay.classList.toggle('visible', v2SessionPaused);
+            const btn = document.getElementById('v2-pause-btn');
+            if (btn) btn.textContent = v2SessionPaused ? 'Продолжить' : 'Пауза';
+        }
+
+        // ============================================================
+        // V2: FAKTURA HINTS
+        // ============================================================
+        function v2InitHintSystem() {
+            v2StopHintTimer();
+            v2PickHint();
+            const intervalMs = (v2State.settings.hint_refresh_interval_minutes || 4) * 60 * 1000;
+            v2HintTimerInterval = setInterval(() => v2PickHint(), intervalMs);
+        }
+
+        function v2StopHintTimer() {
+            if (v2HintTimerInterval) { clearInterval(v2HintTimerInterval); v2HintTimerInterval = null; }
+        }
+
+        function v2RefreshHint() {
+            v2StopHintTimer();
+            v2PickHint();
+            const intervalMs = (v2State.settings.hint_refresh_interval_minutes || 4) * 60 * 1000;
+            v2HintTimerInterval = setInterval(() => v2PickHint(), intervalMs);
+        }
+
+        function v2PickHint() {
+            if (!DATA.fakturaPhrases) return;
+            const noteCount = v2IntroNotes.length;
+            const key = String(Math.min(noteCount, 7));
+            const types = DATA.fakturaPhrases.by_note_count[key] || [];
+            if (!types.length) return;
+
+            // cycle through types, pick random phrase within type
+            if (!v2HintPhraseTypes.length || v2HintPhraseIdx >= v2HintPhraseTypes.length) {
+                v2HintPhraseTypes = [...types].sort(() => Math.random() - 0.5);
+                v2HintPhraseIdx = 0;
+            }
+            const type = v2HintPhraseTypes[v2HintPhraseIdx++];
+            const phrases = DATA.fakturaPhrases.phrases[type] || [];
+            if (!phrases.length) return;
+            const phrase = phrases[Math.floor(Math.random() * phrases.length)];
+
+            const el = document.getElementById('v2-faktura-text');
+            if (el) el.textContent = phrase;
+        }
+
+        // ============================================================
+        // V2: NAVIGATION
+        // ============================================================
+        function v2NextStage() {
+            if (v2IntroStage < 5) {
+                v2StopSessionTimer();
+                v2StopHintTimer();
+                v2RunStage(v2IntroStage + 1);
+            } else {
+                v2FinishIntro();
+            }
+        }
+
+        function v2FinishIntro() {
+            v2StopSessionTimer();
+            v2StopHintTimer();
+            const lad = v2GetLadState(v2CurrentScale, v2CurrentTonic);
+            lad.introduction.completed = true;
+            lad.introduction.current_stage = 5;
+            v2SaveState();
+
+            document.getElementById('v2-path-screen').style.display = 'none';
+            document.getElementById('v2-stage-screen').style.display = 'none';
+            document.getElementById('v2-done-screen').style.display = '';
+
+            const doneSub = document.getElementById('v2-done-sub');
+            if (doneSub) {
+                const name = v2ScaleDisplayName(v2CurrentScale, v2CurrentTonic);
+                doneSub.textContent = `Ты прошёл все 5 этапов для лада ${name}. Этот лад теперь доступен для практики.`;
+            }
+
+            history.replaceState(null, '', `#/intro/done?lad=${v2CurrentScale}&tonic=${v2CurrentTonic}`);
+            v2RenderMap(); // refresh map in background
+        }
+
+        function v2PracticeComingSoon() {
+            if (v2CurrentScale !== null && v2CurrentTonic !== null)
+                v2OpenPracticeSelect(v2CurrentScale, v2CurrentTonic);
+        }
+
+        // ============================================================
+        // V2: PRACTICE SELECT
+        // ============================================================
+        let v2PracticeMode = 'flash';
+        let v2PracticeLevel = 1;
+
+        function v2OpenPracticeSelect(scaleId, tonicPc) {
+            v2CurrentScale = scaleId;
+            v2CurrentTonic = tonicPc;
+            v2PracticeMode = state.mode || 'flash';
+            v2PracticeLevel = state.level || 1;
+            v2RenderPracticeSelect();
+            v2ShowView('view-practice-select');
+            history.replaceState(null, '', `#/practice?lad=${scaleId}&tonic=${tonicPc}`);
+        }
+
+        function v2RenderPracticeSelect() {
+            const label = v2ScaleDisplayName(v2CurrentScale, v2CurrentTonic);
+            document.getElementById('v2-practice-scale-label').textContent = label;
+            v2RefreshNotationLabels();
+
+            const MODES = [
+                { id: 'flash',     title: 'Быстрый',      sub: 'Один уровень, несколько упражнений + свободная игра' },
+                { id: 'explore',   title: 'Исследование', sub: 'У1 → У2 → У3, по 2 упражнения. 7 частей.' },
+                { id: 'immersion', title: 'Погружение',   sub: 'Полная прогрессия У1 → У5 + сценарная свободная игра.' }
+            ];
+            const container = document.getElementById('v2-practice-modes');
+            container.innerHTML = '';
+            MODES.forEach(m => {
+                const card = document.createElement('button');
+                card.className = 'v2-mode-card' + (m.id === v2PracticeMode ? ' active' : '');
+                card.innerHTML = `<div class="v2-mode-title">${m.title}</div><div class="v2-mode-sub">${m.sub}</div>`;
+                card.onclick = () => {
+                    v2PracticeMode = m.id;
+                    container.querySelectorAll('.v2-mode-card').forEach(c => c.classList.toggle('active', c === card));
+                    v2UpdatePracticeLevelConstraints();
+                };
+                container.appendChild(card);
+            });
+
+            const levelRow = document.getElementById('v2-practice-level-row');
+            levelRow.innerHTML = '';
+            for (let l = 1; l <= 5; l++) {
+                const btn = document.createElement('button');
+                btn.className = 'v2-level-btn' + (l === v2PracticeLevel ? ' active' : '');
+                btn.textContent = `У${l}`;
+                btn.dataset.level = l;
+                btn.onclick = () => {
+                    v2PracticeLevel = l;
+                    levelRow.querySelectorAll('.v2-level-btn').forEach(b => b.classList.toggle('active', parseInt(b.dataset.level) === l));
+                };
+                levelRow.appendChild(btn);
+            }
+
+            const dur = state.exerciseDurationMin || 3;
+            const durInput = document.getElementById('v2-practice-duration');
+            durInput.value = dur;
+            document.getElementById('v2-practice-duration-label').textContent = `${dur} мин`;
+            durInput.oninput = e => {
+                const v = parseInt(e.target.value);
+                state.exerciseDurationMin = v;
+                document.getElementById('v2-practice-duration-label').textContent = `${v} мин`;
+                localStorage.setItem('improv_exDuration', v);
+            };
+
+            v2UpdatePracticeLevelConstraints();
+        }
+
+        function v2UpdatePracticeLevelConstraints() {
+            const flashOnly = v2PracticeMode === 'flash';
+            document.querySelectorAll('#v2-practice-level-row .v2-level-btn').forEach(btn => {
+                const l = parseInt(btn.dataset.level);
+                btn.disabled = flashOnly && l > 3;
+                btn.classList.toggle('locked', flashOnly && l > 3);
+            });
+            if (flashOnly && v2PracticeLevel > 3) {
+                v2PracticeLevel = 3;
+                document.querySelectorAll('#v2-practice-level-row .v2-level-btn').forEach(b =>
+                    b.classList.toggle('active', parseInt(b.dataset.level) === 3));
+            }
+        }
+
+        function v2StartPractice() {
+            if (!v2CurrentScale || v2CurrentTonic === null) return;
+            state.scale = v2CurrentScale;
+            state.rootMidi = 60 + v2CurrentTonic;
+            state.level = v2PracticeLevel;
+            state.mode = v2PracticeMode;
+            state.presession = null;
+            saveToStorage();
+            refreshScaleName();
+            const lad = v2GetLadState(v2CurrentScale, v2CurrentTonic);
+            lad.last_practice_mode = v2PracticeMode;
+            v2SaveState();
+            v2ShowView(null);
+            goToPresession();
+        }
+
+        function v2IntroCleanup() {
+            v2StopSessionTimer();
+            v2StopHintTimer();
+            v2SessionPaused = false;
+            const overlay = document.getElementById('v2-pause-overlay');
+            if (overlay) overlay.classList.remove('visible');
+        }
+
+        // ============================================================
+        // V2: INIT
+        // ============================================================
+        function v2Init() {
+            v2LoadState();
+            v2RefreshNotationLabels();
+            window.addEventListener('hashchange', v2HandleHash);
+            v2HandleHash();
         }
 
         const NOTE_NAMES_RU = ['До','До#','Ре','Ре#','Ми','Фа','Фа#','Соль','Соль#','Ля','Ля#','Си'];
@@ -2001,7 +3709,7 @@
 
         function buildParams(level, lastParams = {}) {
             const result = {};
-            const keys = ['dlitelnost', 'temp', 'dinamika', 'ritm', 'pedal'];
+            const keys = ['dlitelnost', 'temp', 'dinamika', 'ritm'];
             if (level >= 3) keys.push('dvizhenie', 'faktura');
             keys.forEach(k => { result[k] = pickParamValue(k, lastParams); });
             applyContrast(result, state.contrast);
@@ -2165,10 +3873,11 @@
 
                 const grid = document.getElementById('param-grid');
                 grid.innerHTML = '';
-                Object.values(ex.params).forEach(p => {
+                Object.entries(ex.params).forEach(([paramKey, p]) => {
                     if (!p) return;
                     const item = document.createElement('div');
                     item.className = 'param-item';
+                    item.dataset.param = paramKey;
 
                     const labelEl = document.createElement('div');
                     labelEl.className = 'param-label';
@@ -2298,7 +4007,7 @@
         document.getElementById('btn-summary-save').addEventListener('click', () => {
             const postNote = document.getElementById('summary-postnote').value.trim();
             saveHistory(postNote);
-            showView('history');
+            v2ShowMap();
         });
 
         function getDeviceId() {
@@ -2661,7 +4370,11 @@
         }
 
         function repeatSession() {
-            startSession();
+            if (v2CurrentScale !== null && v2CurrentTonic !== null) {
+                v2OpenPracticeSelect(v2CurrentScale, v2CurrentTonic);
+            } else {
+                startSession();
+            }
         }
 
         function saveToStorage() {
@@ -2946,6 +4659,8 @@
             applyDefaultDuration();
             renderPerformance();
             renderHistory();
+
+            v2Init();
         }
         init();
     </script>
