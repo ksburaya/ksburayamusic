@@ -8,11 +8,12 @@
     @import url('https://fonts.googleapis.com/css2?family=Space+Mono:ital,wght@0,400;0,700;1,400&family=Unbounded:wght@300;400;600&display=swap');
 
     :root {
-      --bg: #0a0a0a; --surface: #111; --surface2: #1a1a1a;
-      --border: #222; --border2: #2e2e2e;
-      --text: #e8e4dc; --text-dim: #888; --text-faint: #444;
-      --accent: #e8c46a; --accent-dim: #7a6530;
-      --red: #e85454; --blue: #6ab4e8;
+      --bg: #f7f5f2; --surface: #efede9; --surface2: #e8e5e0;
+      --border: #dedad4; --border2: #ccc8c0;
+      --text: #1c1a17; --text-dim: #6b6560; --text-faint: #b0aca6;
+      --accent: #b07a00; --accent-dim: #d4a030;
+      --accent-bg: rgba(176,122,0,0.08);
+      --red: #c0392b; --blue: #1a5fa8;
       --mono: 'Space Mono', monospace; --wide: 'Unbounded', sans-serif;
     }
 
@@ -23,11 +24,6 @@
       background: var(--bg); color: var(--text);
       font-family: var(--mono); font-size: 13px; line-height: 1.6;
       min-height: 100vh;
-    }
-    body::after {
-      content: ''; position: fixed; inset: 0;
-      background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,0,0,0.025) 2px, rgba(0,0,0,0.025) 4px);
-      pointer-events: none; z-index: 9999;
     }
 
     /* HEADER */
@@ -120,7 +116,7 @@
       transition: border-color 0.1s, color 0.1s; white-space: nowrap;
     }
     .genre-pill:hover { border-color: var(--accent-dim); color: var(--text-dim); }
-    .genre-pill.active { border-color: rgba(232,196,106,0.4); color: var(--accent); background: rgba(232,196,106,0.06); }
+    .genre-pill.active { border-color: var(--accent-dim); color: var(--accent); background: var(--accent-bg); }
 
     /* Reset */
     .reset-btn {
@@ -162,24 +158,25 @@
     .pack-info { display: flex; flex-direction: column; gap: 3px; }
     .pack-genres { display: flex; flex-wrap: wrap; gap: 3px; }
     .pack-genre-tag { font-size: 8px; padding: 1px 5px; border: 1px solid var(--border2); color: var(--text-dim); }
-    .pack-genre-tag.active-filter { border-color: rgba(232,196,106,0.4); color: var(--accent); }
+    .pack-genre-tag.active-filter { border-color: var(--accent-dim); color: var(--accent); }
     .pack-genre-tag.sub { border-style: dashed; }
-    .pack-name { font-size: 12px; color: var(--text); }
+    .pack-name { font-size: 12px; }
+    .pack-name a { color: var(--text); text-decoration: none; transition: color 0.15s; }
+    .pack-name a:hover { color: var(--accent); text-decoration: underline; }
 
-    mark { background: rgba(232,196,106,0.25); color: var(--text); border-radius: 1px; }
+    mark { background: rgba(176,122,0,0.15); color: var(--text); border-radius: 1px; }
 
     /* Links column */
-    .pack-links { display: flex; flex-direction: column; gap: 4px; align-self: start; margin-top: 2px; }
-    .tg-link, .preview-link {
-      display: flex; align-items: center; gap: 4px; font-size: 9px;
-      text-decoration: none; padding: 3px 7px; border: 1px solid transparent;
-      white-space: nowrap; transition: border-color 0.1s, color 0.1s;
+    .pack-links { display: flex; align-self: start; margin-top: 2px; }
+    .tg-link {
+      display: flex; align-items: center; gap: 6px; font-size: 11px;
+      text-decoration: none; padding: 6px 14px;
+      background: var(--surface2); border: 1px solid var(--border2);
+      color: var(--text-dim); white-space: nowrap;
+      transition: border-color 0.15s, color 0.15s, background 0.15s;
     }
-    .tg-link { color: var(--text-faint); }
-    .tg-link:hover { border-color: var(--border2); color: var(--blue); }
-    .preview-link { color: var(--text-faint); }
-    .preview-link:hover { border-color: var(--border2); color: var(--accent); }
-    .tg-icon, .ext-icon { width: 12px; height: 12px; fill: currentColor; flex-shrink: 0; }
+    .tg-link:hover { border-color: var(--blue); color: var(--blue); background: var(--surface); }
+    .tg-icon { width: 13px; height: 13px; fill: currentColor; flex-shrink: 0; }
 
     /* Untagged section */
     .section-divider {
@@ -261,7 +258,6 @@
   <script>
     (function () {
       var TG_PATH = 'M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm5.894 8.221l-1.97 9.28c-.145.658-.537.818-1.084.508l-3-2.21-1.447 1.394c-.16.16-.295.295-.605.295l.213-3.053 5.56-5.023c.242-.213-.054-.333-.373-.12l-6.871 4.326-2.962-.924c-.643-.204-.657-.643.136-.953l11.57-4.461c.537-.194 1.006.131.833.941z';
-      var EXT_PATH = 'M14 3h7v7h-2V6.41l-9.29 9.3-1.42-1.42L17.59 5H14V3zM3 5h8v2H5v12h12v-6h2v8H3V5z';
 
       function esc(s) {
         return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
@@ -482,7 +478,15 @@
         /* pack name */
         var nameEl = document.createElement('div');
         nameEl.className = 'pack-name';
-        nameEl.innerHTML = hi(pack.name, q);
+        if (pack.preview_url) {
+          var nameLink = document.createElement('a');
+          nameLink.href = pack.preview_url;
+          nameLink.target = '_blank'; nameLink.rel = 'noopener';
+          nameLink.innerHTML = hi(pack.name, q);
+          nameEl.appendChild(nameLink);
+        } else {
+          nameEl.innerHTML = hi(pack.name, q);
+        }
         infoCol.appendChild(nameEl);
 
         /* Links col */
@@ -494,18 +498,8 @@
         tgLink.href = pack.telegram_url;
         tgLink.target = '_blank'; tgLink.rel = 'noopener';
         tgLink.appendChild(makeSvg(TG_PATH, 'tg-icon'));
-        tgLink.appendChild(Object.assign(document.createElement('span'), { textContent: 'TG' }));
+        tgLink.appendChild(Object.assign(document.createElement('span'), { textContent: 'Telegram' }));
         linksCol.appendChild(tgLink);
-
-        if (pack.preview_url) {
-          var previewLink = document.createElement('a');
-          previewLink.className = 'preview-link';
-          previewLink.href = pack.preview_url;
-          previewLink.target = '_blank'; previewLink.rel = 'noopener';
-          previewLink.appendChild(makeSvg(EXT_PATH, 'ext-icon'));
-          previewLink.appendChild(Object.assign(document.createElement('span'), { textContent: 'Preview' }));
-          linksCol.appendChild(previewLink);
-        }
 
         row.appendChild(bpmCol);
         row.appendChild(infoCol);
