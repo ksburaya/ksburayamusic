@@ -84412,8 +84412,8 @@
       var untagged = DATA.untagged_posts;
 
       /* ── globals ── */
-      var globalMin = tagged.reduce(function (m, p) { return Math.min(m, p.bpm_min); }, Infinity);
-      var globalMax = tagged.reduce(function (m, p) { return Math.max(m, p.bpm_max); }, -Infinity);
+      var globalMin = tagged.reduce(function (m, p) { return p.bpm_min != null ? Math.min(m, p.bpm_min) : m; }, Infinity);
+      var globalMax = tagged.reduce(function (m, p) { return p.bpm_max != null ? Math.max(m, p.bpm_max) : m; }, -Infinity);
 
       var totalPacks = tagged.reduce(function (s, p) { return s + p.packs.length; }, 0)
                      + untagged.reduce(function (s, p) { return s + p.packs.length; }, 0);
@@ -84466,7 +84466,7 @@
 
       function updateSliderFill() {
         var lo = +bpmMinInput.value, hi = +bpmMaxInput.value;
-        var range = globalMax - globalMin;
+        var range = globalMax - globalMin || 1;
         bpmFillEl.style.left  = ((lo - globalMin) / range * 100) + '%';
         bpmFillEl.style.right = ((globalMax - hi) / range * 100) + '%';
         bpmMinValEl.textContent = lo;
@@ -84538,6 +84538,7 @@
       function filterTagged() {
         var q = state.search.toLowerCase().trim();
         return tagged.filter(function (post) {
+          if (post.bpm_min == null || post.bpm_max == null) return false;
           if (post.bpm_min > state.bpmMax || post.bpm_max < state.bpmMin) return false;
           if (state.genre && post.genres.indexOf(state.genre) < 0) return false;
           if (q) {
@@ -84687,7 +84688,9 @@
           labelSpan.textContent = base + '–' + (base + 10) + ' BPM';
           var countSpan = document.createElement('span');
           countSpan.className = 'bpm-group-count';
-          countSpan.textContent = posts.length + ' ' + (posts.length === 1 ? 'пост' : 'постов');
+          var n = posts.length;
+          var pf = (n % 10 === 1 && n % 100 !== 11) ? 'пост' : (n % 10 >= 2 && n % 10 <= 4 && (n % 100 < 10 || n % 100 >= 20)) ? 'поста' : 'постов';
+          countSpan.textContent = n + ' ' + pf;
           header.appendChild(labelSpan);
           header.appendChild(countSpan);
           group.appendChild(header);
@@ -84712,7 +84715,7 @@
       }
 
       render();
-    })()
+    })();
   </script>
 </body>
 </html>
