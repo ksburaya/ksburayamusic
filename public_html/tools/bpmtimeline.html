@@ -32,7 +32,7 @@
 
     /* HEADER */
     header {
-      border-bottom: 1px solid var(--border2); padding: 24px 28px 18px;
+      border-bottom: 1px solid var(--border2); padding: 28px 32px 22px;
       display: flex; align-items: flex-end; gap: 20px; flex-wrap: wrap;
     }
     .header-title { font-family: var(--wide); font-size: 17px; font-weight: 300; letter-spacing: 0.04em; }
@@ -42,14 +42,14 @@
 
     /* LAYOUT */
     .layout {
-      display: grid; grid-template-columns: 260px 1fr;
-      min-height: calc(100vh - 72px);
+      display: grid; grid-template-columns: 280px 1fr;
+      min-height: calc(100vh - 80px);
     }
 
     /* SIDEBAR */
     .sidebar {
       border-right: 1px solid var(--border2); padding: 22px 18px;
-      position: sticky; top: 0; height: calc(100vh - 72px);
+      position: sticky; top: 0; height: calc(100vh - 80px);
       overflow-y: auto; display: flex; flex-direction: column; gap: 26px;
     }
     .sidebar::-webkit-scrollbar { width: 3px; }
@@ -163,7 +163,7 @@
     .post-info { display: flex; flex-direction: column; gap: 4px; }
     .post-genres { display: flex; flex-wrap: wrap; gap: 3px; }
     .post-genre-tag { font-size: 8px; padding: 1px 5px; border: 1px solid var(--border2); color: var(--text-dim); }
-    .post-genre-tag.active-filter { border-color: rgba(232,196,106,0.3); color: var(--accent); }
+    .post-genre-tag.active-filter { border-color: rgba(232,196,106,0.4); color: var(--accent); }
     .pack-line { display: flex; gap: 6px; align-items: baseline; }
     .pack-name { font-size: 12px; color: var(--text); }
     .pack-producer { font-size: 10px; color: var(--text-dim); }
@@ -191,7 +191,7 @@
     .post-row.untagged { opacity: 0.55; }
 
     /* Empty state */
-    .empty { padding: 60px 0; text-align: center; color: var(--text-faint); }
+    .empty { padding: 60px 0; text-align: center; color: var(--text-faint); display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 300px; }
     .empty-icon { font-size: 28px; margin-bottom: 12px; }
     .empty-text { font-size: 11px; letter-spacing: 0.05em; }
   </style>
