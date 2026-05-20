@@ -84406,7 +84406,313 @@
 }</script>
 
   <script>
-    /* JS added in Task 3 */
+    (function () {
+      var DATA = JSON.parse(document.getElementById('raw-data').textContent);
+      var tagged = DATA.tagged_posts;
+      var untagged = DATA.untagged_posts;
+
+      /* ── globals ── */
+      var globalMin = tagged.reduce(function (m, p) { return Math.min(m, p.bpm_min); }, Infinity);
+      var globalMax = tagged.reduce(function (m, p) { return Math.max(m, p.bpm_max); }, -Infinity);
+
+      var totalPacks = tagged.reduce(function (s, p) { return s + p.packs.length; }, 0)
+                     + untagged.reduce(function (s, p) { return s + p.packs.length; }, 0);
+
+      document.getElementById('stat-posts').textContent = tagged.length;
+      document.getElementById('stat-packs').textContent = totalPacks;
+      document.getElementById('stat-untagged').textContent = untagged.length;
+
+      /* ── genre list ── */
+      var genreCounts = {};
+      tagged.forEach(function (post) {
+        post.genres.forEach(function (g) { genreCounts[g] = (genreCounts[g] || 0) + 1; });
+      });
+      untagged.forEach(function (post) {
+        post.genres.forEach(function (g) { genreCounts[g] = (genreCounts[g] || 0) + 1; });
+      });
+      var allGenres = Object.entries(genreCounts).sort(function (a, b) { return b[1] - a[1]; });
+
+      /* ── state ── */
+      var state = { search: '', genre: null, bpmMin: globalMin, bpmMax: globalMax };
+
+      /* ── genre pills ── */
+      var genreListEl = document.getElementById('genre-list');
+      allGenres.forEach(function (entry) {
+        var g = entry[0];
+        var pill = document.createElement('div');
+        pill.className = 'genre-pill';
+        pill.textContent = g;
+        pill.dataset.genre = g;
+        pill.addEventListener('click', function () {
+          state.genre = state.genre === g ? null : g;
+          render();
+        });
+        genreListEl.appendChild(pill);
+      });
+
+      /* ── BPM slider ── */
+      var bpmMinInput = document.getElementById('bpm-min-input');
+      var bpmMaxInput = document.getElementById('bpm-max-input');
+      var bpmMinValEl = document.getElementById('bpm-min-val');
+      var bpmMaxValEl = document.getElementById('bpm-max-val');
+      var bpmFillEl = document.getElementById('bpm-slider-fill');
+
+      bpmMinInput.min = bpmMaxInput.min = globalMin;
+      bpmMinInput.max = bpmMaxInput.max = globalMax;
+      bpmMinInput.value = globalMin;
+      bpmMaxInput.value = globalMax;
+      document.getElementById('bpm-global-min').textContent = globalMin;
+      document.getElementById('bpm-global-max').textContent = globalMax;
+
+      function updateSliderFill() {
+        var lo = +bpmMinInput.value, hi = +bpmMaxInput.value;
+        var range = globalMax - globalMin;
+        bpmFillEl.style.left  = ((lo - globalMin) / range * 100) + '%';
+        bpmFillEl.style.right = ((globalMax - hi) / range * 100) + '%';
+        bpmMinValEl.textContent = lo;
+        bpmMaxValEl.textContent = hi;
+      }
+      updateSliderFill();
+
+      bpmMinInput.addEventListener('input', function () {
+        if (+this.value > +bpmMaxInput.value) this.value = bpmMaxInput.value;
+        state.bpmMin = +this.value;
+        updateSliderFill();
+        render();
+      });
+      bpmMaxInput.addEventListener('input', function () {
+        if (+this.value < +bpmMinInput.value) this.value = bpmMinInput.value;
+        state.bpmMax = +this.value;
+        updateSliderFill();
+        render();
+      });
+
+      /* ── text search ── */
+      var searchInput = document.getElementById('search-input');
+      var searchClear = document.getElementById('search-clear');
+      searchInput.addEventListener('input', function () {
+        state.search = this.value;
+        searchClear.classList.toggle('visible', !!this.value);
+        render();
+      });
+      searchClear.addEventListener('click', function () {
+        searchInput.value = '';
+        state.search = '';
+        this.classList.remove('visible');
+        render();
+      });
+
+      /* ── reset ── */
+      document.getElementById('reset-btn').addEventListener('click', function () {
+        state.search = ''; state.genre = null;
+        state.bpmMin = globalMin; state.bpmMax = globalMax;
+        searchInput.value = '';
+        searchClear.classList.remove('visible');
+        bpmMinInput.value = globalMin;
+        bpmMaxInput.value = globalMax;
+        updateSliderFill();
+        render();
+      });
+
+      /* ── helpers ── */
+      var TG_PATH = 'M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm5.894 8.221l-1.97 9.28c-.145.658-.537.818-1.084.508l-3-2.21-1.447 1.394c-.16.16-.295.295-.605.295l.213-3.053 5.56-5.023c.242-.213-.054-.333-.373-.12l-6.871 4.326-2.962-.924c-.643-.204-.657-.643.136-.953l11.57-4.461c.537-.194 1.006.131.833.941z';
+
+      function esc(s) {
+        return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+      }
+      function hi(text, q) {
+        if (!q) return esc(text);
+        var escaped = esc(text);
+        var qEsc = q.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+        return escaped.replace(new RegExp('(' + qEsc + ')', 'gi'), '<mark>$1</mark>');
+      }
+      function makeTgSvg() {
+        var svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+        svg.setAttribute('viewBox', '0 0 24 24'); svg.setAttribute('class', 'tg-icon');
+        var path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+        path.setAttribute('d', TG_PATH); svg.appendChild(path);
+        return svg;
+      }
+
+      /* ── filter ── */
+      function filterTagged() {
+        var q = state.search.toLowerCase().trim();
+        return tagged.filter(function (post) {
+          if (post.bpm_min > state.bpmMax || post.bpm_max < state.bpmMin) return false;
+          if (state.genre && post.genres.indexOf(state.genre) < 0) return false;
+          if (q) {
+            var match = post.packs.some(function (p) {
+              return p.name.toLowerCase().indexOf(q) >= 0 ||
+                (p.producer && p.producer.toLowerCase().indexOf(q) >= 0);
+            });
+            if (!match) return false;
+          }
+          return true;
+        }).sort(function (a, b) { return a.bpm_min - b.bpm_min; });
+      }
+
+      function filterUntagged() {
+        var q = state.search.toLowerCase().trim();
+        return untagged.filter(function (post) {
+          if (state.genre && post.genres.indexOf(state.genre) < 0) return false;
+          if (q) {
+            var match = post.packs.some(function (p) {
+              return p.name.toLowerCase().indexOf(q) >= 0 ||
+                (p.producer && p.producer.toLowerCase().indexOf(q) >= 0);
+            });
+            if (!match) return false;
+          }
+          return true;
+        });
+      }
+
+      /* ── row builders ── */
+      function makePostRow(post, isUntagged) {
+        var q = state.search.toLowerCase().trim();
+        var row = document.createElement('div');
+        row.className = 'post-row' + (isUntagged ? ' untagged' : '');
+
+        /* BPM col */
+        var bpmCol = document.createElement('div');
+        bpmCol.className = 'post-bpm-col';
+        if (!isUntagged) {
+          var bpmRange = document.createElement('div');
+          bpmRange.className = 'post-bpm-range';
+          bpmRange.textContent = post.bpm_min + '–' + post.bpm_max;
+          var bpmSlowed = document.createElement('div');
+          bpmSlowed.className = 'post-bpm-slowed';
+          bpmSlowed.textContent = 'slowed ' + post.slowed_min + '–' + post.slowed_max;
+          bpmCol.appendChild(bpmRange);
+          bpmCol.appendChild(bpmSlowed);
+        } else {
+          bpmCol.innerHTML = '<span style="color:var(--text-faint);font-size:11px">—</span>';
+        }
+
+        /* Info col */
+        var infoCol = document.createElement('div');
+        infoCol.className = 'post-info';
+
+        var genresEl = document.createElement('div');
+        genresEl.className = 'post-genres';
+        post.genres.forEach(function (g) {
+          var tag = document.createElement('span');
+          tag.className = 'post-genre-tag' + (g === state.genre ? ' active-filter' : '');
+          tag.textContent = g;
+          genresEl.appendChild(tag);
+        });
+        infoCol.appendChild(genresEl);
+
+        post.packs.forEach(function (p) {
+          var packLine = document.createElement('div');
+          packLine.className = 'pack-line';
+          var nameEl = document.createElement('span');
+          nameEl.className = 'pack-name';
+          nameEl.innerHTML = hi(p.name, q);
+          packLine.appendChild(nameEl);
+          if (p.producer && p.producer !== 'Unknown') {
+            var prodEl = document.createElement('span');
+            prodEl.className = 'pack-producer';
+            prodEl.innerHTML = hi(p.producer, q);
+            packLine.appendChild(prodEl);
+          }
+          infoCol.appendChild(packLine);
+        });
+
+        /* TG link */
+        var tgLink = document.createElement('a');
+        tgLink.className = 'tg-link';
+        tgLink.href = post.tg_url;
+        tgLink.target = '_blank'; tgLink.rel = 'noopener';
+        tgLink.appendChild(makeTgSvg());
+        var tgLabel = document.createElement('span');
+        tgLabel.textContent = 'TG';
+        tgLink.appendChild(tgLabel);
+
+        row.appendChild(bpmCol);
+        row.appendChild(infoCol);
+        row.appendChild(tgLink);
+        return row;
+      }
+
+      /* ── render ── */
+      function render() {
+        var q = state.search.toLowerCase().trim();
+        var filteredTagged = filterTagged();
+        var filteredUntagged = filterUntagged();
+
+        /* update genre pills */
+        document.querySelectorAll('.genre-pill').forEach(function (el) {
+          el.classList.toggle('active', el.dataset.genre === state.genre);
+        });
+
+        /* results count */
+        var packsFiltered = filteredTagged.reduce(function (s, p) { return s + p.packs.length; }, 0)
+                          + filteredUntagged.reduce(function (s, p) { return s + p.packs.length; }, 0);
+        var activeFilters = [state.genre, q, (state.bpmMin > globalMin || state.bpmMax < globalMax) ? '1' : ''].filter(Boolean).length;
+        var countEl = document.getElementById('results-count');
+        countEl.innerHTML = '<em>' + filteredTagged.length + '</em> постов &nbsp;·&nbsp; <em>' + packsFiltered + '</em> паков'
+          + (filteredUntagged.length ? ' &nbsp;·&nbsp; ' + filteredUntagged.length + ' без тега' : '')
+          + (activeFilters ? ' &nbsp;<span style="color:var(--text-faint);font-size:9px">[' + activeFilters + ' фильтр' + (activeFilters > 1 ? 'а' : '') + ']</span>' : '');
+
+        var timeline = document.getElementById('timeline');
+        timeline.innerHTML = '';
+
+        /* empty state */
+        if (!filteredTagged.length && !filteredUntagged.length) {
+          var empty = document.createElement('div');
+          empty.className = 'empty';
+          empty.innerHTML = '<div class="empty-icon">&#9711;</div><div class="empty-text">Ничего не найдено</div>';
+          timeline.appendChild(empty);
+          return;
+        }
+
+        /* group tagged by 10-BPM buckets */
+        var buckets = {};
+        filteredTagged.forEach(function (post) {
+          var bucketBase = Math.floor(post.bpm_min / 10) * 10;
+          if (!buckets[bucketBase]) buckets[bucketBase] = [];
+          buckets[bucketBase].push(post);
+        });
+        var sortedKeys = Object.keys(buckets).map(Number).sort(function (a, b) { return a - b; });
+
+        sortedKeys.forEach(function (base) {
+          var posts = buckets[base];
+          var group = document.createElement('div');
+          group.className = 'bpm-group';
+
+          var header = document.createElement('div');
+          header.className = 'bpm-group-header';
+          var labelSpan = document.createElement('span');
+          labelSpan.className = 'bpm-group-label';
+          labelSpan.textContent = base + '–' + (base + 10) + ' BPM';
+          var countSpan = document.createElement('span');
+          countSpan.className = 'bpm-group-count';
+          countSpan.textContent = posts.length + ' ' + (posts.length === 1 ? 'пост' : 'постов');
+          header.appendChild(labelSpan);
+          header.appendChild(countSpan);
+          group.appendChild(header);
+
+          posts.forEach(function (post) {
+            group.appendChild(makePostRow(post, false));
+          });
+          timeline.appendChild(group);
+        });
+
+        /* untagged section */
+        if (filteredUntagged.length) {
+          var divider = document.createElement('div');
+          divider.className = 'section-divider';
+          divider.innerHTML = '<span class="section-divider-label">Без BPM-тега</span>'
+            + '<span class="section-divider-note">' + filteredUntagged.length + ' постов — Vocals, SFX, MIDI…</span>';
+          timeline.appendChild(divider);
+          filteredUntagged.forEach(function (post) {
+            timeline.appendChild(makePostRow(post, true));
+          });
+        }
+      }
+
+      render();
+    })()
   </script>
 </body>
 </html>
