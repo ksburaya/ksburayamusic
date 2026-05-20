@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>BPM Map — Igor Starshinov</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Space+Mono:ital,wght@0,400;0,700;1,400&family=Unbounded:wght@300;400;600&display=swap');
+
+    :root {
+      --bg: #0a0a0a; --surface: #111; --surface2: #1a1a1a;
+      --border: #222; --border2: #2e2e2e;
+      --text: #e8e4dc; --text-dim: #888; --text-faint: #444;
+      --accent: #e8c46a; --accent-dim: #7a6530;
+      --red: #e85454; --blue: #6ab4e8;
+      --mono: 'Space Mono', monospace; --wide: 'Unbounded', sans-serif;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: var(--bg); color: var(--text);
+      font-family: var(--mono); font-size: 13px; line-height: 1.6;
+      min-height: 100vh;
+    }
+    body::after {
+      content: ''; position: fixed; inset: 0;
+      background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,0,0,0.025) 2px, rgba(0,0,0,0.025) 4px);
+      pointer-events: none; z-index: 9999;
+    }
+
+    /* HEADER */
+    header {
+      border-bottom: 1px solid var(--border2); padding: 24px 28px 18px;
+      display: flex; align-items: flex-end; gap: 20px; flex-wrap: wrap;
+    }
+    .header-title { font-family: var(--wide); font-size: 17px; font-weight: 300; letter-spacing: 0.04em; }
+    .header-title strong { font-weight: 600; color: var(--accent); }
+    .stats { margin-left: auto; font-size: 11px; color: var(--text-dim); text-align: right; }
+    .stats strong { color: var(--accent); font-weight: 400; }
+
+    /* LAYOUT */
+    .layout {
+      display: grid; grid-template-columns: 260px 1fr;
+      min-height: calc(100vh - 72px);
+    }
+
+    /* SIDEBAR */
+    .sidebar {
+      border-right: 1px solid var(--border2); padding: 22px 18px;
+      position: sticky; top: 0; height: calc(100vh - 72px);
+      overflow-y: auto; display: flex; flex-direction: column; gap: 26px;
+    }
+    .sidebar::-webkit-scrollbar { width: 3px; }
+    .sidebar::-webkit-scrollbar-thumb { background: var(--border2); }
+
+    .filter-section { display: flex; flex-direction: column; }
+    .filter-label {
+      font-family: var(--wide); font-size: 9px; font-weight: 600;
+      letter-spacing: 0.2em; text-transform: uppercase; color: var(--text-faint);
+      margin-bottom: 10px; padding-bottom: 5px; border-bottom: 1px solid var(--border);
+    }
+
+    /* Search */
+    .search-wrap { position: relative; }
+    .search-wrap input {
+      width: 100%; background: var(--surface2); border: 1px solid var(--border2);
+      color: var(--text); font-family: var(--mono); font-size: 12px;
+      padding: 7px 28px 7px 10px; outline: none; transition: border-color 0.15s;
+    }
+    .search-wrap input:focus { border-color: var(--accent); }
+    .search-wrap input::placeholder { color: var(--text-faint); }
+    .search-clear {
+      position: absolute; right: 8px; top: 50%; transform: translateY(-50%);
+      color: var(--text-faint); cursor: pointer; font-size: 14px; line-height: 1;
+      display: none; transition: color 0.1s;
+    }
+    .search-clear:hover { color: var(--text); }
+    .search-clear.visible { display: block; }
+
+    /* BPM Slider */
+    .bpm-display {
+      display: flex; justify-content: space-between; align-items: baseline;
+      margin-bottom: 6px;
+    }
+    .bpm-display-val { font-family: var(--wide); font-size: 14px; color: var(--accent); }
+    .bpm-display-dash { color: var(--text-faint); font-size: 11px; }
+    .bpm-slider-wrap { position: relative; height: 28px; margin: 4px 0 2px; }
+    .bpm-slider-track {
+      position: absolute; top: 13px; left: 0; right: 0;
+      height: 4px; background: var(--border2); border-radius: 2px;
+    }
+    .bpm-slider-fill {
+      position: absolute; height: 100%; background: var(--accent); border-radius: 2px;
+    }
+    .bpm-slider-wrap input[type=range] {
+      position: absolute; width: 100%; top: 7px;
+      background: transparent; pointer-events: none;
+      -webkit-appearance: none; appearance: none; height: 14px; outline: none;
+    }
+    .bpm-slider-wrap input[type=range]::-webkit-slider-thumb {
+      -webkit-appearance: none; appearance: none;
+      width: 14px; height: 14px; border-radius: 50%;
+      background: var(--accent); cursor: pointer; pointer-events: all;
+    }
+    .bpm-slider-wrap input[type=range]::-moz-range-thumb {
+      width: 14px; height: 14px; border-radius: 50%;
+      background: var(--accent); cursor: pointer; pointer-events: all; border: none;
+    }
+    .bpm-slider-limits { display: flex; justify-content: space-between; font-size: 9px; color: var(--text-faint); }
+
+    /* Genre pills */
+    .genre-list { display: flex; flex-wrap: wrap; gap: 4px; max-height: 220px; overflow-y: auto; }
+    .genre-list::-webkit-scrollbar { width: 3px; }
+    .genre-list::-webkit-scrollbar-thumb { background: var(--border2); }
+    .genre-pill {
+      font-size: 9px; padding: 2px 7px; border: 1px solid var(--border2);
+      color: var(--text-faint); cursor: pointer; font-family: var(--mono);
+      transition: border-color 0.1s, color 0.1s; white-space: nowrap;
+    }
+    .genre-pill:hover { border-color: var(--accent-dim); color: var(--text-dim); }
+    .genre-pill.active { border-color: rgba(232,196,106,0.4); color: var(--accent); background: rgba(232,196,106,0.06); }
+
+    /* Reset */
+    .reset-btn {
+      background: transparent; border: 1px solid var(--border2); color: var(--text-faint);
+      font-family: var(--mono); font-size: 10px; padding: 6px 12px; cursor: pointer;
+      letter-spacing: 0.05em; margin-top: auto; transition: border-color 0.1s, color 0.1s;
+    }
+    .reset-btn:hover { border-color: var(--red); color: var(--red); }
+
+    /* MAIN */
+    .main { overflow-y: auto; }
+    .results-header {
+      padding: 12px 22px 10px; border-bottom: 1px solid var(--border);
+      position: sticky; top: 0; background: var(--bg); z-index: 5;
+    }
+    .results-count { font-size: 11px; color: var(--text-dim); }
+    .results-count em { color: var(--accent); font-style: normal; }
+
+    /* TIMELINE */
+    .timeline { padding: 0 22px 48px; }
+
+    .bpm-group-header {
+      position: sticky; top: 37px; z-index: 4; background: var(--bg);
+      padding: 9px 0 5px; border-bottom: 1px solid var(--border);
+      display: flex; align-items: baseline; gap: 10px;
+    }
+    .bpm-group-label { font-family: var(--wide); font-size: 10px; font-weight: 600; color: var(--accent); letter-spacing: 0.08em; }
+    .bpm-group-count { font-size: 9px; color: var(--text-faint); }
+
+    /* Post row */
+    .post-row {
+      display: grid; grid-template-columns: 72px 1fr auto;
+      align-items: start; gap: 14px; padding: 9px 0;
+      border-bottom: 1px solid var(--border);
+    }
+    .post-bpm-col { display: flex; flex-direction: column; gap: 2px; padding-top: 3px; }
+    .post-bpm-range { font-size: 11px; color: var(--accent); font-weight: 700; white-space: nowrap; }
+    .post-bpm-slowed { font-size: 8px; color: var(--text-faint); white-space: nowrap; }
+
+    .post-info { display: flex; flex-direction: column; gap: 4px; }
+    .post-genres { display: flex; flex-wrap: wrap; gap: 3px; }
+    .post-genre-tag { font-size: 8px; padding: 1px 5px; border: 1px solid var(--border2); color: var(--text-dim); }
+    .post-genre-tag.active-filter { border-color: rgba(232,196,106,0.3); color: var(--accent); }
+    .pack-line { display: flex; gap: 6px; align-items: baseline; }
+    .pack-name { font-size: 12px; color: var(--text); }
+    .pack-producer { font-size: 10px; color: var(--text-dim); }
+    .pack-producer::before { content: '·'; margin-right: 4px; color: var(--text-faint); }
+
+    mark { background: rgba(232,196,106,0.25); color: var(--text); border-radius: 1px; }
+
+    /* TG link */
+    .tg-link {
+      display: flex; align-items: center; gap: 4px; color: var(--text-faint);
+      font-size: 9px; text-decoration: none; padding: 4px 7px;
+      border: 1px solid transparent; white-space: nowrap; align-self: start;
+      margin-top: 2px; transition: border-color 0.1s, color 0.1s;
+    }
+    .tg-link:hover { border-color: var(--border2); color: var(--blue); }
+    .tg-icon { width: 13px; height: 13px; fill: currentColor; flex-shrink: 0; }
+
+    /* Untagged section */
+    .section-divider {
+      margin-top: 30px; padding: 9px 0 5px; border-bottom: 1px solid var(--border);
+      display: flex; align-items: baseline; gap: 10px;
+    }
+    .section-divider-label { font-family: var(--wide); font-size: 9px; font-weight: 600; color: var(--text-faint); letter-spacing: 0.15em; text-transform: uppercase; }
+    .section-divider-note { font-size: 9px; color: var(--text-faint); }
+    .post-row.untagged { opacity: 0.55; }
+
+    /* Empty state */
+    .empty { padding: 60px 0; text-align: center; color: var(--text-faint); }
+    .empty-icon { font-size: 28px; margin-bottom: 12px; }
+    .empty-text { font-size: 11px; letter-spacing: 0.05em; }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="header-title">Igor Starshinov — <strong>BPM Map</strong></div>
+    <div class="stats">
+      <strong id="stat-posts">—</strong> постов &nbsp;·&nbsp;
+      <strong id="stat-packs">—</strong> паков &nbsp;·&nbsp;
+      <strong id="stat-untagged">—</strong> без тега
+    </div>
+  </header>
+
+  <div class="layout">
+    <aside class="sidebar">
+      <div class="filter-section">
+        <div class="filter-label">Поиск</div>
+        <div class="search-wrap">
+          <input type="text" id="search-input" placeholder="Название пака или producer…" autocomplete="off" spellcheck="false">
+          <span class="search-clear" id="search-clear">&times;</span>
+        </div>
+      </div>
+
+      <div class="filter-section">
+        <div class="filter-label">BPM диапазон</div>
+        <div class="bpm-display">
+          <div class="bpm-display-val" id="bpm-min-val">—</div>
+          <div class="bpm-display-dash">—</div>
+          <div class="bpm-display-val" id="bpm-max-val">—</div>
+        </div>
+        <div class="bpm-slider-wrap" id="bpm-slider-wrap">
+          <div class="bpm-slider-track"><div class="bpm-slider-fill" id="bpm-slider-fill"></div></div>
+          <input type="range" id="bpm-min-input" step="1">
+          <input type="range" id="bpm-max-input" step="1">
+        </div>
+        <div class="bpm-slider-limits">
+          <span id="bpm-global-min">—</span>
+          <span id="bpm-global-max">—</span>
+        </div>
+      </div>
+
+      <div class="filter-section">
+        <div class="filter-label">Жанр</div>
+        <div class="genre-list" id="genre-list"></div>
+      </div>
+
+      <button class="reset-btn" id="reset-btn">Сбросить</button>
+    </aside>
+
+    <main class="main">
+      <div class="results-header">
+        <div class="results-count" id="results-count">Загрузка...</div>
+      </div>
+      <div class="timeline" id="timeline"></div>
+    </main>
+  </div>
+
+  <script type="application/json" id="raw-data">PLACEHOLDER_JSON</script>
+
+  <script>
+    /* JS added in Task 3 */
+  </script>
+</body>
+</html>
