@@ -187,7 +187,7 @@
         <div class="seg-clip lane"><div class="seg-track" id="segTrack"></div></div>
       </div>
     </div>
-    <p class="small muted" id="note3d" hidden>3D режим: вы летите по туннелю времени. Горизонт — будущее, экран — «сейчас». Узлы и нити голосов летят из глубины на вас, кольца — отметки каждые 15 секунд, золотые рамки — схождения голосов. Перемотка и плеер работают как обычно; переход к отрезку по клику доступен только в плоском режиме.</p>
+    <p class="small muted" id="note3d" hidden>3D режим: вы летите по туннелю времени. Горизонт — будущее, экран — «сейчас». Каждое движение узнаётся по форме: прямая — ровный луч между рельсами; бисер — отдельные сферы; волна — круглые обручи на гребнях и впадинах (между двумя соседними — полпериода); зубцы — острые треугольники; рваная линия — неравные ромбы. Штриховая линия — ось, от неё отсчитывается размах. В углах — профиль того, что голос играет сейчас. Кольца — отметки каждые 15 секунд, золотые рамки — схождения голосов. Перемотка и плеер работают как обычно; переход к отрезку по клику доступен только в плоском режиме.</p>
     <p class="small muted" id="note2d">Нажмите на любой отрезок, чтобы перейти к нему. Выше точка — выше звук; крупнее — больше звука; ярче сияние — больше высоких частот; форма линии между точками — ровность игры. В центре — общий регистр: точки показывают высоту каждого голоса; при схождении два столбика из точек — диапазоны голосов, золотые точки — где диапазоны пересекаются.</p>
   </section>
 
@@ -578,6 +578,8 @@
     var i, pts, steps, set;
     if (e.shape === 'ripple') {
       g.fn = function (s) { return Math.sin(TAU * n * s) * A * env(s); };
+      g.vp = [];                                                                  /* crests and troughs */
+      for (i = 0; i < 2 * n; i++) { var se = (2 * i + 1) / (4 * n); g.vp.push([se, g.fn(se)]); }
       steps = Math.min(400, n * 24);
       g.ss = []; for (i = 0; i <= steps; i++) g.ss.push(i / steps);
     } else if (e.shape === 'zigzag' || e.shape === 'irregular') {
@@ -597,6 +599,7 @@
         pts.push([1, 0]);
       }
       g.fn = interp(pts);
+      g.vp = pts.filter(function (p) { return p[0] > 0.001 && p[0] < 0.999; });   /* vertices: [s, offset] */
       steps = clamp(Math.round(L / 2), 48, 240);
       set = {};
       g.ss = [];
@@ -1365,7 +1368,7 @@
        screenX = W/2 + x * PERSP / z      screenY = H/2 + y * PERSP / z */
 
   var PERSP = 420, ZFAR = 1000, ZFADE = 50, ZNEAR = 10, LOOK_S = 45;
-  var LANE_Y = { A: -150, B: 150 }, PITCH = 240, WK = 1.6, RING_S = 15;
+  var LANE_Y = { A: -150, B: 150 }, PITCH = 240, WK = 1.6, DK = 3, RING_S = 15;
   var P3 = { x: 0, y: 0, s: 1 }, W3 = { x: 0, y: 0, z: 1 };
   var F3 = { sec: -1, S: null, spd: 0, dz: 0, nodes: [], segs: [], gates: [], np: 0, sp: 0, gp: 0, labels: [], stars: null, cx: 0, cy: 0 };
   var UNI = (function () { var a = []; for (var i = 0; i <= 48; i++) a.push(i / 48); return a; })();
@@ -1462,12 +1465,13 @@
     F3.sec = secNow; F3.S = S; F3.spd = spd;
   }
 
-  function f3Pos(sg, s, o) {
-    var g = sg.geom, sec = lerp(sg.secA, sg.secB, s);
-    W3.x = sway(sg.lane, sec, o) + (g.shape === 'ripple' ? g.fn(s + 0.25 / g.n) * 0.7 * WK : 0);
-    W3.y = lerp(sg.ya, sg.yb, s) + g.fn(s) * WK;
+  /* a point of the movement: lateral sway + baseline between the two nodes + the shape's own offset */
+  function f3At(sg, s, o, val) {
+    W3.x = sway(sg.lane, lerp(sg.secA, sg.secB, s), o);
+    W3.y = lerp(sg.ya, sg.yb, s) + val * DK;
     W3.z = sg.za + (sg.zb - sg.za) * s;
   }
+  function f3Pos(sg, s, o) { f3At(sg, s, o, sg.geom.fn(s)); }
 
   function neonCheap(T, path, col, w, op) {
     var p = pal(col);
@@ -1476,73 +1480,142 @@
     T.strokeStyle = rgba(p.core, op); T.lineWidth = Math.max(w * 0.6, 0.8); T.stroke(path);
   }
 
-  /* a movement as a braid of strands that spirals around a neon core, flying out of the depth */
+  /* Strokes a projected polyline in chunks so every chunk can take its own width and depth fade */
+  function chunks(px, py, ps, pz, m, op, draw) {
+    var CH = Math.max(3, Math.ceil(m / 14));
+    for (var a0 = 0; a0 < m - 1; a0 += CH - 1) {
+      var a1 = Math.min(a0 + CH - 1, m - 1), mid = (a0 + a1) >> 1;
+      var al = op * f3Fade(pz[mid]);
+      if (al < 0.01) continue;
+      var path = new Path2D(); path.moveTo(px[a0], py[a0]);
+      for (var j = a0 + 1; j <= a1; j++) path.lineTo(px[j], py[j]);
+      draw(path, ps[mid], al);
+    }
+  }
+
+  /* Landmarks that make each movement readable head-on:
+       Волна  - round hoops on every crest and trough (one crest-to-crest = one period)
+       Зубцы  - sharp triangles on every vertex, pointing away from the axis
+       Рваная - uneven diamonds at uneven distances
+     The dim axis the offset is measured from and the vertical ribs show the amplitude. */
+  function f3Marker(T, shape, x, y, z, val, col, a) {
+    proj(x, y, z);
+    var r = (shape === 'ripple' ? 36 : (shape === 'zigzag' ? 30 : 22)) * P3.s;
+    if (r < 1.5 || a < 0.01) return;
+    var dir = val >= 0 ? 1 : -1, p = new Path2D(), cx = P3.x, cy = P3.y;
+    if (shape === 'ripple') p.arc(cx, cy, r, 0, TAU);
+    else if (shape === 'zigzag') {
+      p.moveTo(cx, cy + dir * r * 1.15); p.lineTo(cx + r, cy - dir * r * 0.55); p.lineTo(cx - r, cy - dir * r * 0.55); p.closePath();
+    } else {
+      p.moveTo(cx, cy - r); p.lineTo(cx + r * 0.8, cy); p.lineTo(cx, cy + r); p.lineTo(cx - r * 0.8, cy); p.closePath();
+    }
+    neonCheap(T, p, col, 1.3 * P3.s, a);
+    aura(T, cx, cy, r * 1.6, col, 0.28 * a);
+  }
+
   function f3Seg(T, sg, o, time, op, active, hints) {
     var dz = sg.zb - sg.za;
     if (dz <= 0) return;
     var sNear = sg.za < ZNEAR ? (ZNEAR - sg.za) / dz : 0;
     var sFar = sg.zb > ZFAR ? (ZFAR - sg.za) / dz : 1;
     if (sFar - sNear < 1e-3) return;
-    var g = sg.geom, base = g.ss || UNI, ss = [sNear], i, k;
+    var g = sg.geom, shape = g.shape, col = sg.col, base = g.ss || UNI, ss = [sNear], i, j;
     for (i = 0; i < base.length; i++) if (base[i] > sNear + 1e-4 && base[i] < sFar - 1e-4) ss.push(base[i]);
     ss.push(sFar);
-    var m = ss.length, bx = new Float32Array(m), by = new Float32Array(m), bz = new Float32Array(m);
-    var tp = new Float32Array(m), sec = new Float32Array(m), px = new Float32Array(m), py = new Float32Array(m), ps = new Float32Array(m);
+    var m = ss.length, bz = new Float32Array(m);
+    var qx = new Float32Array(m), qy = new Float32Array(m), qs = new Float32Array(m);       /* axis */
+    var px = new Float32Array(m), py = new Float32Array(m), ps = new Float32Array(m);       /* shape */
+    var cx = new Float32Array(m), cy = new Float32Array(m), cs = new Float32Array(m);       /* companion */
     for (i = 0; i < m; i++) {
-      W3.x = 0; f3Pos(sg, ss[i], o);
-      bx[i] = W3.x; by[i] = W3.y; bz[i] = W3.z;
-      tp[i] = ssm(0, 0.08, ss[i]) * ssm(0, 0.08, 1 - ss[i]);
-      sec[i] = lerp(sg.secA, sg.secB, ss[i]);
+      f3At(sg, ss[i], o, 0); bz[i] = W3.z;
+      proj(W3.x, W3.y, W3.z); qx[i] = P3.x; qy[i] = P3.y; qs[i] = P3.s;
+      var off = g.fn(ss[i]);
+      f3At(sg, ss[i], o, off);
+      proj(W3.x, W3.y, W3.z); px[i] = P3.x; py[i] = P3.y; ps[i] = P3.s;
+      proj(W3.x + 9, W3.y, W3.z); cx[i] = P3.x; cy[i] = P3.y; cs[i] = P3.s;
     }
-    var N = g.shape === 'beads' ? Math.min(QS[Q].strands, 4) : QS[Q].strands;
-    var wb = (g.shape === 'hold' ? 2.6 : 2) + (active ? 0.7 : 0);
-    var CH = Math.max(3, Math.ceil(m / 12));
-    for (k = N - 1; k >= 0; k--) {
-      for (i = 0; i < m; i++) {
-        var x = bx[i], y = by[i];
-        if (k > 0) {
-          var rr = (4 + k * 2.4) * WK * tp[i], th = sec[i] * 0.9 + STR.ph[k] * 9 - time * (0.8 + 0.12 * k);
-          x += rr * Math.cos(th); y += rr * Math.sin(th);
-        }
-        proj(x, y, bz[i]); px[i] = P3.x; py[i] = P3.y; ps[i] = P3.s;
-      }
-      for (var a0 = 0; a0 < m - 1; a0 += CH - 1) {
-        var a1 = Math.min(a0 + CH - 1, m - 1), mid = (a0 + a1) >> 1;
-        var al = op * f3Fade(bz[mid]);
-        if (al < 0.01) continue;
-        var path = new Path2D(); path.moveTo(px[a0], py[a0]);
-        for (var j = a0 + 1; j <= a1; j++) path.lineTo(px[j], py[j]);
-        if (k === 0) neonCheap(T, path, sg.col, wb * ps[mid], al);
-        else {
-          T.strokeStyle = rgba(lite(sg.col, STR.wh[k]), STR.al[k] * al);
-          T.lineWidth = Math.max(0.7, wb * STR.w[k] * ps[mid]);
-          T.stroke(path);
-        }
-      }
+    var wb = (shape === 'hold' ? 3.4 : 2.2) + (active ? 0.7 : 0);
+    var lit = lite(col, 0.3);
+
+    /* the axis the offset is measured from */
+    if (shape !== 'hold' && shape !== 'beads') {
+      chunks(qx, qy, qs, bz, m, op, function (path, sc, al) {
+        T.setLineDash([3, 7]); T.strokeStyle = rgba(lit, 0.4 * al); T.lineWidth = clamp(1.2 * sc * 0.5, 0.8, 2); T.stroke(path); T.setLineDash([]);
+      });
+    }
+    /* Прямая: a corridor of two rails */
+    if (shape === 'hold') {
+      [-46, 46].forEach(function (dx) {
+        for (i = 0; i < m; i++) { f3At(sg, ss[i], o, 0); proj(W3.x + dx, W3.y, W3.z); cx[i] = P3.x; cy[i] = P3.y; cs[i] = P3.s; }
+        chunks(cx, cy, cs, bz, m, op, function (path, sc, al) {
+          T.strokeStyle = rgba(col, 0.3 * al); T.lineWidth = clamp(1.4 * sc * 0.5, 0.8, 2.2); T.stroke(path);
+        });
+      });
     }
 
-    if (g.shape === 'beads') {
-      var pc = pal(sg.col);
+    /* vertical ribs between the axis and the curve: the amplitude profile, readable even edge-on */
+    var rib = function (x1, y1, x2, y2, z, a) {
+      var al = op * f3Fade(z) * a;
+      if (al < 0.01) return;
+      T.strokeStyle = rgba(lit, al); T.lineWidth = 1.2;
+      T.beginPath(); T.moveTo(x1, y1); T.lineTo(x2, y2); T.stroke();
+    };
+    if (shape === 'ripple') {
+      for (i = 1; i < m - 1; i += 3) rib(qx[i], qy[i], px[i], py[i], bz[i], active ? 0.42 : 0.3);
+    }
+    if (g.vp && shape !== 'ripple') {
+      g.vp.forEach(function (v) {
+        if (v[0] < sNear || v[0] > sFar) return;
+        f3At(sg, v[0], o, 0); var z = W3.z; proj(W3.x, W3.y, z); var ax = P3.x, ay = P3.y;
+        f3At(sg, v[0], o, v[1]); proj(W3.x, W3.y, z);
+        rib(ax, ay, P3.x, P3.y, z, active ? 0.75 : 0.55);
+      });
+    }
+
+    /* the curve itself */
+    if (shape !== 'beads' && shape !== 'hold') {
+      chunks(cx, cy, cs, bz, m, op, function (path, sc, al) {
+        T.strokeStyle = rgba(col, 0.22 * al); T.lineWidth = clamp(1.2 * sc * 0.5, 0.8, 2); T.stroke(path);
+      });
+    }
+    if (shape === 'beads') {
+      chunks(qx, qy, qs, bz, m, op, function (path, sc, al) {
+        T.strokeStyle = rgba(col, 0.2 * al); T.lineWidth = clamp(sc * 0.5, 0.8, 1.6); T.stroke(path);
+      });
+    } else {
+      chunks(px, py, ps, bz, m, op, function (path, sc, al) { neonCheap(T, path, col, wb * sc, al); });
+    }
+
+    /* landmarks */
+    if (shape === 'ripple' || shape === 'zigzag' || shape === 'irregular') {
+      g.vp.forEach(function (v) {
+        if (v[0] < sNear || v[0] > sFar) return;
+        f3At(sg, v[0], o, v[1]);
+        if (W3.z > ZNEAR) f3Marker(T, shape, W3.x, W3.y, W3.z, v[1], col, op * f3Fade(W3.z));
+      });
+    }
+    if (shape === 'beads') {
+      var pc = pal(col);
       for (i = 0; i < g.beads.length; i++) {
-        var s = (i + 0.5) / g.n;
-        if (s < sNear || s > sFar) continue;
-        f3Pos(sg, s, o);
+        var sb = (i + 0.5) / g.n;
+        if (sb < sNear || sb > sFar) continue;
+        f3At(sg, sb, o, 0);
         if (W3.z < ZNEAR) continue;
         proj(W3.x, W3.y, W3.z);
-        var fa = op * f3Fade(W3.z), br = g.beads[i].rx * WK * P3.s;
-        if (fa < 0.01) continue;
-        aura(T, P3.x, P3.y, br * 1.8, sg.col, 0.35 * fa);
-        var ring = new Path2D(); ring.arc(P3.x, P3.y, br, 0, TAU);
-        neonCheap(T, ring, sg.col, 1.4 * P3.s, fa);
-        var an = time * 2.2 + i * 1.3;
-        T.fillStyle = rgba(pc.core, fa);
-        T.beginPath(); T.arc(P3.x + Math.cos(an) * br * 1.3, P3.y + Math.sin(an) * br * 1.3, Math.max(1.4, 1.8 * P3.s), 0, TAU); T.fill();
+        var fa = op * f3Fade(W3.z), br = g.beads[i].rx * WK * 1.15 * P3.s;
+        if (fa < 0.01 || br < 0.8) continue;
+        /* every note is its own little sphere with a ring around it */
+        T.save(); T.translate(P3.x, P3.y); T.scale(P3.s, P3.s);
+        sphere(T, 0, 0, g.beads[i].rx * WK * 1.15, col, fa);
+        T.restore();
+        var ring = new Path2D(); ring.arc(P3.x, P3.y, br * 1.7, 0, TAU);
+        neonCheap(T, ring, col, 0.9 * P3.s, fa * 0.7);
       }
     }
 
-    /* light pulses riding the string toward the player */
-    if (FX.motion) {
-      var pcol = pal(sg.col).core;
+    /* light pulses riding the movement toward the player */
+    if (FX.motion && shape !== 'beads') {
+      var pcol = pal(col).core;
       for (j = 0; j < 3; j++) {
         var u = 1 - ((time * 0.13 + j / 3 + sg.ph) % 1);
         f3Pos(sg, sNear + u * (sFar - sNear), o);
@@ -1550,19 +1623,58 @@
         proj(W3.x, W3.y, W3.z);
         var pa = op * (active ? 1 : 0.45) * f3Fade(W3.z);
         if (pa < 0.01) continue;
-        aura(T, P3.x, P3.y, Math.max(5, 7 * P3.s), sg.col, 0.8 * pa);
+        aura(T, P3.x, P3.y, Math.max(5, 7 * P3.s), col, 0.8 * pa);
         T.fillStyle = rgba(pcol, pa);
         T.beginPath(); T.arc(P3.x, P3.y, Math.max(1.4, 1.7 * P3.s), 0, TAU); T.fill();
       }
     }
 
     if (hints) {
-      f3Pos(sg, (sNear + sFar) / 2, o);
+      f3At(sg, (sNear + sFar) / 2, o, 0);
       if (W3.z > ZNEAR * 2) {
         proj(W3.x, W3.y, W3.z);
-        F3.labels.push({ text: sg.name, x: P3.x, y: P3.y - 16 - 12 * P3.s, col: sg.col, a: op * f3Fade(W3.z), size: clamp(15 * P3.s, 10, 26), align: 'center' });
+        F3.labels.push({ text: sg.name, x: P3.x, y: P3.y - 16 - 12 * P3.s, col: col, a: op * f3Fade(W3.z), size: clamp(15 * P3.s, 10, 26), align: 'center' });
       }
     }
+  }
+
+  /* HUD: side profile of the movement each voice is playing right now, with a running cursor */
+  function f3Hud(T, o, secNow) {
+    ['A', 'B'].forEach(function (L) {
+      var w = 270, h = 100, x0 = L === 'A' ? 24 : K.W - 24 - w, y0 = K.H - 24 - h, col = K.col[L], i;
+      var cur = null;
+      for (i = 0; i < o.segs.length; i++) {
+        var sg = o.segs[i];
+        if (sg.lane === L && sg.secA <= secNow && secNow < sg.secB) { cur = sg; break; }
+      }
+      rrect(T, x0, y0, w, h, 10); T.fillStyle = rgba(COL.sunken, 0.55); T.fill();
+      T.strokeStyle = rgba(col, 0.45); T.lineWidth = 1.2; T.stroke();
+      F3.labels.push({ text: 'Голос ' + L + ' · ' + (cur ? cur.name : '—'), x: x0 + 14, y: y0 + 22, col: col, a: 1, size: 17, align: 'left' });
+      if (!cur) return;
+      var g = cur.geom, base = g.ss || UNI, lx = x0 + 14, lw = w - 28, cy = y0 + h / 2 + 12;
+      var mid = (cur.ya + cur.yb) / 2, path = new Path2D();
+      for (i = 0; i < base.length; i++) {
+        var s = base[i], yy = cy + (lerp(cur.ya, cur.yb, s) - mid) * 0.16 + g.fn(s) * DK * 0.2;
+        if (i) path.lineTo(lx + lw * s, yy); else path.moveTo(lx + lw * s, yy);
+      }
+      var sn = (secNow - cur.secA) / (cur.secB - cur.secA);
+      T.strokeStyle = rgba(col, 0.4); T.lineWidth = 1.6; T.stroke(path);
+      T.save(); T.beginPath(); T.rect(lx - 4, y0, lw * sn + 4, h); T.clip();
+      neonCheap(T, path, col, 1.1, 1);
+      T.restore();
+      if (g.beads) {
+        g.beads.forEach(function (b, k) {
+          var bs = (k + 0.5) / g.n; T.fillStyle = rgba(col, bs <= sn ? 0.95 : 0.4);
+          T.beginPath(); T.arc(lx + lw * bs, cy + (lerp(cur.ya, cur.yb, bs) - mid) * 0.16, 3.5, 0, TAU); T.fill();
+        });
+      }
+      var cyc = cy + (lerp(cur.ya, cur.yb, sn) - mid) * 0.16 + g.fn(sn) * DK * 0.2;
+      T.strokeStyle = rgba(COL.gold, 0.5); T.lineWidth = 1;
+      T.beginPath(); T.moveTo(lx + lw * sn, y0 + 28); T.lineTo(lx + lw * sn, y0 + h - 8); T.stroke();
+      aura(T, lx + lw * sn, cyc, 11, COL.gold, 0.8);
+      T.fillStyle = rgba(lite(COL.gold, 0.8), 1);
+      T.beginPath(); T.arc(lx + lw * sn, cyc, 3, 0, TAU); T.fill();
+    });
   }
 
   function f3Node(T, n, time, hints) {
@@ -1719,6 +1831,8 @@
         } else if (it.node) f3Node(T, it.node, time, hints);
         else f3Gate(T, it.gate, time, hints);
       }
+
+      f3Hud(T, o, secNow);
 
       /* cockpit reticle */
       var rc = new Path2D(); rc.arc(K.W / 2, K.H / 2, 15, 0, TAU);
