@@ -1,0 +1,2014 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Партитура двух голосов</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Alegreya:ital,wght@0,400;0,500;1,400&family=Fira+Sans+Extra+Condensed:wght@600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --surface: #121823; --raised: #1c2431; --sunken: #0c1118;
+      --ink: #e9ecef; --muted: #a7b0bf; --line: #333f52; --stitch: #6d7b91;
+      --gold: #c9b46a; --gold-hi: #d6c68e; --on-gold: #121823;
+      --voice-a: #e07f78; --voice-b: #7fcfca; --voice-t: #8e88c4;
+      --display: 'TT Lakes Neue Compressed', 'Fira Sans Extra Condensed', 'Arial Narrow', sans-serif;
+      --serif: 'Kazimir Text', 'Alegreya', Georgia, serif;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    [hidden] { display: none !important; }
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: var(--surface); color: var(--ink);
+      font-family: var(--serif); font-size: 17px; line-height: 27px;
+    }
+    button { font: inherit; }
+    button:focus-visible, input:focus-visible, a:focus-visible { outline: 2px solid var(--gold-hi); outline-offset: 3px; }
+
+    .page {
+      max-width: 1280px; margin: 0 auto;
+      padding: 56px clamp(16px, 5vw, 64px) 96px;
+      display: flex; flex-direction: column; gap: 72px;
+    }
+    .stack { display: flex; flex-direction: column; gap: 24px; }
+    .stack-32 { display: flex; flex-direction: column; gap: 32px; }
+    .row { display: flex; flex-wrap: wrap; align-items: center; gap: 16px; }
+    .cols { display: flex; flex-wrap: wrap; gap: 24px; }
+    .grow { flex: 1 1 280px; min-width: 0; }
+
+    /* type */
+    .lbl {
+      font-family: var(--display); font-weight: 600; font-size: 16px; line-height: 20px;
+      letter-spacing: .06em; text-transform: uppercase;
+    }
+    .disp {
+      font-family: var(--display); font-weight: 700; line-height: .95;
+      letter-spacing: .005em; text-transform: uppercase;
+    }
+    .lead { font-size: 21px; line-height: 31px; max-width: 720px; }
+    .small { font-size: 14px; line-height: 21px; }
+    .muted { color: var(--muted); }
+    .accent { color: var(--gold-hi); }
+    .h-xl { font-size: clamp(48px, 9vw, 88px); }
+    .h-l { font-size: clamp(36px, 6vw, 56px); }
+    .h-m { font-size: 34px; }
+    .h-card { font-size: 44px; }
+    .kicker { display: flex; align-items: center; gap: 8px; color: var(--gold-hi); }
+
+    /* buttons */
+    .btn {
+      display: inline-flex; align-items: center; justify-content: center; gap: 12px;
+      min-height: 44px; padding: 0 24px; border-radius: 4px; cursor: pointer;
+      font-family: var(--display); font-weight: 600; font-size: 18px;
+      letter-spacing: .06em; text-transform: uppercase; text-decoration: none;
+    }
+    .btn:disabled { opacity: .4; cursor: default; }
+    .btn-primary { background: var(--gold); color: var(--on-gold); border: 1px solid var(--gold); }
+    .btn-primary:hover { background: var(--gold-hi); }
+    .btn-ghost { background: transparent; color: var(--ink); border: 1px solid var(--stitch); }
+    .btn-ghost:hover:not(:disabled) { border-color: var(--gold-hi); }
+    .btn-ghost[aria-pressed="true"] { border-color: var(--gold); background: rgba(201, 180, 106, .14); }
+    .btn-sm { padding: 0 16px; font-size: 16px; }
+
+    /* cards */
+    .card {
+      background: var(--raised); border-radius: 14px; padding: 24px;
+      display: flex; flex-direction: column; gap: 16px;
+      flex: 1 1 320px; min-width: 0;
+    }
+    .card.w260 { flex-basis: 260px; }
+    .card.w240 { flex-basis: 240px; }
+    .card.full { flex-basis: 100%; }
+    .card.flat { flex: 0 0 auto; padding: 16px; gap: 8px; }
+    .who { display: flex; align-items: center; gap: 12px; }
+    .dot { width: 14px; height: 14px; border-radius: 999px; background: var(--vc, var(--ink)); box-shadow: 0 0 10px var(--vc, transparent); }
+
+    /* fields */
+    .fld { flex: 1 1 200px; min-width: 0; display: flex; flex-direction: column; gap: 4px; }
+    .fld.s { flex-basis: 160px; }
+    .stack > .fld, .card > .fld { flex: none; }
+    .fld-h { display: flex; justify-content: space-between; gap: 12px; font-size: 14px; line-height: 21px; color: var(--muted); }
+    input[type=range] { width: 100%; height: 44px; margin: 0; accent-color: var(--gold); }
+    .scrub { flex: 1 1 280px; min-width: 0; display: flex; align-items: center; gap: 16px; }
+    .scrub input { flex: 1 1 auto; min-width: 0; }
+    .time { white-space: nowrap; color: var(--muted); }
+
+    /* meters */
+    .meter { display: flex; flex-direction: column; gap: 8px; }
+    .meter-h { display: flex; justify-content: space-between; gap: 12px; font-size: 14px; line-height: 21px; color: var(--muted); }
+    .meter-bar { height: 8px; border-radius: 4px; background: var(--line); }
+    .meter-fill { height: 8px; border-radius: 4px; width: 0; background: var(--vc, var(--ink)); box-shadow: 0 0 9px var(--vc, transparent); }
+
+    /* canvases */
+    .stage-scroll { overflow-x: auto; border-radius: 14px; }
+    .stage { position: relative; min-width: 880px; }
+    canvas { display: block; }
+    .stage canvas { width: 100%; height: auto; }
+    .demo canvas, .ill canvas { width: 100%; height: auto; }
+    .seg-clip { position: absolute; inset: 0; overflow: hidden; pointer-events: none; }
+    .seg-clip.lane { clip-path: inset(0 0 0 5%); }
+    .seg-track { position: absolute; inset: 0; }
+    .seg-btn {
+      position: absolute; margin: 0; padding: 0; border: 0; background: transparent;
+      border-radius: 14px; cursor: pointer; pointer-events: auto;
+    }
+    .seg-btn:hover { background: rgba(233, 236, 239, .06); }
+    .seg-btn.round { border-radius: 999px; }
+
+    /* dictionary */
+    .dict-item {
+      display: flex; flex-wrap: wrap; gap: 32px; padding: 40px 0;
+      border-top: 2px dotted var(--stitch);
+    }
+    .dict-text { flex: 1 1 320px; min-width: 0; display: flex; flex-direction: column; gap: 16px; align-items: flex-start; }
+    .dict-demos { flex: 1 1 380px; min-width: 0; display: flex; flex-direction: column; gap: 16px; }
+    .tone { flex: 1 1 240px; min-width: 0; display: flex; flex-direction: column; gap: 12px; border-top: 2px dotted var(--stitch); padding-top: 24px; }
+
+    #howto { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 24px; }
+    #howto .card { flex: none; }
+    .meet { flex-direction: row; flex-wrap: wrap; align-items: center; gap: 24px; }
+    .meet-body { flex: 1 1 280px; min-width: 0; display: flex; flex-direction: column; gap: 12px; }
+    .meet-body p { max-width: 720px; }
+    .glyph { width: 120px; height: 120px; flex: none; }
+
+    .insp .btns { display: flex; flex-wrap: wrap; gap: 8px; }
+    #trainer { scroll-margin-top: 24px; }
+  </style>
+</head>
+<body>
+<div class="page">
+
+  <header class="stack">
+    <div class="lbl kicker">
+      <svg width="14" height="14" viewBox="0 0 14 14" aria-hidden="true"><circle cx="7" cy="7" r="3.2" fill="#d6c68e"></circle><circle cx="7" cy="7" r="6" fill="none" stroke="#d6c68e" stroke-width="1.4" stroke-dasharray="1.5 3.6"></circle></svg>
+      <span>Прототип · упражнение для двоих</span>
+    </div>
+    <h1 class="disp h-xl">Партитура двух голосов</h1>
+    <p class="lead">Два музыканта идут каждый по своей линии. Точка — момент смены состояния, линия между точками — способ играть. Голоса меняются не одновременно; когда точки совпадают, между дорожками появляется знак: как голоса расположены друг относительно друга.</p>
+  </header>
+
+  <section class="stack">
+    <div class="card" style="flex:none">
+      <div class="row" style="align-items:flex-end;gap:16px 32px">
+        <label class="fld"><span class="fld-h"><span>Время практики</span><span id="minutesText"></span></span><input type="range" id="minutes" min="1" max="60" step="1" value="5"></label>
+        <label class="fld s"><span class="fld-h"><span>Точек за 5 минут, от</span><span id="nMinText"></span></span><input type="range" id="nMin" min="2" max="8" step="1" value="3"></label>
+        <label class="fld s"><span class="fld-h"><span>Точек за 5 минут, до</span><span id="nMaxText"></span></span><input type="range" id="nMax" min="2" max="8" step="1" value="6"></label>
+      </div>
+      <div class="row">
+        <button class="btn btn-ghost" id="gen" type="button">Сгенерировать партитуру</button>
+        <button class="btn btn-ghost" id="restore" type="button" hidden>Вернуть пример</button>
+        <p class="small muted grow">Время действует сразу. Число точек применяется при генерации; точки у голосов не обязаны совпадать по времени. Каждые 3–5 минут голоса сходятся, и вид схождения каждый раз новый. На экране видны 5 минут: окно едет за линией.</p>
+      </div>
+    </div>
+
+    <div class="row">
+      <button class="btn btn-primary" id="play" type="button">
+        <svg id="icoPause" width="20" height="20" viewBox="0 0 20 20" aria-hidden="true" hidden><path d="M5 3h3.5v14H5zM11.5 3H15v14h-3.5z" fill="currentColor"></path></svg>
+        <svg id="icoPlay" width="20" height="20" viewBox="0 0 20 20" aria-hidden="true"><path d="M5 3l11 7-11 7z" fill="currentColor"></path></svg>
+        <span id="playLabel">Играть</span>
+      </button>
+      <button class="btn btn-ghost" id="reset" type="button">В начало</button>
+      <div class="scrub">
+        <input type="range" id="scrub" min="0" max="1000" step="1" value="0" aria-label="Положение в партитуре">
+        <span class="lbl time" id="timeText">0:00 / 5:00</span>
+      </div>
+      <button class="btn btn-ghost btn-sm" id="hintsBtn" type="button" aria-pressed="true">Подписи</button>
+      <button class="btn btn-ghost btn-sm" id="loopBtn" type="button" aria-pressed="false">Повтор</button>
+    </div>
+
+    <div class="stage-scroll">
+      <div class="stage">
+        <canvas id="score" role="img" aria-label="Партитура: сверху дорожка голоса A, снизу голоса B, между ними общее поле регистра, где видны диапазоны обоих голосов. Точки — смены состояния, линии между ними — способ игры."></canvas>
+        <div class="seg-clip lane"><div class="seg-track" id="segTrack"></div></div>
+      </div>
+    </div>
+    <p class="small muted">Нажмите на любой отрезок, чтобы перейти к нему. Выше точка — выше звук; крупнее — больше звука; ярче сияние — больше высоких частот; форма линии между точками — ровность игры. В центре — общий регистр: точки показывают высоту каждого голоса; при схождении два столбика из точек — диапазоны голосов, золотые точки — где диапазоны пересекаются.</p>
+  </section>
+
+  <section class="cols" id="lanes"></section>
+
+  <section class="stack-32" style="gap:48px">
+    <h2 class="disp h-l">Как читать</h2>
+    <div class="cols" id="howto"></div>
+  </section>
+
+  <section class="stack-32">
+    <div class="stack">
+      <h2 class="disp h-l">Словарь движений</h2>
+      <p class="lead">От самого ровного к самому рваному. У каждого движения два примера: спокойный и активный. Кнопка подсвечивает такие отрезки в партитуре.</p>
+    </div>
+    <div id="dict" style="display:flex;flex-direction:column"></div>
+  </section>
+
+  <section class="stack-32">
+    <h2 class="disp h-l">Оттенки любого движения</h2>
+    <div class="cols">
+      <div class="tone"><div class="disp h-m">Густота</div><p>Чем чаще волны, зубцы или кружки, тем быстрее и плотнее вы играете.</p></div>
+      <div class="tone"><div class="disp h-m">Размах</div><p>Чем выше волна или зубец, тем шире диапазон: от соседних нот до скачков через весь регистр.</p></div>
+      <div class="tone"><div class="disp h-m">Наклон</div><p>Линия идёт вверх — звук поднимается и светлеет. Вниз — опускается и темнеет.</p></div>
+      <div class="tone"><div class="disp h-m">Рост</div><p>Кружки или зубцы растут — нарастание: громче, шире, плотнее. Мельчают — затухание.</p></div>
+    </div>
+  </section>
+
+  <section class="stack-32" id="trainer">
+    <div class="stack">
+      <h2 class="disp h-l">Конструктор тренировки</h2>
+      <p class="lead">Упражнение на один голос. Начните с элемента словаря, затем нажимайте на точки и на отрезки мини-партитуры: у каждого несколько простых ручек. Играйте вместе с бегущей линией.</p>
+    </div>
+    <div class="row" style="gap:12px">
+      <span class="lbl muted">Начать с элемента</span>
+      <span id="trPresets" style="display:contents"></span>
+    </div>
+    <div class="stage-scroll">
+      <div class="stage">
+        <canvas id="trCanvas" role="img" aria-label="Мини-партитура тренировки: одна дорожка с точками и движениями между ними."></canvas>
+        <div class="seg-clip"><div class="seg-track" id="trTrack"></div></div>
+      </div>
+    </div>
+    <div class="row">
+      <button class="btn btn-ghost" id="trPlay" type="button">
+        <svg id="trIcoPause" width="20" height="20" viewBox="0 0 20 20" aria-hidden="true" hidden><path d="M5 3h3.5v14H5zM11.5 3H15v14h-3.5z" fill="currentColor"></path></svg>
+        <svg id="trIcoPlay" width="20" height="20" viewBox="0 0 20 20" aria-hidden="true"><path d="M5 3l11 7-11 7z" fill="currentColor"></path></svg>
+        <span id="trPlayLabel">Играть</span>
+      </button>
+      <button class="btn btn-ghost" id="trReset" type="button">В начало</button>
+      <span class="lbl time" id="trTime"></span>
+      <button class="btn btn-ghost" id="addPoint" type="button">Добавить точку</button>
+      <button class="btn btn-ghost" id="removeLast" type="button">Убрать последнюю</button>
+    </div>
+    <div class="cols">
+      <div class="card insp" style="flex-basis:360px">
+        <span class="lbl accent" id="inspKicker"></span>
+        <div id="edgePane" class="stack" style="gap:16px">
+          <div class="btns" id="trShapes"></div>
+          <p id="inspText"></p>
+          <label class="fld"><span class="fld-h"><span>Длительность</span><span id="durText"></span></span><input type="range" id="insDur" min="5" max="60" step="5"></label>
+          <label class="fld" id="fRow"><span class="fld-h"><span>Густота: медленно — часто</span><span id="fText"></span></span><input type="range" id="insF" min="0" max="100" step="5"></label>
+          <label class="fld" id="ampRow"><span class="fld-h"><span>Размах: узко — широко</span><span id="ampText"></span></span><input type="range" id="insAmp" min="0" max="100" step="5"></label>
+        </div>
+        <div id="nodePane" class="stack" style="gap:16px" hidden>
+          <label class="fld"><span class="fld-h"><span>Высота</span><span id="bText"></span></span><input type="range" id="insB" min="0" max="100" step="5"></label>
+          <label class="fld"><span class="fld-h"><span>Количество</span><span id="qText"></span></span><input type="range" id="insQ" min="0" max="100" step="5"></label>
+          <label class="fld"><span class="fld-h"><span>Сияние</span><span id="gText"></span></span><input type="range" id="insG" min="0" max="100" step="5"></label>
+        </div>
+      </div>
+      <div id="trCardHost" style="display:contents"></div>
+    </div>
+  </section>
+
+  <section class="stack-32">
+    <div class="stack">
+      <h2 class="disp h-l">Положение голосов при схождении</h2>
+      <p class="lead">Каждые 3–5 минут точки двух голосов совпадают по времени. В центре тогда появляются два столбика из точек — диапазоны голосов, а в карточке «Схождение» два круга: коралловый — голос A, мятный — голос B. Их взаимное положение говорит, как голоса держатся в общем звуке.</p>
+    </div>
+    <div class="cols" id="rels"></div>
+  </section>
+
+</div>
+
+<script>
+(function () {
+  'use strict';
+
+  /* ══════════════════════════════════════════════════════════════
+     Constants & small helpers
+     ══════════════════════════════════════════════════════════════ */
+
+  var TAU = Math.PI * 2;
+  var K = {
+    W: 1400, H: 870, X0: 80, XW: 1240, PAD: 50, AMAX: 62, laneH: 230,
+    fieldTop: 292, fieldBot: 588,
+    laneTop: { A: 30, B: 620 },
+    col: { A: '#e07f78', B: '#7fcfca' }
+  };
+  var COL = {
+    surface: '#121823', raised: '#1c2431', sunken: '#0c1118',
+    ink: '#e9ecef', muted: '#a7b0bf', line: '#333f52', stitch: '#6d7b91',
+    gold: '#c9b46a', train: '#8e88c4', ice: '#81b8db'
+  };
+  var FONT_L = "600 17px 'Fira Sans Extra Condensed','Arial Narrow',sans-serif";
+  var FONT_S = "400 17px 'Alegreya',Georgia,serif";
+  var TR = { top: 20, h: 260, pad: 50, VH: 300 };
+
+  function clamp(v, a, b) { return Math.max(a, Math.min(b, v)); }
+  function lerp(a, b, s) { return a + (b - a) * s; }
+  function r1(v) { return Math.round(v * 10) / 10; }
+  function rad(q) { return 6 + q * 34; }
+  function ssm(a, b, x) { x = clamp((x - a) / (b - a), 0, 1); return x * x * (3 - 2 * x); }
+
+  function rng(seed) {
+    var a = seed | 0;
+    return function () {
+      a = (a + 0x6D2B79F5) | 0;
+      var t = Math.imul(a ^ (a >>> 15), 1 | a);
+      t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+      return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+    };
+  }
+
+  function fmt(sec) {
+    var s = Math.round(sec);
+    var h = Math.floor(s / 3600);
+    var m = Math.floor((s % 3600) / 60);
+    var r = String(s % 60).padStart(2, '0');
+    return h ? h + ':' + String(m).padStart(2, '0') + ':' + r : m + ':' + r;
+  }
+
+  function $(id) { return document.getElementById(id); }
+
+  /* colour helpers — results cached, the draw loop calls these thousands of times */
+  var rgbMemo = {}, mixMemo = {};
+  function rgb(h) {
+    return rgbMemo[h] || (rgbMemo[h] = [parseInt(h.slice(1, 3), 16), parseInt(h.slice(3, 5), 16), parseInt(h.slice(5, 7), 16)]);
+  }
+  function rgba(h, a) {
+    var c = rgb(h);
+    return 'rgba(' + c[0] + ',' + c[1] + ',' + c[2] + ',' + (Math.round(clamp(a, 0, 1) * 1000) / 1000) + ')';
+  }
+  function toward(h, to, k) {
+    var key = h + to + k;
+    if (mixMemo[key]) return mixMemo[key];
+    var c = rgb(h), o = to === 'w' ? 255 : 0, out = '#';
+    for (var i = 0; i < 3; i++) {
+      var v = Math.round(c[i] + (o - c[i]) * k);
+      out += (v < 16 ? '0' : '') + v.toString(16);
+    }
+    return (mixMemo[key] = out);
+  }
+  function lite(h, k) { return toward(h, 'w', k); }
+  function dark(h, k) { return toward(h, 'b', k); }
+  function pal(h) { return { hot: lite(h, 0.55), core: lite(h, 0.86), deep: dark(h, 0.5) }; }
+
+
+  /* ══════════════════════════════════════════════════════════════
+     Neon toolkit — everything that actually paints light
+     ══════════════════════════════════════════════════════════════
+     All light is drawn into a trail buffer (black background, source-over)
+     and added onto the static panels with 'lighter'. */
+
+  var gk = 1;              /* device px per logical px: shadowBlur ignores ctx transforms */
+  /* shadows: 0 = none, 1 = halo only, 2 = halo + body + fine details */
+  var QS = [
+    { strands: 3, shadows: 0, blur: 0 },
+    { strands: 6, shadows: 1, blur: 0.8 },
+    { strands: 9, shadows: 2, blur: 1 }
+  ];
+  var RES = 1;             /* emergency resolution scale, see loop() */
+  var Q = (navigator.hardwareConcurrency || 8) <= 4 ? 1 : 2;
+  var FX = {
+    motion: !(window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches),
+    auto: true
+  };
+  /* ?fx=low|mid|high pins the glow quality (otherwise it adapts to the frame rate) */
+  (function () {
+    var m = /[?&]fx=(low|mid|high)\b/.exec(location.search);
+    if (m) { Q = { low: 0, mid: 1, high: 2 }[m[1]]; FX.auto = false; }
+  })();
+
+  function noShadow(T) { T.shadowBlur = 0; T.shadowColor = 'transparent'; }
+
+  /* three-layer neon stroke: wide blurred halo -> saturated body -> white-hot core */
+  function neon(T, path, col, w, op) {
+    var p = pal(col), q = QS[Q], b = q.blur * gk;
+    if (q.shadows > 0) {
+      T.shadowColor = rgba(col, op);
+      T.shadowBlur = 30 * b;
+      T.strokeStyle = rgba(col, 0.34 * op); T.lineWidth = w * 2.8; T.stroke(path);
+      if (q.shadows > 1) T.shadowBlur = 10 * b; else noShadow(T);
+      T.strokeStyle = rgba(col, 0.8 * op); T.lineWidth = w * 1.45; T.stroke(path);
+      noShadow(T);
+    } else {
+      T.strokeStyle = rgba(col, 0.16 * op); T.lineWidth = w * 4.4; T.stroke(path);
+      T.strokeStyle = rgba(col, 0.6 * op); T.lineWidth = w * 1.6; T.stroke(path);
+    }
+    T.strokeStyle = rgba(p.core, op); T.lineWidth = w * 0.55; T.stroke(path);
+  }
+
+  function aura(T, x, y, R, col, a) {
+    var g = T.createRadialGradient(x, y, 0, x, y, R);
+    g.addColorStop(0, rgba(col, 0.7 * a));
+    g.addColorStop(0.45, rgba(col, 0.26 * a));
+    g.addColorStop(1, rgba(col, 0));
+    T.fillStyle = g; T.beginPath(); T.arc(x, y, R, 0, TAU); T.fill();
+  }
+
+  /* volumetric sci-fi sphere: offset key light, bounce light, specular, fresnel rim */
+  function sphere(T, x, y, r, col, op) {
+    var p = pal(col), b = QS[Q].blur * gk, g;
+    if (QS[Q].shadows > 0) { T.shadowColor = rgba(col, 0.9 * op); T.shadowBlur = (12 + r * 0.6) * b; }
+    T.fillStyle = rgba(p.deep, 0.95 * op);
+    T.beginPath(); T.arc(x, y, r, 0, TAU); T.fill();
+    noShadow(T);
+
+    g = T.createRadialGradient(x - r * 0.34, y - r * 0.4, r * 0.04, x, y, r);
+    g.addColorStop(0, rgba(p.core, op));
+    g.addColorStop(0.2, rgba(p.hot, op));
+    g.addColorStop(0.58, rgba(col, 0.96 * op));
+    g.addColorStop(0.9, rgba(dark(col, 0.42), 0.96 * op));
+    g.addColorStop(1, rgba(dark(col, 0.62), 0.96 * op));
+    T.fillStyle = g; T.beginPath(); T.arc(x, y, r, 0, TAU); T.fill();
+
+    g = T.createRadialGradient(x - r * 0.28, y - r * 0.32, r * 0.75, x - r * 0.28, y - r * 0.32, r * 1.3);
+    g.addColorStop(0, rgba(col, 0));
+    g.addColorStop(1, rgba(p.hot, 0.55 * op));
+    T.fillStyle = g; T.beginPath(); T.arc(x, y, r, 0, TAU); T.fill();
+
+    var sx = x - r * 0.4, sy = y - r * 0.46;
+    g = T.createRadialGradient(sx, sy, 0, sx, sy, r * 0.34);
+    g.addColorStop(0, 'rgba(255,255,255,' + (0.9 * op) + ')');
+    g.addColorStop(1, 'rgba(255,255,255,0)');
+    T.fillStyle = g; T.beginPath(); T.arc(sx, sy, r * 0.34, 0, TAU); T.fill();
+
+    T.strokeStyle = rgba(p.hot, 0.8 * op); T.lineWidth = 1.2;
+    T.beginPath(); T.arc(x, y, r, 0, TAU); T.stroke();
+  }
+
+  /* translucent glass orb */
+  function glass(T, x, y, r, col, op) {
+    var p = pal(col), g = T.createRadialGradient(x - r * 0.25, y - r * 0.3, r * 0.1, x, y, r);
+    g.addColorStop(0, rgba(col, 0.1 * op));
+    g.addColorStop(0.7, rgba(col, 0.2 * op));
+    g.addColorStop(1, rgba(p.hot, 0.5 * op));
+    T.fillStyle = g; T.beginPath(); T.arc(x, y, r, 0, TAU); T.fill();
+    var sx = x - r * 0.4, sy = y - r * 0.44;
+    g = T.createRadialGradient(sx, sy, 0, sx, sy, r * 0.3);
+    g.addColorStop(0, 'rgba(255,255,255,' + (0.5 * op) + ')');
+    g.addColorStop(1, 'rgba(255,255,255,0)');
+    T.fillStyle = g; T.beginPath(); T.arc(sx, sy, r * 0.3, 0, TAU); T.fill();
+    var ring = new Path2D(); ring.arc(x, y, r, 0, TAU);
+    neon(T, ring, col, 1.7, op);
+  }
+
+  function spiralPath(x, y, r, rot) {
+    var p = new Path2D(), steps = 48;
+    for (var i = 0; i <= steps; i++) {
+      var th = (i / steps) * 3 * TAU + rot, rr = r * 0.82 * (i / steps);
+      if (i) p.lineTo(x + rr * Math.cos(th), y + rr * Math.sin(th));
+      else p.moveTo(x, y);
+    }
+    return p;
+  }
+
+  function raysOf(T, x, y, r, g, col, time, op) {
+    var cnt = Math.round(g * 12);
+    if (cnt < 2) return 0;
+    var r0 = r + 16, len = 6 + g * 20, p = new Path2D(), rot = time * 0.18;
+    for (var i = 0; i < cnt; i++) {
+      var a = (i / cnt) * TAU + 0.3 + rot;
+      var L = len * (0.78 + 0.22 * Math.sin(time * 2.3 + i * 2.1));
+      p.moveTo(x + r0 * Math.cos(a), y + r0 * Math.sin(a));
+      p.lineTo(x + (r0 + L) * Math.cos(a), y + (r0 + L) * Math.sin(a));
+    }
+    neon(T, p, col, 1.4, op * 0.9);
+    return len + 6;
+  }
+
+  /* One voice point. kind: solid | spiral | rings. o: { op, ph, plain, ping } */
+  function drawNode(T, x, y, r, g, kind, col, time, o) {
+    o = o || {};
+    var op = o.op == null ? 1 : o.op, ph = o.ph || 0;
+    var br = r * (1 + 0.03 * Math.sin(time * 1.7 + ph));
+    var p = pal(col), ext = 0;
+
+    if (!o.plain) {
+      if (g > 0.05) {
+        var R = r + 14 + g * 46;
+        aura(T, x, y, R, col, op * (0.85 + 0.15 * Math.sin(time * 2 + ph)));
+        if (g > 0.55) {
+          var lg = T.createLinearGradient(x - R * 1.5, y, x + R * 1.5, y);
+          lg.addColorStop(0, rgba(col, 0));
+          lg.addColorStop(0.5, rgba(lite(col, 0.7), 0.55 * g * op));
+          lg.addColorStop(1, rgba(col, 0));
+          T.fillStyle = lg; T.fillRect(x - R * 1.5, y - 1.1, R * 3, 2.2);
+        }
+        ext = raysOf(T, x, y, br, g, col, time, op);
+      }
+      T.setLineDash([2, 7]); T.lineDashOffset = -time * 5;
+      T.strokeStyle = rgba(col, 0.75 * op); T.lineWidth = 2;
+      T.beginPath(); T.arc(x, y, br + 10, 0, TAU); T.stroke();
+      T.setLineDash([]);
+    }
+
+    if (kind === 'solid') {
+      sphere(T, x, y, br, col, op);
+    } else if (kind === 'spiral') {
+      glass(T, x, y, br, col, op);
+      neon(T, spiralPath(x, y, br, time * 0.8 + ph), col, 1.3, op);
+    } else {
+      var ro = new Path2D(), rm = new Path2D();
+      ro.arc(x, y, br, 0, TAU); rm.arc(x, y, br * 0.62, 0, TAU);
+      neon(T, ro, col, 1.7, op);
+      neon(T, rm, col, 1.7, op);
+      sphere(T, x, y, br * 0.28, col, op);
+      /* satellites riding the rings */
+      for (var s = 0; s < 2; s++) {
+        var rr = s ? br * 0.62 : br, an = time * (s ? -2.1 : 1.5) + ph + s * 2;
+        T.fillStyle = rgba(p.core, op);
+        if (QS[Q].shadows > 1) { T.shadowColor = rgba(col, op); T.shadowBlur = 8 * QS[Q].blur * gk; }
+        T.beginPath(); T.arc(x + rr * Math.cos(an), y + rr * Math.sin(an), 2.1, 0, TAU); T.fill();
+        noShadow(T);
+      }
+    }
+
+    if (o.ping > 0) {
+      var pr = br + 10 + (1 - o.ping) * 54;
+      T.strokeStyle = rgba(p.hot, 0.8 * o.ping * op); T.lineWidth = 2;
+      T.beginPath(); T.arc(x, y, pr, 0, TAU); T.stroke();
+    }
+    return ext;
+  }
+
+  /* tiny glowing bead used by the register field */
+  function pearl(T, x, y, r, col, op) {
+    var p = pal(col);
+    if (QS[Q].shadows > 1) { T.shadowColor = rgba(col, 0.9 * op); T.shadowBlur = 9 * QS[Q].blur * gk; }
+    var g = T.createRadialGradient(x - r * 0.3, y - r * 0.35, 0, x, y, r);
+    g.addColorStop(0, rgba(p.core, op));
+    g.addColorStop(0.5, rgba(col, op));
+    g.addColorStop(1, rgba(dark(col, 0.45), op));
+    T.fillStyle = g; T.beginPath(); T.arc(x, y, r, 0, TAU); T.fill();
+    noShadow(T);
+  }
+
+  /* dotted neon line (stitch) */
+  function stitch(T, x1, y1, x2, y2, col, w, dash, time, op) {
+    T.setLineDash(dash); T.lineDashOffset = -time * 6;
+    if (QS[Q].shadows > 1) { T.shadowColor = rgba(col, 0.9 * op); T.shadowBlur = 8 * QS[Q].blur * gk; }
+    T.strokeStyle = rgba(lite(col, 0.2), 0.95 * op); T.lineWidth = w;
+    T.beginPath(); T.moveTo(x1, y1); T.lineTo(x2, y2); T.stroke();
+    noShadow(T); T.setLineDash([]);
+  }
+
+
+  /* ══════════════════════════════════════════════════════════════
+     Edge geometry (the "movements") and strand bundles
+     ══════════════════════════════════════════════════════════════ */
+
+  function interp(pts) {
+    return function (s) {
+      if (s <= pts[0][0]) return pts[0][1];
+      for (var i = 1; i < pts.length; i++) {
+        if (s <= pts[i][0]) {
+          var a = pts[i - 1], b = pts[i], d = b[0] - a[0];
+          return d <= 0 ? b[1] : a[1] + (b[1] - a[1]) * (s - a[0]) / d;
+        }
+      }
+      return pts[pts.length - 1][1];
+    };
+  }
+
+  function edgeGeom(x1, y1, q1, x2, y2, q2, e, lo, hi, amax, sc) {
+    var xa = x1 + rad(q1) * sc * 0.85;
+    var xb = x2 - rad(q2) * sc * 0.85;
+    var L = Math.max(xb - xa, 2);
+    var A = (e.amp || 0) * amax, grow = e.grow || 0;
+    var n = Math.max(1, Math.round(e.n || 1));
+    var env = function (s) { return clamp(1 + grow * (2 * s - 1) * 0.7, 0.3, 1.7); };
+    var g = {
+      shape: e.shape, xa: xa, L: L, n: n, lo: lo, hi: hi, y1: y1, y2: y2,
+      base: function (s) { return y1 + (y2 - y1) * s; },
+      fn: function () { return 0; }, ss: null, beads: null
+    };
+    var i, pts, steps, set;
+    if (e.shape === 'ripple') {
+      g.fn = function (s) { return Math.sin(TAU * n * s) * A * env(s); };
+      steps = Math.min(400, n * 24);
+      g.ss = []; for (i = 0; i <= steps; i++) g.ss.push(i / steps);
+    } else if (e.shape === 'zigzag' || e.shape === 'irregular') {
+      pts = [[0, 0]];
+      if (e.shape === 'zigzag') {
+        for (var j = 1; j <= n; j++) {
+          var su = (j - 0.5) / n, sd = j / n;
+          pts.push([su, -A * env(su)]);
+          pts.push([sd, j === n ? 0 : A * 0.5 * env(sd)]);
+        }
+      } else {
+        var rnd = rng(e.seed || 1), m = n * 2;
+        for (var k = 1; k < m; k++) {
+          var s = clamp((k + (rnd() - 0.5) * 0.9) / m, 0.02, 0.98);
+          pts.push([s, ((k % 2) ? -1 : 1) * A * env(s) * (0.35 + 0.65 * rnd())]);
+        }
+        pts.push([1, 0]);
+      }
+      g.fn = interp(pts);
+      steps = clamp(Math.round(L / 2), 48, 240);
+      set = {};
+      g.ss = [];
+      for (i = 0; i <= steps; i++) { set[i / steps] = 1; }
+      pts.forEach(function (p) { set[p[0]] = 1; });
+      g.ss = Object.keys(set).map(Number).sort(function (a, b) { return a - b; });
+    } else if (e.shape === 'beads') {
+      var sp = L / n, ang = Math.atan2(y2 - y1, L);
+      g.ang = ang; g.beads = [];
+      for (i = 0; i < n; i++) {
+        var sb = (i + 0.5) / n, q = lerp(q1, q2, sb);
+        var rx = Math.min((5 + q * 13) * 1.3 * sc, sp * 0.58);
+        g.beads.push({ cx: xa + L * sb, cy: clamp(g.base(sb), lo, hi), rx: rx, ry: rx * 0.78, i: i });
+      }
+    } else {
+      g.ss = []; for (i = 0; i <= 48; i++) g.ss.push(i / 48);
+    }
+    return g;
+  }
+
+  /* weave parameters: strand 0 is the exact movement, the rest braid around it */
+  var STR = {
+    ph:  [0, 0.12, -0.12, 0.26, -0.26, 0.4, -0.4, 0.52, -0.52],
+    sc:  [1, 0.84, 0.84, 0.68, 0.68, 1.14, 1.14, 0.5, 0.5],
+    off: [0, 2.4, -2.4, 5, -5, 7.5, -7.5, 1.2, -1.2],
+    al:  [1, 0.6, 0.6, 0.42, 0.42, 0.3, 0.3, 0.22, 0.22],
+    w:   [1, 0.62, 0.62, 0.46, 0.46, 0.38, 0.38, 0.32, 0.32],
+    wh:  [0, 0.45, 0.45, 0.3, 0.3, 0.15, 0.15, 0, 0]
+  };
+
+  function strandPath(g, k, time) {
+    var p = new Path2D(), ss = g.ss, n = ss.length, hold = g.shape === 'hold', rip = g.shape === 'ripple';
+    for (var i = 0; i < n; i++) {
+      var s = ss[i], dy;
+      if (k === 0) {
+        dy = g.fn(s);
+      } else {
+        var e = ssm(0, 0.12, s) * ssm(0, 0.12, 1 - s);
+        if (hold) {
+          dy = e * (2.2 + k * 0.7) * Math.sin(TAU * (1.4 * s + STR.ph[k] * 2) - time * (0.9 + 0.12 * k));
+        } else if (rip) {
+          dy = e * (STR.sc[k] * g.fn(s + (STR.ph[k] - time * 0.3) / g.n) + STR.off[k] + 1.2 * Math.sin(time * 1.1 + k * 2.3));
+        } else {
+          var s2 = clamp(s + STR.ph[k] * 0.06 + 0.012 * Math.sin(time * 0.9 + k * 1.9), 0, 1);
+          dy = e * (STR.sc[k] * g.fn(s2) + STR.off[k] + 1.2 * Math.sin(time * 1.1 + k * 2.3));
+        }
+      }
+      var y = clamp(g.base(s) + dy, g.lo, g.hi), x = g.xa + g.L * s;
+      if (i) p.lineTo(x, y); else p.moveTo(x, y);
+    }
+    return p;
+  }
+
+  /* "Бисер": a chain of glowing pearls with orbiting electrons */
+  function drawBeads(T, g, col, time, op, active, wb) {
+    var p = pal(col), body = new Path2D(), orbit = new Path2D(), b, i;
+    for (i = 0; i < g.beads.length; i++) {
+      b = g.beads[i];
+      body.moveTo(b.cx + b.rx * Math.cos(g.ang), b.cy + b.rx * Math.sin(g.ang));
+      body.ellipse(b.cx, b.cy, b.rx, b.ry, g.ang, 0, TAU);
+      var oa = g.ang + 0.4 + 0.3 * Math.sin(time * 0.9 + i);
+      orbit.moveTo(b.cx + b.rx * 1.3 * Math.cos(oa), b.cy + b.rx * 1.3 * Math.sin(oa));
+      orbit.ellipse(b.cx, b.cy, b.rx * 1.3, b.ry * 1.25, oa, 0, TAU);
+      var gr = T.createRadialGradient(b.cx, b.cy, 0, b.cx, b.cy, b.rx * 1.2);
+      gr.addColorStop(0, rgba(p.core, 0.55 * op));
+      gr.addColorStop(0.6, rgba(col, 0.2 * op));
+      gr.addColorStop(1, rgba(col, 0));
+      T.fillStyle = gr; T.beginPath(); T.arc(b.cx, b.cy, b.rx * 1.2, 0, TAU); T.fill();
+    }
+    T.strokeStyle = rgba(lite(col, 0.2), 0.34 * op); T.lineWidth = 1;
+    T.stroke(orbit);
+    neon(T, body, col, wb, op);
+    {
+      T.fillStyle = rgba(p.core, op);
+      if (QS[Q].shadows > 1) { T.shadowColor = rgba(col, op); T.shadowBlur = 7 * QS[Q].blur * gk; }
+      for (i = 0; i < g.beads.length; i++) {
+        b = g.beads[i];
+        var an = time * 2.2 + i * 1.3, ca = Math.cos(an) * b.rx * 1.3, sa = Math.sin(an) * b.ry * 1.25;
+        var oa2 = g.ang + 0.4 + 0.3 * Math.sin(time * 0.9 + i);
+        T.beginPath();
+        T.arc(b.cx + ca * Math.cos(oa2) - sa * Math.sin(oa2), b.cy + ca * Math.sin(oa2) + sa * Math.cos(oa2), 1.8, 0, TAU);
+        T.fill();
+      }
+      noShadow(T);
+    }
+  }
+
+  /* A movement drawn as a braid of thin strands of different alpha around one neon core */
+  function drawBundle(T, g, col, time, op, active, wb) {
+    if (g.shape === 'beads') return drawBeads(T, g, col, time, op, active, wb);
+    var N = QS[Q].strands, k, path, primary = null;
+    for (k = N - 1; k >= 0; k--) {
+      path = strandPath(g, k, time);
+      if (k === 0) { primary = path; break; }
+      if (k <= 2 && QS[Q].shadows > 1) { T.shadowColor = rgba(col, 0.9 * op); T.shadowBlur = 9 * QS[Q].blur * gk; }
+      T.strokeStyle = rgba(lite(col, STR.wh[k]), STR.al[k] * op);
+      T.lineWidth = Math.max(0.8, wb * STR.w[k]);
+      T.stroke(path);
+      noShadow(T);
+    }
+    neon(T, primary, col, wb, op);
+    if (FX.motion && op > 0.3) {
+      /* light pulses running along the core */
+      var pc = pal(col).core;
+      T.setLineDash([14, Math.max(50, g.L * 0.7)]);
+      T.lineDashOffset = -time * (active ? 120 : 42);
+      if (QS[Q].shadows > 1) { T.shadowColor = rgba(col, op); T.shadowBlur = 12 * QS[Q].blur * gk; }
+      T.strokeStyle = rgba(pc, (active ? 0.95 : 0.4) * op);
+      T.lineWidth = wb * 1.15;
+      T.stroke(primary);
+      noShadow(T); T.setLineDash([]);
+    }
+  }
+
+
+  /* ══════════════════════════════════════════════════════════════
+     Score data: defaults, generator, text helpers
+     ══════════════════════════════════════════════════════════════ */
+
+  function bright(b) {
+    if (b < 0.2) return 'очень низко';
+    if (b < 0.4) return 'низко';
+    if (b < 0.6) return 'середина';
+    if (b < 0.8) return 'высоко';
+    return 'очень высоко';
+  }
+  function glowWord(g) {
+    if (g < 0.2) return 'глухо, тёмный тембр';
+    if (g < 0.4) return 'мягко';
+    if (g < 0.6) return 'ровный тембр';
+    if (g < 0.8) return 'звонко';
+    return 'сияет, много верхов';
+  }
+  function amount(q) {
+    if (q < 0.25) return 'единичные звуки';
+    if (q < 0.5) return 'разрежённо';
+    if (q < 0.75) return 'насыщенно';
+    return 'плотно, много';
+  }
+  function trWord(f) {
+    if (f < 0.2) return 'очень медленно';
+    if (f < 0.4) return 'медленно';
+    if (f < 0.6) return 'средне';
+    if (f < 0.8) return 'часто';
+    return 'очень часто';
+  }
+  function trAmpWord(a) {
+    if (a < 0.2) return 'очень узко';
+    if (a < 0.4) return 'узко';
+    if (a < 0.6) return 'средне';
+    if (a < 0.8) return 'широко';
+    return 'очень широко';
+  }
+
+  var SHAPES = [
+    { id: 'hold', name: 'Прямая', live: 'Одна нота, звук тянется.',
+      text: 'Одна нота или один аккорд, звук тянется без движения. Меняется только то, что показывают соседние точки: высота — если линия идёт вверх или вниз, плотность — если точки разного размера.',
+      v1: { n: 1, amp: 0, grow: 0, q1: 0.5, q2: 0.5, y1: 50, y2: 50, seed: 1, cap: 'Ровно: одна высота, одна нота.' },
+      v2: { n: 1, amp: 0, grow: 0, q1: 0.5, q2: 0.5, y1: 76, y2: 24, seed: 1, cap: 'С наклоном: звук плавно поднимается и светлеет.' } },
+    { id: 'beads', name: 'Бисер', live: 'Отдельные ровные ноты, каждая сама по себе.',
+      text: 'Ноты по одной, каждая отдельно, ровным пульсом; высота почти не меняется. Число кружков — число нот, размер кружка — сила и длина ноты. Растут — звучите всё полнее, мельчают — затухаете.',
+      v1: { n: 4, amp: 0, grow: 0, q1: 0.3, q2: 0.3, y1: 50, y2: 50, seed: 1, cap: 'Редко и мелко: тихие одиночные ноты.' },
+      v2: { n: 9, amp: 0, grow: 0, q1: 0.3, q2: 0.9, y1: 50, y2: 50, seed: 1, cap: 'Часто и крупнее: пульс нарастает.' } },
+    { id: 'ripple', name: 'Волна', live: 'Плавное покачивание вокруг центра: трель, тремоло, легато.',
+      text: 'Плавное покачивание вокруг центра линии: трель, тремоло, соседние ноты, легато без острых краёв. Частота волн — скорость, высота волны — как далеко вы уходите от центра.',
+      v1: { n: 3, amp: 0.2, grow: 0, q1: 0.5, q2: 0.5, y1: 50, y2: 50, seed: 1, cap: 'Медленно и узко: покачивание вокруг одной ноты.' },
+      v2: { n: 8, amp: 0.45, grow: 0, q1: 0.5, q2: 0.5, y1: 50, y2: 50, seed: 1, cap: 'Часто и шире: трель, быстрое перебирание.' } },
+    { id: 'zigzag', name: 'Зубцы', live: 'Арпеджио скачками, острые акценты.',
+      text: 'Арпеджио: ровные скачки вверх и обратно, острые края, акценты. Каждый зубец — прыжок; чем он выше, тем шире интервал. Зубцы растут — диапазон расширяется, мельчают — сжимается.',
+      v1: { n: 3, amp: 0.35, grow: 0, q1: 0.5, q2: 0.5, y1: 50, y2: 50, seed: 1, cap: 'Низкие зубцы: арпеджио в узком диапазоне.' },
+      v2: { n: 4, amp: 0.9, grow: 0.6, q1: 0.5, q2: 0.5, y1: 50, y2: 50, seed: 1, cap: 'Высокие и растущие: скачки через весь регистр.' } },
+    { id: 'irregular', name: 'Рваная линия', live: 'Арпеджио без правила: рваный ритм и скачки.',
+      text: 'Арпеджио без правила: неравные паузы и неравные прыжки. Не повторяйте паттерн дважды и не выравнивайте ритм. Заданы только размах и густота — остальное решаете вы.',
+      v1: { n: 3, amp: 0.3, grow: 0, q1: 0.5, q2: 0.5, y1: 50, y2: 50, seed: 5, cap: 'Редко и узко: отдельные неожиданные ноты.' },
+      v2: { n: 7, amp: 0.85, grow: 0, q1: 0.5, q2: 0.5, y1: 50, y2: 50, seed: 9, cap: 'Густо и широко: хаотичное арпеджио.' } }
+  ];
+  var SHAPE = {};
+  SHAPES.forEach(function (s) { SHAPE[s.id] = s; });
+
+  var DEF = {
+    nodes: {
+      A: [
+        { id: 'A1', t: 0.04, b: 0.70, q: 1.00, g: 0.25, kind: 'solid' },
+        { id: 'A2', t: 0.25, b: 0.48, q: 0.45, g: 0.15, kind: 'solid' },
+        { id: 'A3', t: 0.55, b: 0.46, q: 0.80, g: 0.55, kind: 'spiral' },
+        { id: 'A4', t: 0.80, b: 0.75, q: 0.35, g: 0.90, kind: 'spiral' },
+        { id: 'A5', t: 0.94, b: 0.55, q: 0.40, g: 0.60, kind: 'rings' }
+      ],
+      B: [
+        { id: 'B1', t: 0.04, b: 0.26, q: 1.00, g: 0.20, kind: 'solid' },
+        { id: 'B2', t: 0.31, b: 0.38, q: 0.55, g: 0.10, kind: 'solid' },
+        { id: 'B3', t: 0.55, b: 0.61, q: 0.60, g: 0.45, kind: 'solid' },
+        { id: 'B4', t: 0.74, b: 0.50, q: 0.30, g: 0.30, kind: 'solid' },
+        { id: 'B5', t: 0.94, b: 0.55, q: 1.00, g: 1.00, kind: 'rings' }
+      ]
+    },
+    edges: {
+      A: [
+        { shape: 'ripple', n: 5, amp: 0.30, grow: -0.3 },
+        { shape: 'beads', n: 8 },
+        { shape: 'zigzag', n: 3, amp: 0.9, grow: 0.3 },
+        { shape: 'hold' }
+      ],
+      B: [
+        { shape: 'hold' },
+        { shape: 'irregular', n: 5, amp: 0.55, seed: 7 },
+        { shape: 'hold' },
+        { shape: 'beads', n: 8 }
+      ]
+    },
+    meets: [
+      { t: 0.04, a: 'A1', b: 'B1', rel: 'apart', rA: [0.58, 0.82], rB: [0.14, 0.38] },
+      { t: 0.55, a: 'A3', b: 'B3', rel: 'overlap', rA: [0.30, 0.62], rB: [0.45, 0.78] },
+      { t: 0.94, a: 'A5', b: 'B5', rel: 'around', rA: [0.43, 0.67], rB: [0.27, 0.83] }
+    ]
+  };
+
+  function generateScore(cfg, seed) {
+    var rnd = rng(seed);
+    var pick = function (arr) { return arr[Math.floor(rnd() * arr.length)]; };
+    var dur = Math.max(10, cfg.minutes * 60);
+    var pad = Math.min(8, dur * 0.04);
+    var nMin = Math.max(2, cfg.nMin);
+    var nMax = Math.max(nMin, cfg.nMax);
+    var times = [pad];
+    for (;;) {
+      var next = times[times.length - 1] + 180 + rnd() * 120;
+      if (next > dur - pad - 60) break;
+      times.push(next);
+    }
+    var endT = dur - pad;
+    if (times.length > 1 && endT - times[times.length - 1] < 120) times[times.length - 1] = endT;
+    else times.push(endT);
+
+    var rels = ['around', 'overlap', 'touch', 'apart'];
+    var cl = function (r) { return [Math.round(clamp(r[0], 0.03, 0.97) * 100) / 100, Math.round(clamp(r[1], 0.03, 0.97) * 100) / 100]; };
+    var prev = null;
+    var meets = times.map(function (ts) {
+      var rel;
+      do { rel = pick(rels); } while (rel === prev);
+      prev = rel;
+      var c = 0.38 + rnd() * 0.24, first, second;
+      if (rel === 'around') { first = [c - 0.28, c + 0.28]; second = [c - 0.12, c + 0.12]; }
+      else if (rel === 'overlap') { first = [c - 0.05, c + 0.30]; second = [c - 0.30, c + 0.05]; }
+      else if (rel === 'touch') { first = [c, c + 0.30]; second = [c - 0.30, c]; }
+      else { first = [c + 0.10, c + 0.35]; second = [c - 0.35, c - 0.10]; }
+      var firstIsA = rnd() < 0.5;
+      var rA = cl(firstIsA ? first : second);
+      var rB = cl(firstIsA ? second : first);
+      var qA = 0.4 + rnd() * 0.5, qB = 0.4 + rnd() * 0.5;
+      if (rel === 'around') {
+        if (firstIsA) { qA = 0.85; qB = 0.4; } else { qA = 0.4; qB = 0.85; }
+      }
+      return { sec: ts, rel: rel, rA: rA, rB: rB, qA: qA, qB: qB };
+    });
+
+    var nodes = {}, edges = {};
+    ['A', 'B'].forEach(function (L) {
+      var arr = [];
+      var bPrev = 0.3 + rnd() * 0.4;
+      var free = function (s) {
+        bPrev = clamp(bPrev + (rnd() - 0.5) * 0.6, 0.06, 0.94);
+        return {
+          sec: s, b: Math.round(bPrev * 100) / 100, q: Math.round((0.25 + rnd() * 0.75) * 100) / 100,
+          g: Math.round(rnd() * 100) / 100, kind: rnd() < 0.45 ? 'spiral' : 'solid'
+        };
+      };
+      for (var k = 0; k < times.length; k++) {
+        var m = meets[k];
+        var r = L === 'A' ? m.rA : m.rB;
+        var q = L === 'A' ? m.qA : m.qB;
+        bPrev = (r[0] + r[1]) / 2;
+        arr.push({
+          sec: times[k], b: Math.round(bPrev * 100) / 100, q: Math.round(q * 100) / 100,
+          g: Math.round(rnd() * 100) / 100,
+          kind: m.rel === 'around' ? 'rings' : (rnd() < 0.45 ? 'spiral' : 'solid'), meet: k
+        });
+        if (k < times.length - 1) {
+          var gap = times[k + 1] - times[k];
+          var target = (nMin + rnd() * (nMax - nMin)) * gap / 300;
+          var cnt = clamp(Math.round(target) - 1, 1, Math.max(1, Math.floor(gap / 15) - 1));
+          for (var j = 1; j <= cnt; j++) {
+            arr.push(free(times[k] + gap * (j + (rnd() - 0.5) * 0.5) / (cnt + 1)));
+          }
+        }
+      }
+      arr.forEach(function (n, i) { n.id = L + (i + 1); n.t = Math.round(n.sec / dur * 10000) / 10000; });
+      nodes[L] = arr;
+      var es = [];
+      for (var i = 0; i < arr.length - 1; i++) {
+        var sec = arr[i + 1].sec - arr[i].sec;
+        var shape = pick(['hold', 'beads', 'ripple', 'zigzag', 'irregular']);
+        var e = { shape: shape };
+        if (shape === 'beads') { e.n = clamp(Math.round(sec / (6 + rnd() * 4)), 3, 14); }
+        if (shape === 'ripple') { e.n = clamp(Math.round(sec / (6 + rnd() * 6)), 2, 12); e.amp = 0.2 + rnd() * 0.5; }
+        if (shape === 'zigzag') { e.n = clamp(Math.round(sec / (10 + rnd() * 10)), 2, 6); e.amp = 0.3 + rnd() * 0.6; e.grow = (rnd() - 0.5) * 0.8; }
+        if (shape === 'irregular') { e.n = clamp(Math.round(sec / (8 + rnd() * 8)), 2, 8); e.amp = 0.3 + rnd() * 0.6; e.seed = 1 + Math.floor(rnd() * 98); }
+        es.push(e);
+      }
+      edges[L] = es;
+    });
+    var outMeets = meets.map(function (m, k) {
+      return {
+        t: Math.round(m.sec / dur * 10000) / 10000,
+        a: nodes.A.filter(function (n) { return n.meet === k; })[0].id,
+        b: nodes.B.filter(function (n) { return n.meet === k; })[0].id,
+        rel: m.rel, rA: m.rA, rB: m.rB
+      };
+    });
+    return { nodes: nodes, edges: edges, meets: outMeets };
+  }
+
+  function relName(rel) {
+    return { around: 'Внутри', overlap: 'Перекрытие', touch: 'Касание', apart: 'Врозь' }[rel];
+  }
+
+  function relText(rel, inner, top) {
+    var bot = top === 'A' ? 'B' : 'A';
+    if (rel === 'around') {
+      var outer = inner === 'A' ? 'B' : 'A';
+      return 'Голос ' + inner + ' внутри голоса ' + outer + '. ' + outer + ' — оболочка: шире, дольше, мягче. ' + inner + ' — ядро: играет внутри её звука, не выходя за диапазон и громкость.';
+    }
+    if (rel === 'overlap') {
+      return 'Диапазоны частично совпадают. В общей зоне можно играть те же высоты и сливаться; за её пределами каждый сам по себе. Выше по яркости — голос ' + top + '.';
+    }
+    if (rel === 'touch') {
+      return 'Голоса рядом, на границе: ' + top + ' выше, ' + bot + ' ниже. Не заходите на чужую территорию — держите чёткий край.';
+    }
+    return 'Каждый в своём пространстве, между вами пустота. Слушайте друг друга издалека и не сближайтесь.';
+  }
+
+  /* two-circle sign of how the voices sit relative to each other */
+  function glyph(rel, qa, qb, ba, bb, cx, cy, sc) {
+    var ra = (8 + qa * 12) * sc, rb = (8 + qb * 12) * sc;
+    var top = ba >= bb ? 'A' : 'B';
+    var A, B, inner = null;
+    if (rel === 'around') {
+      var big = Math.max(ra, rb) + 8 * sc, small = Math.min(ra, rb);
+      inner = qa <= qb ? 'A' : 'B';
+      A = { cx: cx, cy: cy, r: inner === 'A' ? small : big };
+      B = { cx: cx, cy: cy, r: inner === 'B' ? small : big };
+    } else {
+      var dist = rel === 'overlap' ? 0.6 * (ra + rb) : (rel === 'touch' ? (ra + rb) : (ra + rb) + 26 * sc);
+      A = { cx: cx, cy: top === 'A' ? cy - dist / 2 : cy + dist / 2, r: ra };
+      B = { cx: cx, cy: top === 'A' ? cy + dist / 2 : cy - dist / 2, r: rb };
+    }
+    return { A: A, B: B, inner: inner, top: top };
+  }
+
+
+  /* ══════════════════════════════════════════════════════════════
+     Application state
+     ══════════════════════════════════════════════════════════════ */
+
+  var ui = {
+    t: 0, playing: false, hi: null, score: null, hints: true, loop: false,
+    cfg: { minutes: 5, nMin: 3, nMax: 6 },
+    tr: null, trSel: { kind: 'edge', i: 0 }, trT: 0, trPlaying: false
+  };
+
+  function curScore() { return ui.score || DEF; }
+  function curDur() { return Math.max(10, ui.cfg.minutes * 60); }
+
+  var cacheS = null, cacheFor = null, cacheDur = 0;
+
+  function buildScore() {
+    var sc = curScore(), dur = curDur();
+    if (cacheS && cacheFor === sc && cacheDur === dur) return cacheS;
+    cacheFor = sc; cacheDur = dur;
+    var pps = K.XW / Math.min(300, dur);
+    var xa = function (t) { return K.X0 + t * dur * pps; };
+    var N = sc.nodes, Ed = sc.edges, M = sc.meets;
+    var pos = {}, nodes = [], segs = [], labels = [], dots = [], flines = [], bands = [];
+
+    ['A', 'B'].forEach(function (L) {
+      var col = K.col[L], top = K.laneTop[L];
+      N[L].forEach(function (n, i) {
+        var x = xa(n.t), y = top + K.PAD + (1 - n.b) * (K.laneH - 2 * K.PAD), r = rad(n.q), g = n.g || 0;
+        var cnt = Math.round(g * 12), ext = (g > 0.05 && cnt >= 2) ? 6 + g * 20 + 6 : 0;
+        pos[n.id] = { x: x, y: y, r: r, q: n.q, b: n.b, g: g, t: n.t };
+        nodes.push({ id: n.id, x: x, y: y, r: r, g: g, kind: n.kind, col: col, sec: n.t * dur, ph: i * 1.7 + (L === 'B' ? 2.1 : 0) });
+        labels.push({ x: x, y: y - r - 18 - ext, text: n.id, color: COL.muted, glow: false });
+      });
+      for (var i = 0; i < N[L].length - 1; i++) {
+        var na = N[L][i], nb = N[L][i + 1], a = pos[na.id], b = pos[nb.id];
+        var e = Object.assign({ seed: i * 13 + L.charCodeAt(0) }, Ed[L][i]);
+        var geom = edgeGeom(a.x, a.y, a.q, b.x, b.y, b.q, e, top + 6, top + K.laneH - 6, K.AMAX, 1);
+        var label = na.id + ' → ' + nb.id + ' · ' + SHAPE[e.shape].name;
+        segs.push({
+          lane: L, shape: e.shape, t0: na.t, t1: nb.t, x0: a.x, x1: b.x, geom: geom, color: col, label: label,
+          pct: {
+            left: r1(a.x / K.W * 1000) / 10, top: r1(top / K.H * 1000) / 10,
+            width: r1((b.x - a.x) / K.W * 1000) / 10, height: r1(K.laneH / K.H * 1000) / 10
+          }
+        });
+        labels.push({
+          x: (a.x + b.x) / 2, y: L === 'A' ? top + K.laneH + 22 : top - 12,
+          text: SHAPE[e.shape].name.toUpperCase(), color: col, glow: true
+        });
+      }
+    });
+
+    var fy = function (v) { return K.fieldTop + 24 + (1 - v) * (K.fieldBot - K.fieldTop - 48); };
+    var GOLD = COL.gold;
+    var meets = M.map(function (m) {
+      var pa = pos[m.a], pb = pos[m.b], x = pa.x;
+      var rA = m.rA || [pa.b - 0.1, pa.b + 0.1], rB = m.rB || [pb.b - 0.1, pb.b + 0.1];
+      var xA = x - 16, xB = x + 16;
+      flines.push({ x: x, x1: xA, y1: fy(rA[1]), y2: fy(rA[0]), col: K.col.A, dash: [2, 7], w: 2.5 });
+      flines.push({ x: x, x1: xB, y1: fy(rB[1]), y2: fy(rB[0]), col: K.col.B, dash: [2, 7], w: 2.5 });
+      dots.push({ x: xA, y: fy(rA[0]), r: 5, col: K.col.A }, { x: xA, y: fy(rA[1]), r: 5, col: K.col.A });
+      dots.push({ x: xB, y: fy(rB[0]), r: 5, col: K.col.B }, { x: xB, y: fy(rB[1]), r: 5, col: K.col.B });
+      var lo = Math.max(rA[0], rB[0]), hi = Math.min(rA[1], rB[1]);
+      if (hi - lo > 0.005) {
+        flines.push({ x: x, x1: x, y1: fy(hi), y2: fy(lo), col: GOLD, dash: [2, 7], w: 3 });
+        dots.push({ x: x, y: fy(hi), r: 4, col: GOLD }, { x: x, y: fy(lo), r: 4, col: GOLD });
+      } else if (Math.abs(hi - lo) <= 0.005) {
+        dots.push({ x: x, y: fy((hi + lo) / 2), r: 5, col: GOLD });
+      } else {
+        flines.push({ x: x, x1: x, y1: fy(lo), y2: fy(hi), col: COL.stitch, dash: [1, 9], w: 2 });
+      }
+      bands.push({ x: x, bx: x - 64 });
+      labels.push({ x: x, y: 572, text: relName(m.rel).toUpperCase(), color: COL.muted, glow: false });
+      return { t: m.t, rel: m.rel, x: x, qa: pa.q, qb: pb.q, ba: pa.b, bb: pb.b };
+    });
+    var gridY = [0.25, 0.5, 0.75].map(fy);
+    ['A', 'B'].forEach(function (L) {
+      N[L].forEach(function (n) { dots.push({ x: xa(n.t), y: fy(n.b), r: 3 + n.q * 6, col: K.col[L], reg: true }); });
+    });
+
+    cacheS = { pos: pos, nodes: nodes, segs: segs, labels: labels, dots: dots, flines: flines, bands: bands, meets: meets, gridY: gridY, pps: pps };
+    return cacheS;
+  }
+
+  function mainView() {
+    var dur = curDur(), t = ui.t, winLen = Math.min(300, dur), pps = K.XW / winLen;
+    var secNow = t * dur;
+    var winStart = dur > winLen ? clamp(secNow - 0.2 * winLen, 0, dur - winLen) : 0;
+    return {
+      dur: dur, t: t, winLen: winLen, pps: pps, secNow: secNow, winStart: winStart, tx: -winStart * pps,
+      px: K.X0 + (secNow - winStart) * pps,
+      vx0: K.X0 + winStart * pps - 200, vx1: K.X0 + (winStart + winLen) * pps + 200
+    };
+  }
+
+
+  /* ══════════════════════════════════════════════════════════════
+     Static panel painting (cached background layer)
+     ══════════════════════════════════════════════════════════════ */
+
+  function rrect(c, x, y, w, h, r) {
+    c.beginPath();
+    c.moveTo(x + r, y);
+    c.arcTo(x + w, y, x + w, y + h, r);
+    c.arcTo(x + w, y + h, x, y + h, r);
+    c.arcTo(x, y + h, x, y, r);
+    c.arcTo(x, y, x + w, y, r);
+    c.closePath();
+  }
+
+  function panel(c, x, y, w, h, fill, grid, gx0, gy0) {
+    c.save();
+    rrect(c, x, y, w, h, 14); c.fillStyle = fill; c.fill();
+    c.clip();
+    var vg = c.createRadialGradient(x + w / 2, y + h / 2, h * 0.2, x + w / 2, y + h / 2, w * 0.62);
+    vg.addColorStop(0, 'rgba(129,184,219,0.035)');
+    vg.addColorStop(1, 'rgba(0,0,0,0.28)');
+    c.fillStyle = vg; c.fillRect(x, y, w, h);
+    if (grid) {
+      c.strokeStyle = rgba(COL.line, 0.6); c.lineWidth = 1; c.beginPath();
+      for (var gx = gx0 || 0; gx <= x + w; gx += 40) { if (gx >= x) { c.moveTo(gx + 0.5, y); c.lineTo(gx + 0.5, y + h); } }
+      for (var gy = gy0 || 0; gy <= y + h; gy += 40) { if (gy >= y) { c.moveTo(x, gy + 0.5); c.lineTo(x + w, gy + 0.5); } }
+      c.stroke();
+    }
+    c.restore();
+    /* HUD corner brackets */
+    c.strokeStyle = rgba(COL.stitch, 0.7); c.lineWidth = 1.5; c.lineCap = 'butt';
+    var b = 14, i = 7;
+    c.beginPath();
+    c.moveTo(x + i, y + i + b); c.lineTo(x + i, y + i); c.lineTo(x + i + b, y + i);
+    c.moveTo(x + w - i - b, y + i); c.lineTo(x + w - i, y + i); c.lineTo(x + w - i, y + i + b);
+    c.moveTo(x + i, y + h - i - b); c.lineTo(x + i, y + h - i); c.lineTo(x + i + b, y + h - i);
+    c.moveTo(x + w - i - b, y + h - i); c.lineTo(x + w - i, y + h - i); c.lineTo(x + w - i, y + h - i - b);
+    c.stroke(); c.lineCap = 'round';
+  }
+
+  function glowText(c, s, x, y, col, size, align, glow) {
+    c.font = size;
+    c.textAlign = align; c.fillStyle = col;
+    if (glow) { c.shadowColor = rgba(col, 0.9); c.shadowBlur = glow; }
+    c.fillText(s, x, y);
+    c.shadowBlur = 0; c.shadowColor = 'transparent';
+  }
+
+  var mainScene = {
+    W: K.W, H: K.H,
+
+    drawBg: function (c, st) {
+      var S = buildScore();
+      c.fillStyle = COL.surface; c.fillRect(0, 0, K.W, K.H);
+      panel(c, 0, 30, 1400, 230, COL.raised, true, 0, 0);
+      panel(c, 0, 292, 1400, 296, COL.sunken, false);
+      panel(c, 0, 620, 1400, 230, COL.raised, true, 0, 0);
+      c.strokeStyle = COL.line; c.lineWidth = 1.5; c.setLineDash([2, 7]); c.beginPath();
+      S.gridY.forEach(function (y) { c.moveTo(0, y); c.lineTo(1400, y); });
+      c.stroke(); c.setLineDash([]);
+      var k = st ? st.k : 1;
+      var glow = 10 * k;
+      glowText(c, 'ОБЩИЙ РЕГИСТР · ВЫШЕ', 22, 322, COL.muted, FONT_L, 'left', 0);
+      glowText(c, 'НИЖЕ', 22, 574, COL.muted, FONT_L, 'left', 0);
+      glowText(c, 'ТОЧКИ — ГОЛОСА · ЗОЛОТЫЕ — ОБЩИЙ РЕГИСТР', 1378, 322, '#d6c68e', FONT_L, 'right', 0);
+      glowText(c, 'A', 22, 76, K.col.A, "700 46px 'Fira Sans Extra Condensed','Arial Narrow',sans-serif", 'left', glow);
+      glowText(c, 'B', 22, 666, K.col.B, "700 46px 'Fira Sans Extra Condensed','Arial Narrow',sans-serif", 'left', glow);
+    },
+
+    drawLight: function (T, st, time, dt) {
+      var S = buildScore(), v = mainView(), i;
+      T.save();
+      T.beginPath(); T.rect(70, 0, 1330, K.H); T.clip();
+      T.translate(v.tx, 0);
+
+      /* meeting columns: holographic strips with a slow scan line */
+      S.bands.forEach(function (b) {
+        if (b.x < v.vx0 || b.x > v.vx1) return;
+        var g = T.createLinearGradient(0, 24, 0, 856);
+        g.addColorStop(0, 'rgba(233,236,239,0)');
+        g.addColorStop(0.5, 'rgba(233,236,239,0.07)');
+        g.addColorStop(1, 'rgba(233,236,239,0)');
+        rrect(T, b.bx, 24, 128, 832, 14); T.fillStyle = g; T.fill();
+        T.setLineDash([2, 7]); T.lineDashOffset = -time * 4;
+        T.strokeStyle = rgba(COL.stitch, 0.85); T.lineWidth = 1.5; T.stroke(); T.setLineDash([]);
+        var sy = 24 + ((time * 70) % 832);
+        var sg = T.createLinearGradient(0, sy - 46, 0, sy);
+        sg.addColorStop(0, 'rgba(214,198,142,0)'); sg.addColorStop(1, 'rgba(214,198,142,0.05)');
+        T.fillStyle = sg; T.fillRect(b.bx + 2, sy - 46, 124, 46);
+        T.fillStyle = 'rgba(214,198,142,0.22)'; T.fillRect(b.bx + 2, sy - 0.5, 124, 1);
+      });
+
+      S.flines.forEach(function (l) {
+        if (l.x < v.vx0 || l.x > v.vx1) return;
+        stitch(T, l.x1, l.y1, l.x1, l.y2, l.col, l.w, l.dash, time, 1);
+      });
+
+      S.segs.forEach(function (s) {
+        if (s.x1 < v.vx0 || s.x0 > v.vx1) return;
+        var active = v.t >= s.t0 && v.t < s.t1, op;
+        if (ui.hi) op = s.shape === ui.hi ? 1 : 0.18;
+        else op = active ? 1 : (s.t1 <= v.t ? 0.38 : 0.8);
+        drawBundle(T, s.geom, s.color, time, op, active, (s.shape === 'hold' ? 2.4 : 1.8) + (active ? 0.6 : 0));
+      });
+
+      S.nodes.forEach(function (n) {
+        if (n.x < v.vx0 || n.x > v.vx1) return;
+        var since = v.secNow - n.sec, ping = (since >= 0 && since < 1.4) ? 1 - since / 1.4 : 0;
+        drawNode(T, n.x, n.y, n.r, n.g, n.kind, n.col, time, { ph: n.ph, ping: ping });
+      });
+
+      S.dots.forEach(function (d) {
+        if (d.x < v.vx0 || d.x > v.vx1) return;
+        pearl(T, d.x, d.y, d.r, d.col, d.reg ? 0.95 : 1);
+      });
+      T.restore();
+
+      /* soft edge where the window scrolls under the lane labels */
+      var fade = clamp(v.winStart * v.pps / 50, 0, 1);
+      if (fade > 0) {
+        T.globalCompositeOperation = 'destination-out';
+        var eg = T.createLinearGradient(70, 0, 170, 0);
+        eg.addColorStop(0, 'rgba(0,0,0,' + fade + ')'); eg.addColorStop(1, 'rgba(0,0,0,0)');
+        T.fillStyle = eg; T.fillRect(70, 0, 100, K.H);
+        T.globalCompositeOperation = 'source-over';
+      }
+
+      /* drifting energy motes */
+      if (FX.motion) {
+        for (i = 0; i < MOTES.length; i++) {
+          var m = MOTES[i];
+          m.x += m.vx * dt; m.y += m.vy * dt;
+          if (m.x < 70) m.x += 1330; if (m.x > 1400) m.x -= 1330;
+          if (m.y < m.y0) m.y = m.y1; if (m.y > m.y1) m.y = m.y0;
+          T.fillStyle = rgba(m.col, 0.12 + 0.34 * (0.5 + 0.5 * Math.sin(time * 1.2 + m.ph)));
+          T.beginPath(); T.arc(m.x, m.y, m.s, 0, TAU); T.fill();
+        }
+      }
+
+      /* light curtain behind the playhead + the playhead itself */
+      var cx0 = Math.max(v.px - 130, 70);
+      if (v.px - cx0 > 2) {
+        var cg = T.createLinearGradient(cx0, 0, v.px, 0);
+        cg.addColorStop(0, rgba(COL.gold, 0)); cg.addColorStop(1, rgba(COL.gold, 0.035));
+        T.fillStyle = cg; T.fillRect(cx0, 30, v.px - cx0, 820);
+      }
+      playhead(T, v.px, 20, 856, 7, time);
+    },
+
+    drawCrisp: function (c, st, time) {
+      var S = buildScore(), v = mainView();
+      c.save();
+      c.beginPath(); c.rect(70, 0, 1330, K.H); c.clip();
+      c.translate(v.tx, 0);
+      var step = [5, 10, 15, 30, 60].filter(function (q) { return v.winLen / q <= 10; })[0] || 60;
+      c.strokeStyle = COL.stitch; c.lineWidth = 1.5; c.beginPath();
+      var ticks = [];
+      for (var sec = Math.floor(v.winStart / step) * step; sec <= v.winStart + v.winLen + step; sec += step) {
+        if (sec > v.dur + 0.001) break;
+        var x = K.X0 + sec * v.pps;
+        c.moveTo(x, 20); c.lineTo(x, 28);
+        ticks.push([x, fmt(sec)]);
+      }
+      c.stroke();
+      c.font = FONT_L; c.fillStyle = COL.muted; c.textAlign = 'center';
+      ticks.forEach(function (t) { c.fillText(t[1], t[0], 14); });
+      if (ui.hints) {
+        S.labels.forEach(function (l) {
+          if (l.x < v.vx0 || l.x > v.vx1) return;
+          glowText(c, l.text, l.x, l.y, l.color, FONT_L, 'center', l.glow ? 7 * st.k : 0);
+        });
+      }
+      c.restore();
+    }
+  };
+
+  function playhead(T, x, y0, y1, r, time) {
+    var p = new Path2D(); p.moveTo(x, y0); p.lineTo(x, y1);
+    neon(T, p, COL.gold, 1.6, 1);
+    sphere(T, x, y0, r, COL.gold, 1);
+    var fl = 18 + 3 * Math.sin(time * 3);
+    var g = T.createLinearGradient(x - fl, y0, x + fl, y0);
+    g.addColorStop(0, rgba(COL.gold, 0)); g.addColorStop(0.5, rgba(lite(COL.gold, 0.8), 0.7)); g.addColorStop(1, rgba(COL.gold, 0));
+    T.fillStyle = g; T.fillRect(x - fl, y0 - 0.9, fl * 2, 1.8);
+  }
+
+  /* drifting motes: lane A, field, lane B */
+  var MOTES = (function () {
+    var r = rng(41), out = [], zones = [
+      [30, 260, K.col.A], [300, 580, COL.ice], [620, 850, K.col.B]
+    ];
+    for (var i = 0; i < 54; i++) {
+      var z = zones[i % 3];
+      out.push({ x: 70 + r() * 1330, y: z[0] + r() * (z[1] - z[0]), y0: z[0], y1: z[1],
+        vx: (r() - 0.5) * 16, vy: (r() - 0.5) * 9, s: 0.7 + r() * 1.4, ph: r() * TAU, col: z[2] });
+    }
+    return out;
+  })();
+
+
+  /* ══════════════════════════════════════════════════════════════
+     Trainer mini-score
+     ══════════════════════════════════════════════════════════════ */
+
+  function trPreset(id) {
+    var mk = function (b, q, g) { return { b: b, q: q, g: g }; };
+    var m = {
+      hold: [mk(0.5, 0.6, 0.3), mk(0.5, 0.6, 0.3), mk(0.8, 0.6, 0.3)],
+      beads: [mk(0.5, 0.3, 0.3), mk(0.5, 0.3, 0.3), mk(0.5, 0.9, 0.3)],
+      ripple: [mk(0.5, 0.6, 0.3), mk(0.5, 0.6, 0.3), mk(0.5, 0.6, 0.3)],
+      zigzag: [mk(0.5, 0.6, 0.3), mk(0.5, 0.6, 0.3), mk(0.5, 0.6, 0.3)],
+      irregular: [mk(0.5, 0.6, 0.3), mk(0.5, 0.6, 0.3), mk(0.5, 0.6, 0.3)]
+    };
+    return {
+      nodes: m[id],
+      edges: [
+        { shape: id, f: 0.25, amp: 0.25, dur: 20 },
+        { shape: id, f: 0.75, amp: 0.7, dur: 20 }
+      ]
+    };
+  }
+  function curTr() { return ui.tr || (ui.tr = trPreset('ripple')); }
+
+  var trCache = { key: '', g: null };
+  function trGeom(tr) {
+    var key = JSON.stringify(tr);
+    if (trCache.key === key) return trCache.g;
+    var T = [0];
+    tr.edges.forEach(function (e) { T.push(T[T.length - 1] + e.dur); });
+    var total = T[T.length - 1];
+    var pos = tr.nodes.map(function (n, i) {
+      return {
+        x: K.X0 + (0.04 + 0.92 * (T[i] / total)) * K.XW,
+        y: TR.top + TR.pad + (1 - n.b) * (TR.h - 2 * TR.pad),
+        r: rad(n.q), n: n, ph: i * 1.9
+      };
+    });
+    var segs = tr.edges.map(function (e, i) {
+      var a = pos[i], b = pos[i + 1];
+      var n = clamp(Math.round(e.dur * (0.2 + e.f * 1.2)), 2, 16);
+      var geom = edgeGeom(a.x, a.y, a.n.q, b.x, b.y, b.n.q, { shape: e.shape, n: n, amp: e.amp, grow: 0, seed: i * 7 + 3 }, TR.top + 6, TR.top + TR.h - 6, 70, 1);
+      return {
+        i: i, shape: e.shape, geom: geom, x0: a.x, x1: b.x, T0: T[i], T1: T[i + 1],
+        label: 'Движение ' + (i + 1) + ' между точками ' + (i + 1) + ' и ' + (i + 2),
+        pct: {
+          left: r1(a.x / K.W * 1000) / 10, top: r1(TR.top / TR.VH * 1000) / 10,
+          width: r1((b.x - a.x) / K.W * 1000) / 10, height: r1(TR.h / TR.VH * 1000) / 10
+        }
+      };
+    });
+    var labels = pos.map(function (p, i) {
+      var ext = p.n.g > 0.05 && Math.round(p.n.g * 12) >= 2 ? 6 + p.n.g * 20 + 6 : 0;
+      return { x: p.x, y: p.y - p.r - 18 - ext, text: String(i + 1) };
+    });
+    var nodeBtns = pos.map(function (p, i) {
+      var side = 2 * (p.r + 12);
+      return {
+        i: i, label: 'Точка ' + (i + 1),
+        pct: {
+          left: r1((p.x - p.r - 12) / K.W * 1000) / 10, top: r1((p.y - p.r - 12) / TR.VH * 1000) / 10,
+          width: r1(side / K.W * 1000) / 10, height: r1(side / TR.VH * 1000) / 10
+        }
+      };
+    });
+    trCache = { key: key, g: { pos: pos, segs: segs, labels: labels, nodeBtns: nodeBtns, T: T, total: total } };
+    trPending = true;
+    return trCache.g;
+  }
+  var trPending = true;
+
+  var trScene = {
+    W: K.W, H: TR.VH,
+
+    drawBg: function (c) {
+      c.fillStyle = COL.surface; c.fillRect(0, 0, K.W, TR.VH);
+      panel(c, 0, 20, 1400, 260, COL.raised, true, 0, 0);
+    },
+
+    drawLight: function (T, st, time) {
+      var G = trGeom(curTr()), trT = ui.trT, elapsed = trT * G.total;
+      var sel = ui.trSel, isEdge = sel.kind === 'edge';
+      var selI = clamp(sel.i, 0, (isEdge ? G.segs.length : G.pos.length) - 1);
+
+      /* selection marker */
+      var x, y, w, h, rx;
+      if (isEdge) { var sg = G.segs[selI]; x = sg.x0; y = 14; w = sg.x1 - sg.x0; h = 272; rx = 14; }
+      else { var p = G.pos[selI], hs = p.r + 16; x = p.x - hs; y = p.y - hs; w = hs * 2; h = hs * 2; rx = hs; }
+      rrect(T, x, y, w, h, rx); T.fillStyle = rgba(COL.gold, 0.025); T.fill();
+      T.setLineDash([2, 7]); T.lineDashOffset = -time * 5;
+      if (QS[Q].shadows > 0) { T.shadowColor = rgba(COL.gold, 0.9); T.shadowBlur = 9 * QS[Q].blur * gk; }
+      T.strokeStyle = rgba(COL.gold, 0.95); T.lineWidth = 2; T.stroke();
+      noShadow(T); T.setLineDash([]);
+
+      G.segs.forEach(function (s) {
+        var active = elapsed >= s.T0 && elapsed < s.T1, chosen = isEdge && selI === s.i;
+        drawBundle(T, s.geom, COL.train, time, (active || chosen) ? 1 : 0.6, active,
+          (s.shape === 'hold' ? 2.4 : 1.8) + ((active || chosen) ? 0.6 : 0));
+      });
+      G.pos.forEach(function (p) {
+        drawNode(T, p.x, p.y, p.r, p.n.g || 0, 'solid', COL.train, time, { ph: p.ph });
+      });
+      playhead(T, K.X0 + (0.04 + 0.92 * trT) * K.XW, 10, 290, 6, time);
+    },
+
+    drawCrisp: function (c) {
+      var G = trGeom(curTr());
+      c.font = FONT_L; c.fillStyle = COL.muted; c.textAlign = 'center';
+      G.labels.forEach(function (l) { c.fillText(l.text, l.x, l.y); });
+    }
+  };
+
+
+  /* ══════════════════════════════════════════════════════════════
+     Stage: canvas + static layer + motion-blur trail buffer
+     ══════════════════════════════════════════════════════════════
+     The visible canvas is rebuilt every frame as   static panels  +  trail buffer ('lighter')  +  crisp text.
+     The trail buffer is never clearRect-ed: each frame it is covered with a translucent
+     black rgba() fill, so light from the previous frames fades out gradually
+     and moving elements leave soft tails. */
+
+  var TRAIL_TAU = 0.11;   /* seconds for a trail to fall to ~37% */
+  var stages = [];
+
+  function Stage(canvas, scene) {
+    this.cv = canvas; this.scene = scene; this.ctx = canvas.getContext('2d');
+    this.bg = document.createElement('canvas'); this.bgx = this.bg.getContext('2d');
+    this.tb = document.createElement('canvas'); this.tbx = this.tb.getContext('2d');
+    this.k = 1; this.pw = 0; this.ph = 0;
+    this.dirtyBg = true; this.hard = true; this.visible = true;
+    canvas.style.aspectRatio = scene.W + ' / ' + scene.H;
+    var self = this;
+    if ('ResizeObserver' in window) new ResizeObserver(function () { self.resize(); }).observe(canvas);
+    if ('IntersectionObserver' in window) {
+      new IntersectionObserver(function (es) { self.visible = es[es.length - 1].isIntersecting; }).observe(canvas);
+    }
+    stages.push(this);
+    this.resize();
+  }
+  Stage.prototype.resize = function () {
+    var cw = this.cv.clientWidth;
+    if (!cw) return;
+    var dpr = Math.min(window.devicePixelRatio || 1, 1.5) * RES;
+    var pw = Math.round(cw * dpr), ph = Math.round(cw * this.scene.H / this.scene.W * dpr);
+    if (pw === this.pw && ph === this.ph) return;
+    this.pw = pw; this.ph = ph; this.k = pw / this.scene.W;
+    this.cv.width = this.bg.width = this.tb.width = pw;
+    this.cv.height = this.bg.height = this.tb.height = ph;
+    this.dirtyBg = true; this.hard = true;
+  };
+  Stage.prototype.frame = function (dt, time) {
+    if (!this.pw) { this.resize(); if (!this.pw) return; }
+    var k = this.k, sc = this.scene, T = this.tbx, c = this.ctx;
+    gk = k;
+    if (this.dirtyBg) {
+      this.bgx.setTransform(k, 0, 0, k, 0, 0); this.bgx.lineCap = this.bgx.lineJoin = 'round';
+      sc.drawBg(this.bgx, this);
+      this.dirtyBg = false;
+    }
+    /* trail: translucent black fill instead of clearRect */
+    var a = (this.hard || !FX.motion) ? 1 : 1 - Math.exp(-dt / TRAIL_TAU);
+    T.setTransform(1, 0, 0, 1, 0, 0);
+    T.globalCompositeOperation = 'source-over';
+    T.fillStyle = 'rgba(0,0,0,' + a + ')';
+    T.fillRect(0, 0, this.pw, this.ph);
+    T.setTransform(k, 0, 0, k, 0, 0);
+    T.lineCap = T.lineJoin = 'round';
+    sc.drawLight(T, this, time, dt);
+
+    c.setTransform(1, 0, 0, 1, 0, 0);
+    c.globalCompositeOperation = 'source-over';
+    c.drawImage(this.bg, 0, 0);
+    c.globalCompositeOperation = 'lighter';
+    c.drawImage(this.tb, 0, 0);
+    c.globalCompositeOperation = 'source-over';
+    c.setTransform(k, 0, 0, k, 0, 0);
+    sc.drawCrisp(c, this, time);
+    this.hard = false;
+  };
+
+  var mainStage = new Stage($('score'), mainScene);
+  var trStage = new Stage($('trCanvas'), trScene);
+
+
+  /* ══════════════════════════════════════════════════════════════
+     Static canvases (illustrations, dictionary previews, glyphs)
+     ══════════════════════════════════════════════════════════════ */
+
+  var statics = [];
+  function staticCanvas(cv, W, H, draw) {
+    cv.style.aspectRatio = W + ' / ' + H;
+    var e = { cv: cv, W: W, H: H, draw: draw };
+    statics.push(e);
+    paintStatic(e);
+    return e;
+  }
+  function paintStatic(e) {
+    var cw = e.cv.clientWidth;
+    if (!cw) return;
+    var dpr = Math.min(window.devicePixelRatio || 1, 2);
+    var pw = Math.round(cw * dpr), ph = Math.round(cw * e.H / e.W * dpr);
+    e.cv.width = pw; e.cv.height = ph;
+    var c = e.cv.getContext('2d'), q0 = Q;
+    Q = 2; gk = pw / e.W;
+    c.setTransform(gk, 0, 0, gk, 0, 0);
+    c.lineCap = c.lineJoin = 'round';
+    e.draw(c, gk);
+    Q = q0;
+  }
+  function repaintStatics() { statics.forEach(paintStatic); }
+
+  var staticTimer = 0;
+  if ('ResizeObserver' in window) {
+    var sro = new ResizeObserver(function () {
+      clearTimeout(staticTimer);
+      staticTimer = setTimeout(repaintStatics, 80);
+    });
+    sro.observe(document.body);
+  }
+
+  function txt(c, s, x, y, col, align, font) {
+    c.font = font || FONT_S; c.textAlign = align || 'left'; c.fillStyle = col || COL.muted;
+    c.fillText(s, x, y);
+  }
+
+  /* dictionary preview: one movement between two small spheres */
+  function drawDemo(c, shapeId, v) {
+    var g = edgeGeom(34, v.y1, v.q1, 286, v.y2, v.q2, { shape: shapeId, n: v.n, amp: v.amp, grow: v.grow, seed: v.seed }, 6, 94, 40, 0.55);
+    drawBundle(c, g, COL.ice, 1.3, 1, false, 1.8);
+    drawNode(c, 34, v.y1, rad(v.q1) * 0.55, 0, 'solid', COL.ice, 0, { plain: true });
+    drawNode(c, 286, v.y2, rad(v.q2) * 0.55, 0, 'solid', COL.ice, 0, { plain: true });
+  }
+
+  function drawGlyph(c, A, B) {
+    c.globalCompositeOperation = 'lighter';
+    [[A, K.col.A], [B, K.col.B]].forEach(function (p) {
+      var o = p[0], col = p[1], pp = pal(col);
+      var g = c.createRadialGradient(o.cx, o.cy, o.r * 0.1, o.cx, o.cy, o.r);
+      g.addColorStop(0, rgba(col, 0.14)); g.addColorStop(0.75, rgba(col, 0.26)); g.addColorStop(1, rgba(pp.hot, 0.5));
+      c.fillStyle = g; c.beginPath(); c.arc(o.cx, o.cy, o.r, 0, TAU); c.fill();
+      var ring = new Path2D(); ring.arc(o.cx, o.cy, o.r, 0, TAU);
+      neon(c, ring, col, 1.9, 1);
+    });
+    c.globalCompositeOperation = 'source-over';
+  }
+
+  var HOWTO = [
+    { title: 'Высота — регистр', W: 240, H: 100,
+      text: 'Чем выше точка на дорожке, тем выше звук. Линия между точками плавно ведёт высоту из одного состояния в другое. Диапазон, в котором голос ходит, виден в центре.',
+      draw: function (c) {
+        drawNode(c, 40, 20, 9, 0, 'solid', COL.ice, 0, { plain: true });
+        drawNode(c, 40, 80, 9, 0, 'solid', COL.ice, 0, { plain: true });
+        stitch(c, 40, 34, 40, 66, COL.ice, 2, [2, 7], 0, 1);
+        txt(c, 'высоко · звонко', 62, 26); txt(c, 'низко · глухо', 62, 86);
+      } },
+    { title: 'Размер — количество', W: 240, H: 100,
+      text: 'Мелкая точка — единичные, тихие звуки. Крупная — плотно, громко, много нот. Кружки в цепочке тоже растут или мельчают: это нарастание и затухание внутри движения.',
+      draw: function (c) {
+        drawNode(c, 36, 46, 5, 0, 'solid', COL.ice, 0, { plain: true });
+        drawNode(c, 96, 46, 12, 0, 'solid', COL.ice, 0, { plain: true });
+        drawNode(c, 176, 46, 24, 0, 'solid', COL.ice, 0, { plain: true });
+        txt(c, 'тихо', 36, 92, COL.muted, 'center'); txt(c, 'густо', 176, 92, COL.muted, 'center');
+      } },
+    { title: 'Сияние — верхи', W: 240, H: 100,
+      text: 'Чем ярче сияние вокруг точки, тем больше в звуке высоких частот: от глухого, тёмного тембра до звонкого, с обертонами и металлом. Высота и сияние независимы: низкая нота тоже может сиять.',
+      draw: function (c) {
+        drawNode(c, 60, 50, 12, 0, 'solid', COL.ice, 0, { plain: true });
+        aura(c, 180, 50, 44, COL.ice, 0.9);
+        var p = new Path2D();
+        for (var i = 0; i < 8; i++) {
+          var a = i * Math.PI / 4;
+          p.moveTo(180 + 24 * Math.cos(a), 50 + 24 * Math.sin(a)); p.lineTo(180 + 38 * Math.cos(a), 50 + 38 * Math.sin(a));
+        }
+        neon(c, p, COL.ice, 1.3, 1);
+        drawNode(c, 180, 50, 12, 0, 'solid', COL.ice, 0, { plain: true });
+        txt(c, 'глухо', 60, 94, COL.muted, 'center'); txt(c, 'сияет', 180, 98, COL.muted, 'center');
+      } },
+    { title: 'Форма — ровность', W: 320, H: 78,
+      text: 'От прямой — одна нота — через бисер, волну и зубцы к рваной линии — арпеджио без правила. Чем ровнее линия, тем меньше нужно решать; чем рванее, тем больше.',
+      draw: function (c) {
+        var cfgs = [
+          { shape: 'hold' }, { shape: 'beads', n: 3 }, { shape: 'ripple', n: 2, amp: 0.45 },
+          { shape: 'zigzag', n: 2, amp: 0.8 }, { shape: 'irregular', n: 3, amp: 0.8, seed: 4 }
+        ];
+        cfgs.forEach(function (cf, k) {
+          var x1 = 8 + k * 62;
+          drawBundle(c, edgeGeom(x1, 32, 0.4, x1 + 56, 32, 0.4, cf, 4, 60, 26, 0.3), COL.ice, 1.3, 1, false, 1.5);
+        });
+        txt(c, 'одна нота', 6, 74); txt(c, 'арпеджио', 314, 74, COL.muted, 'right');
+      } },
+    { title: 'Вид точки', W: 240, H: 100,
+      text: 'Закрашенная — держите состояние ровно. Со спиралью — внутри точки идёт медленное вращение: звук дышит, тембр слегка плывёт. Кольца — встреча голосов.',
+      draw: function (c) {
+        drawNode(c, 50, 50, 20, 0, 'solid', COL.ice, 0, { plain: true });
+        drawNode(c, 120, 50, 20, 0, 'spiral', COL.ice, 1.2, { plain: true });
+        drawNode(c, 190, 50, 20, 0, 'rings', COL.ice, 0.6, { plain: true });
+      } }
+  ];
+
+  function buildHowto() {
+    var host = $('howto');
+    HOWTO.forEach(function (h) {
+      var card = document.createElement('div');
+      card.className = 'card w260 ill';
+      card.innerHTML = '<canvas aria-hidden="true"></canvas><div class="disp h-m"></div><p></p>';
+      card.children[1].textContent = h.title;
+      card.children[2].textContent = h.text;
+      host.appendChild(card);
+      staticCanvas(card.firstChild, h.W, h.H, h.draw);
+    });
+  }
+
+  var dictUses = [];
+  function buildDict() {
+    var host = $('dict');
+    SHAPES.forEach(function (sh, idx) {
+      var art = document.createElement('article');
+      art.className = 'dict-item';
+      art.innerHTML =
+        '<div class="dict-text">' +
+          '<span class="lbl accent"></span><h3 class="disp" style="font-size:clamp(34px,5vw,48px)"></h3>' +
+          '<p></p><p class="small muted">В этой партитуре: <span class="uses"></span></p>' +
+          '<div class="row" style="gap:12px"><button class="btn btn-ghost" type="button" aria-pressed="false">Показать в партитуре</button>' +
+          '<a class="btn btn-ghost" href="#trainer">Потренировать →</a></div>' +
+        '</div><div class="dict-demos"></div>';
+      var t = art.firstChild;
+      t.children[0].textContent = 'Ровность ' + (idx + 1) + ' из 5';
+      t.children[1].textContent = sh.name;
+      t.children[2].textContent = sh.text;
+      var btn = t.querySelector('button'), train = t.querySelector('a');
+      btn.addEventListener('click', function () { ui.hi = ui.hi === sh.id ? null : sh.id; syncDict(); });
+      train.addEventListener('click', function () { setPreset(sh.id); });
+      var demos = art.lastChild;
+      [sh.v1, sh.v2].forEach(function (v) {
+        var d = document.createElement('div');
+        d.className = 'card flat demo';
+        d.innerHTML = '<canvas aria-hidden="true"></canvas><div class="small muted"></div>';
+        d.lastChild.textContent = v.cap;
+        demos.appendChild(d);
+        staticCanvas(d.firstChild, 320, 100, function (c) { drawDemo(c, sh.id, v); });
+      });
+      host.appendChild(art);
+      dictUses.push({ id: sh.id, btn: btn, uses: t.querySelector('.uses') });
+    });
+  }
+  function syncDict() {
+    var S = buildScore();
+    dictUses.forEach(function (d) {
+      var uses = S.segs.filter(function (s) { return s.shape === d.id; }).map(function (s) { return s.label.split(' · ')[0]; }).join(', ') || 'не используется';
+      if (d.uses.textContent !== uses) d.uses.textContent = uses;
+      var on = ui.hi === d.id;
+      d.btn.setAttribute('aria-pressed', on);
+      d.btn.textContent = on ? 'Подсветка включена' : 'Показать в партитуре';
+    });
+  }
+
+  function buildRels() {
+    var host = $('rels'), cfg = { around: [0.4, 1.0], overlap: [0.8, 0.6], touch: [0.7, 0.7], apart: [0.7, 0.7] };
+    ['around', 'overlap', 'touch', 'apart'].forEach(function (rel) {
+      var g = glyph(rel, cfg[rel][0], cfg[rel][1], 0.6, 0.4, 60, 60, 1);
+      var card = document.createElement('div');
+      card.className = 'card w240';
+      card.innerHTML = '<canvas class="glyph" aria-hidden="true"></canvas><div class="disp h-m"></div><p></p>';
+      card.children[1].textContent = relName(rel);
+      card.children[2].textContent = relText(rel, g.inner, g.top);
+      host.appendChild(card);
+      staticCanvas(card.firstChild, 120, 120, function (c) { drawGlyph(c, g.A, g.B); });
+    });
+  }
+
+
+  /* ══════════════════════════════════════════════════════════════
+     Live cards (voice A / voice B / meeting / trainer)
+     ══════════════════════════════════════════════════════════════ */
+
+  function meter(label, f) {
+    return '<div class="meter"><div class="meter-h"><span>' + label + '</span><span data-f="' + f + 'Word"></span></div>' +
+           '<div class="meter-bar"><div class="meter-fill" data-f="' + f + 'Pct"></div></div></div>';
+  }
+  function makeLiveCard(host, withTitleDot) {
+    var root = document.createElement('div');
+    root.className = 'card';
+    root.innerHTML =
+      '<div class="lbl who"><span class="dot"></span><span data-f="name"></span></div>' +
+      '<div class="disp h-card" data-f="title"></div><p data-f="text"></p>' +
+      meter('Высота', 'b') + meter('Сияние', 'g') + meter('Количество', 'q') +
+      '<div class="small muted" data-f="next"></div>';
+    host.appendChild(root);
+    var f = {}, last = {};
+    [].forEach.call(root.querySelectorAll('[data-f]'), function (n) { f[n.getAttribute('data-f')] = n; });
+    return {
+      update: function (info) {
+        root.style.setProperty('--vc', info.color);
+        ['name', 'title', 'text', 'next', 'bWord', 'gWord', 'qWord'].forEach(function (k) {
+          if (last[k] !== info[k]) { f[k].textContent = info[k]; last[k] = info[k]; }
+        });
+        ['b', 'g', 'q'].forEach(function (k) {
+          var key = k + 'Pct';
+          if (last[key] !== info[key]) { f[key].style.width = info[key] + '%'; last[key] = info[key]; }
+        });
+      }
+    };
+  }
+
+  var EMPTY = { bPct: 0, bWord: '—', qPct: 0, qWord: '—', gPct: 0, gWord: '—', next: '' };
+  function trendWord(d, up, down) { return d > 0.08 ? up : (d < -0.08 ? down : 'держится'); }
+
+  function laneLive(L, t, dur) {
+    var N = curScore().nodes[L], Ed = curScore().edges[L];
+    var base = { name: 'Голос ' + L, color: K.col[L] };
+    if (t < N[0].t) {
+      return Object.assign({}, EMPTY, base, { title: 'Тишина', text: 'Первая точка ' + N[0].id + ' — через ' + Math.ceil((N[0].t - t) * dur) + ' с. Приготовьтесь и слушайте.' });
+    }
+    var i = 0;
+    while (i < N.length - 1 && N[i + 1].t <= t) i++;
+    if (i >= N.length - 1) {
+      return Object.assign({}, EMPTY, base, { title: 'Конец', text: 'Последняя точка ' + N[N.length - 1].id + ' пройдена. Дослушайте звук до конца.' });
+    }
+    var a = N[i], b = N[i + 1], s = (t - a.t) / (b.t - a.t);
+    var bb = lerp(a.b, b.b, s), qq = lerp(a.q, b.q, s), gg = lerp(a.g || 0, b.g || 0, s);
+    var sh = SHAPE[Ed[i].shape];
+    return Object.assign({}, base, {
+      title: sh.name, text: sh.live,
+      bPct: Math.round(bb * 100), bWord: bright(bb) + ' · ' + trendWord(b.b - a.b, 'растёт', 'падает'),
+      qPct: Math.round(qq * 100), qWord: amount(qq) + ' · ' + trendWord(b.q - a.q, 'нарастает', 'убывает'),
+      gPct: Math.round(gg * 100), gWord: glowWord(gg) + ' · ' + trendWord((b.g || 0) - (a.g || 0), 'растёт', 'падает'),
+      next: 'Следующая точка ' + b.id + ' — через ' + Math.ceil((b.t - t) * dur) + ' с'
+    });
+  }
+
+  function meetLive(t, dur) {
+    var S = buildScore();
+    var now = S.meets.filter(function (m) { return Math.abs(t - m.t) <= 0.025; })[0];
+    var nxt = S.meets.filter(function (m) { return m.t - t > 0.025; })[0];
+    var m = now || nxt;
+    if (!m) {
+      return { has: false, key: 'none', kicker: 'Схождений больше нет', title: 'Голоса расходятся', text: 'Дальше каждый идёт по своей линии и сам решает, как закончить.' };
+    }
+    var g = glyph(m.rel, m.qa, m.qb, m.ba, m.bb, 60, 60, 1);
+    return {
+      has: true, key: [m.rel, m.qa, m.qb, m.ba, m.bb].join('|'), g: g,
+      kicker: now ? 'Схождение · сейчас' : 'Схождение · через ' + Math.ceil((m.t - t) * dur) + ' с',
+      title: relName(m.rel), text: relText(m.rel, g.inner, g.top)
+    };
+  }
+
+  function trLive(tr, G, elapsed) {
+    var base = { name: 'Ваша тренировка', color: COL.train };
+    if (elapsed >= G.total - 0.001) {
+      return Object.assign({}, EMPTY, base, { title: 'Конец', text: 'Упражнение закончено. Измените параметры или соберите следующее.' });
+    }
+    var T = G.T, i = 0;
+    while (i < tr.edges.length - 1 && T[i + 1] <= elapsed) i++;
+    var e = tr.edges[i], a = tr.nodes[i], b = tr.nodes[i + 1], s = (elapsed - T[i]) / e.dur;
+    var bb = lerp(a.b, b.b, s), qq = lerp(a.q, b.q, s), gg = lerp(a.g || 0, b.g || 0, s);
+    var sh = SHAPE[e.shape], text = sh.live;
+    if (e.shape !== 'hold') text += ' Густота: ' + trWord(e.f) + '.';
+    if (e.shape !== 'hold' && e.shape !== 'beads') text += ' Размах: ' + trAmpWord(e.amp) + '.';
+    return Object.assign({}, base, {
+      title: sh.name, text: text,
+      bPct: Math.round(bb * 100), bWord: bright(bb) + ' · ' + trendWord(b.b - a.b, 'растёт', 'падает'),
+      qPct: Math.round(qq * 100), qWord: amount(qq) + ' · ' + trendWord(b.q - a.q, 'нарастает', 'убывает'),
+      gPct: Math.round(gg * 100), gWord: glowWord(gg) + ' · ' + trendWord((b.g || 0) - (a.g || 0), 'растёт', 'падает'),
+      next: 'Следующая точка ' + (i + 2) + ' — через ' + Math.ceil(T[i + 1] - elapsed) + ' с'
+    });
+  }
+
+  var lanesHost = $('lanes');
+  var cardA = makeLiveCard(lanesHost), cardB = makeLiveCard(lanesHost);
+  var meetCard = document.createElement('div');
+  meetCard.className = 'card full meet';
+  meetCard.innerHTML =
+    '<canvas class="glyph" aria-hidden="true"></canvas>' +
+    '<div class="meet-body"><span class="lbl accent"></span><div class="disp h-m"></div><p></p></div>';
+  lanesHost.appendChild(meetCard);
+  var meetCv = meetCard.firstChild, meetBody = meetCard.lastChild, meetKey = null;
+  var meetStatic = staticCanvas(meetCv, 120, 120, function (c) {
+    if (meetState && meetState.has) drawGlyph(c, meetState.g.A, meetState.g.B);
+  });
+  var meetState = null;
+  var trCard = makeLiveCard($('trCardHost'));
+
+  function setText(node, s) { if (node.textContent !== s) node.textContent = s; }
+  /* SVG elements have no .hidden property, so go through the attribute */
+  function setHidden(node, on) { node.toggleAttribute('hidden', !!on); }
+
+  function syncMain() {
+    var v = mainView(), dur = v.dur, t = v.t;
+    setText($('timeText'), fmt(t * dur) + ' / ' + fmt(dur));
+    var sv = Math.round(t * 1000);
+    if (+$('scrub').value !== sv) $('scrub').value = sv;
+    var label = ui.playing ? 'Пауза' : (t >= 0.999 ? 'Заново' : 'Играть');
+    setText($('playLabel'), label);
+    setHidden($('icoPause'), !ui.playing); setHidden($('icoPlay'), ui.playing);
+    cardA.update(laneLive('A', t, dur));
+    cardB.update(laneLive('B', t, dur));
+    var m = meetLive(t, dur);
+    setText(meetBody.children[0], m.kicker); setText(meetBody.children[1], m.title); setText(meetBody.children[2], m.text);
+    meetCv.hidden = !m.has;
+    if (m.key !== meetKey) { meetKey = m.key; meetState = m; paintStatic(meetStatic); }
+    syncSegButtons(v);
+  }
+
+  function syncTrainer() {
+    var tr = curTr(), G = trGeom(tr), elapsed = ui.trT * G.total;
+    setText($('trTime'), fmt(elapsed) + ' / ' + fmt(G.total));
+    setText($('trPlayLabel'), ui.trPlaying ? 'Пауза' : (ui.trT >= 0.999 ? 'Заново' : 'Играть'));
+    setHidden($('trIcoPause'), !ui.trPlaying); setHidden($('trIcoPlay'), ui.trPlaying);
+    trCard.update(trLive(tr, G, elapsed));
+  }
+
+
+  /* ══════════════════════════════════════════════════════════════
+     Hit-areas over the canvases (keyboard & pointer)
+     ══════════════════════════════════════════════════════════════ */
+
+  var segBtns = [];
+  function pctStyle(b, p) {
+    b.style.left = p.left + '%'; b.style.top = p.top + '%'; b.style.width = p.width + '%'; b.style.height = p.height + '%';
+  }
+  function rebuildSegButtons() {
+    var S = buildScore(), host = $('segTrack');
+    host.textContent = ''; segBtns = [];
+    S.segs.forEach(function (s) {
+      var b = document.createElement('button');
+      b.type = 'button'; b.className = 'seg-btn';
+      b.setAttribute('aria-label', 'Перейти к отрезку ' + s.label); b.title = 'Перейти к отрезку ' + s.label;
+      pctStyle(b, s.pct);
+      b.addEventListener('click', function () { ui.t = s.t0; mainStage.hard = false; syncMain(); });
+      host.appendChild(b);
+      segBtns.push({ el: b, s: s, hidden: false });
+    });
+  }
+  function syncSegButtons(v) {
+    $('segTrack').style.transform = 'translateX(' + (v.tx / K.W * 100) + '%)';
+    segBtns.forEach(function (o) {
+      var h = o.s.x1 < v.vx0 || o.s.x0 > v.vx1;
+      if (h !== o.hidden) { o.el.hidden = h; o.hidden = h; }
+    });
+  }
+
+  function rebuildTrButtons() {
+    var G = trGeom(curTr()), host = $('trTrack');
+    host.textContent = '';
+    G.segs.forEach(function (s) {
+      var b = document.createElement('button');
+      b.type = 'button'; b.className = 'seg-btn';
+      b.setAttribute('aria-label', s.label); b.title = s.label; pctStyle(b, s.pct);
+      b.addEventListener('click', function () { ui.trSel = { kind: 'edge', i: s.i }; syncInspector(); });
+      host.appendChild(b);
+    });
+    G.nodeBtns.forEach(function (n) {
+      var b = document.createElement('button');
+      b.type = 'button'; b.className = 'seg-btn round';
+      b.setAttribute('aria-label', n.label); b.title = n.label; pctStyle(b, n.pct);
+      b.addEventListener('click', function () { ui.trSel = { kind: 'node', i: n.i }; syncInspector(); });
+      host.appendChild(b);
+    });
+  }
+
+
+  /* ══════════════════════════════════════════════════════════════
+     Trainer inspector
+     ══════════════════════════════════════════════════════════════ */
+
+  function setPreset(id) {
+    ui.tr = trPreset(id); ui.trSel = { kind: 'edge', i: 0 }; ui.trT = 0; ui.trPlaying = false;
+    trStage.hard = true; syncInspector();
+  }
+  function setTr(fn) {
+    var copy = JSON.parse(JSON.stringify(curTr()));
+    fn(copy);
+    ui.tr = copy;
+    syncInspector();
+  }
+  function selIndex() {
+    var tr = curTr(), isEdge = ui.trSel.kind === 'edge';
+    return clamp(ui.trSel.i, 0, (isEdge ? tr.edges.length : tr.nodes.length) - 1);
+  }
+
+  var shapeBtns = [];
+  function buildTrainerControls() {
+    var presets = $('trPresets'), shapes = $('trShapes');
+    SHAPES.forEach(function (sh) {
+      var b = document.createElement('button');
+      b.type = 'button'; b.className = 'btn btn-ghost'; b.textContent = sh.name;
+      b.addEventListener('click', function () { setPreset(sh.id); });
+      presets.appendChild(b);
+
+      var s = document.createElement('button');
+      s.type = 'button'; s.className = 'btn btn-ghost btn-sm'; s.textContent = sh.name;
+      s.addEventListener('click', function () {
+        var i = selIndex();
+        setTr(function (c) { c.edges[Math.min(i, c.edges.length - 1)].shape = sh.id; });
+      });
+      shapes.appendChild(s);
+      shapeBtns.push({ el: s, id: sh.id });
+    });
+    var edgeSet = function (k, scale) {
+      return function (ev) {
+        var i = selIndex(), v = Number(ev.target.value) / scale;
+        setTr(function (c) { c.edges[Math.min(i, c.edges.length - 1)][k] = v; });
+      };
+    };
+    var nodeSet = function (k) {
+      return function (ev) {
+        var i = selIndex(), v = Number(ev.target.value) / 100;
+        setTr(function (c) { c.nodes[Math.min(i, c.nodes.length - 1)][k] = v; });
+      };
+    };
+    $('insDur').addEventListener('input', edgeSet('dur', 1));
+    $('insF').addEventListener('input', edgeSet('f', 100));
+    $('insAmp').addEventListener('input', edgeSet('amp', 100));
+    $('insB').addEventListener('input', nodeSet('b'));
+    $('insQ').addEventListener('input', nodeSet('q'));
+    $('insG').addEventListener('input', nodeSet('g'));
+
+    $('addPoint').addEventListener('click', function () {
+      setTr(function (c) {
+        c.nodes.push(Object.assign({}, c.nodes[c.nodes.length - 1]));
+        c.edges.push(Object.assign({}, c.edges[c.edges.length - 1]));
+      });
+    });
+    $('removeLast').addEventListener('click', function () {
+      setTr(function (c) { if (c.edges.length > 1) { c.nodes.pop(); c.edges.pop(); } });
+    });
+    $('trPlay').addEventListener('click', function () {
+      if (ui.trPlaying) { ui.trPlaying = false; }
+      else { if (ui.trT >= 0.999) ui.trT = 0; ui.trPlaying = true; }
+      syncTrainer();
+    });
+    $('trReset').addEventListener('click', function () { ui.trT = 0; ui.trPlaying = false; syncTrainer(); });
+  }
+
+  function setRange(id, v) { var n = $(id); if (+n.value !== v) n.value = v; }
+
+  function syncInspector() {
+    var tr = curTr(), isEdge = ui.trSel.kind === 'edge', i = selIndex();
+    var ed = tr.edges[Math.min(i, tr.edges.length - 1)], nd = tr.nodes[Math.min(i, tr.nodes.length - 1)];
+    setText($('inspKicker'), isEdge ? 'Движение ' + (i + 1) + ' · между точками ' + (i + 1) + ' и ' + (i + 2) : 'Точка ' + (i + 1));
+    $('edgePane').hidden = !isEdge; $('nodePane').hidden = isEdge;
+    shapeBtns.forEach(function (b) { b.el.setAttribute('aria-pressed', isEdge && ed.shape === b.id); });
+    setText($('inspText'), SHAPE[ed.shape].text);
+    $('fRow').hidden = ed.shape === 'hold';
+    $('ampRow').hidden = ed.shape === 'hold' || ed.shape === 'beads';
+    setRange('insDur', ed.dur); setText($('durText'), ed.dur + ' с');
+    setRange('insF', Math.round(ed.f * 100)); setText($('fText'), trWord(ed.f));
+    setRange('insAmp', Math.round(ed.amp * 100)); setText($('ampText'), trAmpWord(ed.amp));
+    setRange('insB', Math.round(nd.b * 100)); setText($('bText'), bright(nd.b));
+    setRange('insQ', Math.round(nd.q * 100)); setText($('qText'), amount(nd.q));
+    setRange('insG', Math.round((nd.g || 0) * 100)); setText($('gText'), glowWord(nd.g || 0));
+    $('addPoint').disabled = tr.edges.length >= 8;
+    $('removeLast').disabled = tr.edges.length <= 1;
+    trGeom(tr);
+    if (trPending) { rebuildTrButtons(); trPending = false; }
+    syncTrainer();
+  }
+
+
+  /* ══════════════════════════════════════════════════════════════
+     Main controls
+     ══════════════════════════════════════════════════════════════ */
+
+  function syncConfig() {
+    var c = ui.cfg;
+    setText($('minutesText'), c.minutes >= 60 ? '1 ч' : c.minutes + ' мин');
+    setText($('nMinText'), String(c.nMin)); setText($('nMaxText'), String(c.nMax));
+  }
+  function scoreChanged() {
+    rebuildSegButtons(); syncDict(); mainStage.dirtyBg = true; mainStage.hard = true; syncMain();
+  }
+
+  function bindMain() {
+    $('minutes').addEventListener('input', function (e) { ui.cfg.minutes = +e.target.value; syncConfig(); scoreChanged(); });
+    $('nMin').addEventListener('input', function (e) { ui.cfg.nMin = +e.target.value; syncConfig(); });
+    $('nMax').addEventListener('input', function (e) { ui.cfg.nMax = +e.target.value; syncConfig(); });
+    $('gen').addEventListener('click', function () {
+      ui.score = generateScore(ui.cfg, Math.floor(Math.random() * 1000000) + 1);
+      ui.t = 0; ui.playing = false; ui.hi = null;
+      $('restore').hidden = false; scoreChanged();
+    });
+    $('restore').addEventListener('click', function () {
+      ui.score = null; ui.t = 0; ui.playing = false; ui.hi = null;
+      $('restore').hidden = true; scoreChanged();
+    });
+    $('play').addEventListener('click', function () {
+      if (ui.playing) ui.playing = false;
+      else { if (ui.t >= 0.999) ui.t = 0; ui.playing = true; }
+      syncMain();
+    });
+    $('reset').addEventListener('click', function () { ui.t = 0; ui.playing = false; syncMain(); });
+    $('scrub').addEventListener('input', function (e) { ui.t = clamp(+e.target.value / 1000, 0, 1); syncMain(); });
+    $('hintsBtn').addEventListener('click', function (e) {
+      ui.hints = !ui.hints; e.currentTarget.setAttribute('aria-pressed', ui.hints);
+    });
+    $('loopBtn').addEventListener('click', function (e) {
+      ui.loop = !ui.loop; e.currentTarget.setAttribute('aria-pressed', ui.loop);
+    });
+  }
+
+
+  /* ══════════════════════════════════════════════════════════════
+     Main loop
+     ══════════════════════════════════════════════════════════════ */
+
+  var lastTs = 0, time = 0, lastSync = 0, slow = 0;
+
+  function loop(ts) {
+    requestAnimationFrame(loop);
+    if (!lastTs) lastTs = ts;
+    var dt = Math.min(ts - lastTs, 100) / 1000;
+    lastTs = ts;
+    if (FX.motion) time += dt;
+
+    if (ui.playing) {
+      var t = ui.t + dt / curDur();
+      if (t >= 1) { if (ui.loop) t = 0; else { t = 1; ui.playing = false; } }
+      ui.t = t;
+    }
+    if (ui.trPlaying) {
+      var G = trGeom(curTr()), u = ui.trT + dt / G.total;
+      if (u >= 1) { u = 1; ui.trPlaying = false; }
+      ui.trT = u;
+    }
+    if (ts - lastSync > 90) {
+      lastSync = ts;
+      if (ui.playing) syncMain();
+      if (ui.trPlaying) syncTrainer();
+    }
+
+    var drawn = false;
+    for (var i = 0; i < stages.length; i++) {
+      if (stages[i].visible) { stages[i].frame(dt, time); drawn = true; }
+    }
+
+    /* drop quality if the machine can't hold ~35 fps */
+    if (drawn && dt > 0.03) { slow++; } else if (slow > 0) { slow--; }
+    if (FX.auto && slow > 45) {
+      slow = 0;
+      if (Q > 0) Q--;
+      else if (RES > 0.6) { RES = 0.7; stages.forEach(function (s) { s.resize(); }); }
+    }
+  }
+
+
+  /* ══════════════════════════════════════════════════════════════
+     Init
+     ══════════════════════════════════════════════════════════════ */
+
+  buildHowto();
+  buildDict();
+  buildRels();
+  buildTrainerControls();
+  bindMain();
+  syncConfig();
+  rebuildSegButtons();
+  syncDict();
+  syncInspector();
+  syncMain();
+
+  if (document.fonts && document.fonts.ready) {
+    document.fonts.ready.then(function () {
+      stages.forEach(function (s) { s.dirtyBg = true; s.hard = true; });
+      repaintStatics();
+    });
+  }
+  window.addEventListener('load', repaintStatics);
+
+  requestAnimationFrame(loop);
+})();
+</script>
+</body>
+</html>
