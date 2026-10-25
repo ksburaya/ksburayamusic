@@ -9,10 +9,10 @@
   <link href="https://fonts.googleapis.com/css2?family=Alegreya:ital,wght@0,400;0,500;1,400&family=Fira+Sans+Extra+Condensed:wght@600;700&display=swap" rel="stylesheet">
   <style>
     :root {
-      --surface: #25223f; --raised: #363356; --sunken: #1a1830;
-      --ink: #f7f3ee; --muted: #bdb8d6; --line: #4b4772; --stitch: #8a85b4;
-      --gold: #edcf32; --gold-hi: #fff59a; --on-gold: #25223f;
-      --voice-a: #f088e8; --voice-b: #43b86b; --voice-t: #8662f0;
+      --surface: #121823; --raised: #1c2431; --sunken: #0c1118;
+      --ink: #e9ecef; --muted: #a7b0bf; --line: #333f52; --stitch: #6d7b91;
+      --gold: #c9b46a; --gold-hi: #d6c68e; --on-gold: #121823;
+      --voice-a: #e07f78; --voice-b: #7fcfca; --voice-t: #8e88c4;
       --display: 'TT Lakes Neue Compressed', 'Fira Sans Extra Condensed', 'Arial Narrow', sans-serif;
       --serif: 'Kazimir Text', 'Alegreya', Georgia, serif;
     }
@@ -70,7 +70,7 @@
     .btn-primary:hover { background: var(--gold-hi); }
     .btn-ghost { background: transparent; color: var(--ink); border: 1px solid var(--stitch); }
     .btn-ghost:hover:not(:disabled) { border-color: var(--gold-hi); }
-    .btn-ghost[aria-pressed="true"] { border-color: var(--gold); background: rgba(237, 207, 50, .14); }
+    .btn-ghost[aria-pressed="true"] { border-color: var(--gold); background: rgba(201, 180, 106, .14); }
     .btn-sm { padding: 0 16px; font-size: 16px; }
 
     /* cards */
@@ -115,7 +115,7 @@
       position: absolute; margin: 0; padding: 0; border: 0; background: transparent;
       border-radius: 14px; cursor: pointer; pointer-events: auto;
     }
-    .seg-btn:hover { background: rgba(247, 243, 238, .06); }
+    .seg-btn:hover { background: rgba(233, 236, 239, .06); }
     .seg-btn.round { border-radius: 999px; }
 
     /* dictionary */
@@ -143,7 +143,7 @@
 
   <header class="stack">
     <div class="lbl kicker">
-      <svg width="14" height="14" viewBox="0 0 14 14" aria-hidden="true"><circle cx="7" cy="7" r="3.2" fill="#fff59a"></circle><circle cx="7" cy="7" r="6" fill="none" stroke="#fff59a" stroke-width="1.4" stroke-dasharray="1.5 3.6"></circle></svg>
+      <svg width="14" height="14" viewBox="0 0 14 14" aria-hidden="true"><circle cx="7" cy="7" r="3.2" fill="#d6c68e"></circle><circle cx="7" cy="7" r="6" fill="none" stroke="#d6c68e" stroke-width="1.4" stroke-dasharray="1.5 3.6"></circle></svg>
       <span>Прототип · упражнение для двоих</span>
     </div>
     <h1 class="disp h-xl">Партитура двух голосов</h1>
@@ -285,12 +285,12 @@
     W: 1400, H: 870, X0: 80, XW: 1240, PAD: 50, AMAX: 62, laneH: 230,
     fieldTop: 292, fieldBot: 588,
     laneTop: { A: 30, B: 620 },
-    col: { A: '#f088e8', B: '#43b86b' }
+    col: { A: '#e07f78', B: '#7fcfca' }
   };
   var COL = {
-    surface: '#25223f', raised: '#363356', sunken: '#1a1830',
-    ink: '#f7f3ee', muted: '#bdb8d6', line: '#4b4772', stitch: '#8a85b4',
-    gold: '#edcf32', train: '#8662f0', ice: '#6f9be8'
+    surface: '#121823', raised: '#1c2431', sunken: '#0c1118',
+    ink: '#e9ecef', muted: '#a7b0bf', line: '#333f52', stitch: '#6d7b91',
+    gold: '#c9b46a', train: '#8e88c4', ice: '#81b8db'
   };
   var FONT_L = "600 17px 'Fira Sans Extra Condensed','Arial Narrow',sans-serif";
   var FONT_S = "400 17px 'Alegreya',Georgia,serif";
@@ -1065,7 +1065,7 @@
     rrect(c, x, y, w, h, 14); c.fillStyle = fill; c.fill();
     c.clip();
     var vg = c.createRadialGradient(x + w / 2, y + h / 2, h * 0.2, x + w / 2, y + h / 2, w * 0.62);
-    vg.addColorStop(0, 'rgba(240,136,232,0.05)');
+    vg.addColorStop(0, 'rgba(129,184,219,0.035)');
     vg.addColorStop(1, 'rgba(0,0,0,0.28)');
     c.fillStyle = vg; c.fillRect(x, y, w, h);
     if (grid) {
@@ -1110,7 +1110,7 @@
       var glow = 10 * k;
       glowText(c, 'ОБЩИЙ РЕГИСТР · ВЫШЕ', 22, 322, COL.muted, FONT_L, 'left', 0);
       glowText(c, 'НИЖЕ', 22, 574, COL.muted, FONT_L, 'left', 0);
-      glowText(c, 'ТОЧКИ — ГОЛОСА · ЗОЛОТЫЕ — ОБЩИЙ РЕГИСТР', 1378, 322, '#fff59a', FONT_L, 'right', 0);
+      glowText(c, 'ТОЧКИ — ГОЛОСА · ЗОЛОТЫЕ — ОБЩИЙ РЕГИСТР', 1378, 322, '#d6c68e', FONT_L, 'right', 0);
       glowText(c, 'A', 22, 76, K.col.A, "700 46px 'Fira Sans Extra Condensed','Arial Narrow',sans-serif", 'left', glow);
       glowText(c, 'B', 22, 666, K.col.B, "700 46px 'Fira Sans Extra Condensed','Arial Narrow',sans-serif", 'left', glow);
     },
@@ -1125,17 +1125,17 @@
       S.bands.forEach(function (b) {
         if (b.x < v.vx0 || b.x > v.vx1) return;
         var g = T.createLinearGradient(0, 24, 0, 856);
-        g.addColorStop(0, 'rgba(247, 243, 238,0)');
-        g.addColorStop(0.5, 'rgba(247, 243, 238,0.07)');
-        g.addColorStop(1, 'rgba(247, 243, 238,0)');
+        g.addColorStop(0, 'rgba(233,236,239,0)');
+        g.addColorStop(0.5, 'rgba(233,236,239,0.07)');
+        g.addColorStop(1, 'rgba(233,236,239,0)');
         rrect(T, b.bx, 24, 128, 832, 14); T.fillStyle = g; T.fill();
         T.setLineDash([2, 7]); T.lineDashOffset = -time * 4;
         T.strokeStyle = rgba(COL.stitch, 0.85); T.lineWidth = 1.5; T.stroke(); T.setLineDash([]);
         var sy = 24 + ((time * 70) % 832);
         var sg = T.createLinearGradient(0, sy - 46, 0, sy);
-        sg.addColorStop(0, 'rgba(255, 245, 154,0)'); sg.addColorStop(1, 'rgba(255, 245, 154,0.05)');
+        sg.addColorStop(0, 'rgba(214,198,142,0)'); sg.addColorStop(1, 'rgba(214,198,142,0.05)');
         T.fillStyle = sg; T.fillRect(b.bx + 2, sy - 46, 124, 46);
-        T.fillStyle = 'rgba(255, 245, 154,0.22)'; T.fillRect(b.bx + 2, sy - 0.5, 124, 1);
+        T.fillStyle = 'rgba(214,198,142,0.22)'; T.fillRect(b.bx + 2, sy - 0.5, 124, 1);
       });
 
       S.flines.forEach(function (l) {
@@ -1730,7 +1730,7 @@
     }
     if (hints) {
       proj(0, -hh, gt.z);
-      F3.labels.push({ text: gt.name, x: P3.x, y: P3.y - 8, col: '#fff59a', a: a, size: clamp(18 * P3.s, 11, 30), align: 'center' });
+      F3.labels.push({ text: gt.name, x: P3.x, y: P3.y - 8, col: '#d6c68e', a: a, size: clamp(18 * P3.s, 11, 30), align: 'center' });
     }
   }
 
@@ -1751,9 +1751,9 @@
       var b = bands[st.z < 330 ? 0 : (st.z < 660 ? 1 : 2)];
       b.moveTo(x1, y1); b.lineTo(P3.x, P3.y);
     }
-    T.strokeStyle = rgba('#fff59a', 0.85); T.lineWidth = 1.3; T.stroke(bands[0]);
-    T.strokeStyle = rgba('#f088e8', 0.55); T.lineWidth = 1; T.stroke(bands[1]);
-    T.strokeStyle = rgba('#6f9be8', 0.4); T.lineWidth = 0.8; T.stroke(bands[2]);
+    T.strokeStyle = rgba(COL.ice, 0.85); T.lineWidth = 1.3; T.stroke(bands[0]);
+    T.strokeStyle = rgba(COL.ice, 0.5); T.lineWidth = 1; T.stroke(bands[1]);
+    T.strokeStyle = rgba(COL.ice, 0.28); T.lineWidth = 0.8; T.stroke(bands[2]);
   }
   function f3Star(z) { return { x: (Math.random() - 0.5) * 3.6 * z, y: (Math.random() - 0.5) * 2.3 * z, z: z }; }
 
@@ -1765,7 +1765,7 @@
       c.save(); rrect(c, 0, 0, K.W, K.H, 14); c.clip();
       c.fillStyle = COL.sunken; c.fillRect(0, 0, K.W, K.H);
       var g = c.createRadialGradient(700, 435, 0, 700, 435, 760);
-      g.addColorStop(0, 'rgba(134,98,240,0.26)'); g.addColorStop(0.22, 'rgba(240,136,232,0.09)'); g.addColorStop(1, 'rgba(0,0,0,0)');
+      g.addColorStop(0, 'rgba(129,184,219,0.20)'); g.addColorStop(0.22, 'rgba(90,110,170,0.08)'); g.addColorStop(1, 'rgba(0,0,0,0)');
       c.fillStyle = g; c.fillRect(0, 0, K.W, K.H);
       var v = c.createRadialGradient(700, 435, 380, 700, 435, 900);
       v.addColorStop(0, 'rgba(0,0,0,0)'); v.addColorStop(1, 'rgba(0,0,0,0.6)');
