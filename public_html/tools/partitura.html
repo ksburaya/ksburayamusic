@@ -187,7 +187,7 @@
         <div class="seg-clip lane"><div class="seg-track" id="segTrack"></div></div>
       </div>
     </div>
-    <p class="small muted" id="note3d" hidden>3D режим: вы летите по туннелю времени. Горизонт — будущее, экран — «сейчас». Каждое движение узнаётся по форме: прямая — ровный луч между рельсами; бисер — отдельные сферы; волна — круглые обручи на гребнях и впадинах (между двумя соседними — полпериода); зубцы — острые треугольники; рваная линия — неравные ромбы. Штриховая линия — ось, от неё отсчитывается размах. В углах — профиль того, что голос играет сейчас. Кольца — отметки каждые 15 секунд, золотые рамки — схождения голосов. Перемотка и плеер работают как обычно; переход к отрезку по клику доступен только в плоском режиме.</p>
+    <p class="small muted" id="note3d" hidden>3D режим: вы летите по туннелю времени. Горизонт — будущее, экран — «сейчас». Каждое движение узнаётся по форме: прямая — ровный луч между рельсами; бисер — отдельные сферы; волна — круглые обручи на гребнях и впадинах (между двумя соседними — полпериода); зубцы — острые треугольники; рваная линия — неравные ромбы. Штриховая линия — ось, от неё отсчитывается размах. В углах — профиль того, что голос играет сейчас. Золотые столбики — схождения голосов: диапазоны обоих голосов и их общая зона. Перемотка и плеер работают как обычно; переход к отрезку по клику доступен только в плоском режиме.</p>
     <p class="small muted" id="note2d">Нажмите на любой отрезок, чтобы перейти к нему. Выше точка — выше звук; крупнее — больше звука; ярче сияние — больше высоких частот; форма линии между точками — ровность игры. В центре — общий регистр: точки показывают высоту каждого голоса; при схождении два столбика из точек — диапазоны голосов, золотые точки — где диапазоны пересекаются.</p>
   </section>
 
@@ -1368,7 +1368,7 @@
        screenX = W/2 + x * PERSP / z      screenY = H/2 + y * PERSP / z */
 
   var PERSP = 420, ZFAR = 1000, ZFADE = 50, ZNEAR = 10, LOOK_S = 45;
-  var LANE_Y = { A: -150, B: 150 }, PITCH = 240, WK = 1.6, DK = 3, RING_S = 15;
+  var LANE_Y = { A: -150, B: 150 }, PITCH = 240, WK = 1.6, DK = 3;
   var P3 = { x: 0, y: 0, s: 1 }, W3 = { x: 0, y: 0, z: 1 };
   var F3 = { sec: -1, S: null, spd: 0, dz: 0, nodes: [], segs: [], gates: [], np: 0, sp: 0, gp: 0, labels: [], stars: null, cx: 0, cy: 0 };
   var UNI = (function () { var a = []; for (var i = 0; i <= 48; i++) a.push(i / 48); return a; })();
@@ -1713,13 +1713,7 @@
     if (gt.z <= ZNEAR) return;
     var a = f3Fade(gt.z);
     if (a < 0.02) return;
-    var hw = 380, hh = 300, c = [[-hw, -hh], [hw, -hh], [hw, hh], [-hw, hh]], path = new Path2D(), i;
-    for (i = 0; i < 4; i++) { proj(c[i][0], c[i][1], gt.z); if (i) path.lineTo(P3.x, P3.y); else path.moveTo(P3.x, P3.y); }
-    path.closePath();
-    /* no translucent fill here: the trail buffer would re-add it every frame and it would pile up */
-    T.setLineDash([2, 7]); T.lineDashOffset = -time * 5;
-    T.strokeStyle = rgba('#d6c68e', 0.65 * a); T.lineWidth = clamp(2.4 * P3.s * 0.6, 1.2, 2.6); T.stroke(path);
-    T.setLineDash([]);
+    var hh = 300, i;
     var yv = function (v) { return (0.5 - v) * 300; };
     var rA = gt.rA, rB = gt.rB;
     dotted3(T, -34, yv(rA[1]), -34, yv(rA[0]), gt.z, K.col.A, 2.5, a);
@@ -1737,32 +1731,6 @@
     if (hints) {
       proj(0, -hh, gt.z);
       F3.labels.push({ text: gt.name, x: P3.x, y: P3.y - 8, col: '#d6c68e', a: a, size: clamp(18 * P3.s, 11, 30), align: 'center' });
-    }
-  }
-
-  function f3Frames(T, secNow, spd, hints) {
-    var i0 = Math.ceil(secNow / RING_S), hw = 560, hh = 340, c = [[-hw, -hh], [hw, -hh], [hw, hh], [-hw, hh]], i, e;
-    /* rails converging on the horizon */
-    T.strokeStyle = rgba(COL.stitch, 0.22); T.lineWidth = 1; T.beginPath();
-    [[-hw, -hh], [hw, -hh], [hw, hh], [-hw, hh], [0, -hh], [0, hh], [-hw, 0], [hw, 0]].forEach(function (p) {
-      proj(p[0], p[1], ZFAR); T.moveTo(P3.x, P3.y); proj(p[0], p[1], 60); T.lineTo(P3.x, P3.y);
-    });
-    T.stroke();
-    /* a ring every RING_S seconds of score time */
-    for (i = i0; ; i++) {
-      var z = (i * RING_S - secNow) * spd;
-      if (z > ZFAR) break;
-      if (z <= ZNEAR) continue;
-      var a = f3Fade(z) * 0.55;
-      if (a < 0.02) continue;
-      var path = new Path2D();
-      for (e = 0; e < 4; e++) { proj(c[e][0], c[e][1], z); if (e) path.lineTo(P3.x, P3.y); else path.moveTo(P3.x, P3.y); }
-      path.closePath();
-      T.strokeStyle = rgba(COL.ice, a * 0.5); T.lineWidth = clamp(1.6 * P3.s * 0.5, 1, 3); T.stroke(path);
-      if (hints) {
-        proj(-hw, -hh, z);
-        F3.labels.push({ text: fmt(i * RING_S), x: P3.x + 8, y: P3.y + 16 + 6 * P3.s, col: COL.ice, a: a, size: clamp(14 * P3.s, 10, 22), align: 'left' });
-      }
     }
   }
 
@@ -1813,7 +1781,6 @@
       F3.cx = 36 * Math.sin(time * 0.37); F3.cy = 14 * Math.sin(time * 0.27 + 1);
       F3.labels.length = 0;
 
-      f3Frames(T, secNow, spd, hints);
       f3Stars(T, dt, spd);
 
       var items = [];
@@ -2432,7 +2399,7 @@
   }
 
   var LABEL_2D = $('score').getAttribute('aria-label');
-  var LABEL_3D = 'Партитура в 3D: вид от первого лица, полёт по туннелю времени. Сверху летят узлы и нити голоса A, снизу — голоса B; золотые рамки — моменты схождения голосов.';
+  var LABEL_3D = 'Партитура в 3D: вид от первого лица, полёт по туннелю времени. Сверху летят узлы и нити голоса A, снизу — голоса B; золотые столбики — моменты схождения голосов.';
   function applyMode() {
     var on = ui.mode3d;
     $('mode3dBtn').setAttribute('aria-pressed', on);
