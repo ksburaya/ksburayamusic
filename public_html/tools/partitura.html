@@ -103,7 +103,21 @@
     .meter-fill { height: 8px; border-radius: 4px; width: 0; background: var(--vc, var(--ink)); box-shadow: 0 0 9px var(--vc, transparent); }
 
     /* canvases */
-    .stage-scroll { overflow-x: auto; border-radius: 14px; }
+    .stage-scroll { overflow-x: auto; border-radius: 14px; position: relative; }
+    .stage-scroll.is-fs {
+      position: fixed; inset: 0; z-index: 100; border-radius: 0; overflow: hidden;
+      background: #05070b; display: flex; align-items: center; justify-content: center;
+    }
+    .stage-scroll.is-fs .stage { min-width: 0; width: min(100vw, calc(100vh * 1400 / 870)); }
+    .fs-bar {
+      position: absolute; top: 16px; left: 50%; transform: translateX(-50%); z-index: 5;
+      display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 12px;
+      max-width: calc(100vw - 32px); padding: 10px 14px; border-radius: 14px;
+      background: rgba(12, 17, 24, .78); border: 1px solid var(--line); transition: opacity .3s;
+    }
+    .fs-bar.idle { opacity: 0; pointer-events: none; }
+    .fs-bar .fld { flex: 0 0 200px; }
+    .fs-bar input[type=range] { height: 32px; }
     .stage { position: relative; min-width: 880px; }
     canvas { display: block; }
     .stage canvas { width: 100%; height: auto; }
@@ -178,10 +192,19 @@
       <button class="btn btn-ghost btn-sm" id="hintsBtn" type="button" aria-pressed="true">Подписи</button>
       <button class="btn btn-ghost btn-sm" id="loopBtn" type="button" aria-pressed="false">Повтор</button>
       <button class="btn btn-ghost btn-sm" id="mode3dBtn" type="button" aria-pressed="false">3D режим</button>
-      <label class="fld s" id="flyRow" hidden><span class="fld-h"><span>Скорость полёта</span><span id="flyText">×1,0</span></span><input type="range" id="flySpeed" min="50" max="300" step="10" value="100"></label>
+      <button class="btn btn-ghost btn-sm" id="hudBtn" type="button" aria-pressed="true" hidden>Профили</button>
+      <button class="btn btn-ghost btn-sm" id="fsBtn" type="button">Во весь экран</button>
+      <label class="fld s" id="flyRow" hidden><span class="fld-h"><span>Скорость полёта</span><span id="flyText">×1,0</span></span><input type="range" id="flySpeed" min="50" max="1000" step="10" value="100"></label>
     </div>
 
-    <div class="stage-scroll">
+    <div class="stage-scroll" id="stageScroll">
+      <div class="fs-bar" id="fsBar" hidden>
+        <button class="btn btn-primary btn-sm" id="fsPlay" type="button">Играть</button>
+        <button class="btn btn-ghost btn-sm" id="fs3d" type="button" aria-pressed="false">3D режим</button>
+        <button class="btn btn-ghost btn-sm" id="fsHud" type="button" aria-pressed="true" hidden>Профили</button>
+        <label class="fld" id="fsFlyRow" hidden><span class="fld-h"><span>Скорость полёта</span><span id="fsFlyText">×1,0</span></span><input type="range" id="fsFly" min="50" max="1000" step="10" value="100"></label>
+        <button class="btn btn-ghost btn-sm" id="fsExit" type="button">Выйти</button>
+      </div>
       <div class="stage">
         <canvas id="score" role="img" aria-label="Партитура: сверху дорожка голоса A, снизу голоса B, между ними общее поле регистра, где видны диапазоны обоих голосов. Точки — смены состояния, линии между ними — способ игры."></canvas>
         <div class="seg-clip lane"><div class="seg-track" id="segTrack"></div></div>
@@ -955,7 +978,7 @@
      ══════════════════════════════════════════════════════════════ */
 
   var ui = {
-    t: 0, playing: false, hi: null, score: null, hints: true, loop: false, mode3d: false, fly: 1,
+    t: 0, playing: false, hi: null, score: null, hints: true, loop: false, mode3d: false, fly: 1, hud: true,
     cfg: { minutes: 5, nMin: 3, nMax: 6 },
     tr: null, trSel: { kind: 'edge', i: 0 }, trT: 0, trPlaying: false
   };
@@ -1377,8 +1400,8 @@
     var s = PERSP / z;
     P3.s = s; P3.x = K.W / 2 + (x - F3.cx) * s; P3.y = K.H / 2 + (y - F3.cy) * s;
   }
-  function f3Speed() { return ZFAR / LOOK_S * ui.fly; }           /* z units per second of score time */
-  function f3Fade(z) { return clamp(z / ZFADE, 0, 1) * clamp((ZFAR - z) / 120, 0, 1); }
+  function f3Speed() { return 1000 / LOOK_S * ui.fly; }           /* z units per second of score time */
+  function f3Fade(z) { return clamp(z / ZFADE, 0, 1) * clamp((ZFAR - z) / (ZFAR * 0.12), 0, 1); }
   function nodeY(L, b) { return LANE_Y[L] - (b - 0.5) * PITCH; }
 
   /* the lanes wind around the axis as a helix and pinch to the centre at every meeting */
@@ -1438,8 +1461,10 @@
   }
 
   function f3Update(secNow, o, S) {
+    /* the faster the flight, the deeper the tunnel, so a full wave still fits in view */
+    ZFAR = 1000 * Math.sqrt(Math.max(1, ui.fly));
     var spd = f3Speed(), look = ZFAR / spd, i;
-    if (F3.S !== S || F3.spd !== spd || secNow < F3.sec - 1e-6 || secNow - F3.sec > 0.5) {
+    if (F3.S !== S || F3.spd !== spd || F3.far !== ZFAR || secNow < F3.sec - 1e-6 || secNow - F3.sec > 0.5) {
       f3Rebuild(secNow, o, spd, look); F3.dz = 0;
     } else {
       var dz = (secNow - F3.sec) * spd;            /* depth consumed since the last frame */
@@ -1462,7 +1487,7 @@
     F3.nodes = F3.nodes.filter(function (e) { return e.z > 0; });
     F3.segs = F3.segs.filter(function (e) { return e.zb > 0; });
     F3.gates = F3.gates.filter(function (e) { return e.z > 0; });
-    F3.sec = secNow; F3.S = S; F3.spd = spd;
+    F3.sec = secNow; F3.S = S; F3.spd = spd; F3.far = ZFAR;
   }
 
   /* a point of the movement: lateral sway + baseline between the two nodes + the shape's own offset */
@@ -1738,8 +1763,9 @@
     var i, st;
     if (!F3.stars) {
       F3.stars = [];
-      for (i = 0; i < 170; i++) F3.stars.push(f3Star(Math.random() * ZFAR));
     }
+    var want = Math.round(170 * Math.min(2.2, Math.sqrt(ZFAR / 1000)));
+    while (F3.stars.length < want) F3.stars.push(f3Star(Math.random() * ZFAR));
     var v = F3.dz + (FX.motion ? 30 * dt : 0), bands = [new Path2D(), new Path2D(), new Path2D()];
     var tail = Math.max(12, spd * 0.07) + (FX.motion ? 14 : 0);
     for (i = 0; i < F3.stars.length; i++) {
@@ -1799,7 +1825,7 @@
         else f3Gate(T, it.gate, time, hints);
       }
 
-      f3Hud(T, o, secNow);
+      if (ui.hud) f3Hud(T, o, secNow);
 
       /* cockpit reticle */
       var rc = new Path2D(); rc.arc(K.W / 2, K.H / 2, 15, 0, TAU);
@@ -2218,7 +2244,7 @@
     var sv = Math.round(t * 1000);
     if (+$('scrub').value !== sv) $('scrub').value = sv;
     var label = ui.playing ? 'Пауза' : (t >= 0.999 ? 'Заново' : 'Играть');
-    setText($('playLabel'), label);
+    setText($('playLabel'), label); setText($('fsPlay'), label);
     setHidden($('icoPause'), !ui.playing); setHidden($('icoPlay'), ui.playing);
     cardA.update(laneLive('A', t, dur));
     cardB.update(laneLive('B', t, dur));
@@ -2403,7 +2429,9 @@
   function applyMode() {
     var on = ui.mode3d;
     $('mode3dBtn').setAttribute('aria-pressed', on);
-    setHidden($('flyRow'), !on); setHidden($('note3d'), !on); setHidden($('note2d'), on);
+    setHidden($('flyRow'), !on); setHidden($('hudBtn'), !on); setHidden($('note3d'), !on); setHidden($('note2d'), on);
+    setHidden($('fsFlyRow'), !on); setHidden($('fsHud'), !on);
+    $('fs3d').setAttribute('aria-pressed', on);
     setHidden($('segTrack').parentNode, on);
     $('score').setAttribute('aria-label', on ? LABEL_3D : LABEL_2D);
     mainStage.scene = on ? tunnelScene : mainScene;
@@ -2423,11 +2451,8 @@
       ui.score = null; ui.t = 0; ui.playing = false; ui.hi = null;
       $('restore').hidden = true; scoreChanged();
     });
-    $('play').addEventListener('click', function () {
-      if (ui.playing) ui.playing = false;
-      else { if (ui.t >= 0.999) ui.t = 0; ui.playing = true; }
-      syncMain();
-    });
+    $('play').addEventListener('click', togglePlay);
+    $('fsPlay').addEventListener('click', togglePlay);
     $('reset').addEventListener('click', function () { ui.t = 0; ui.playing = false; syncMain(); });
     $('scrub').addEventListener('input', function (e) { ui.t = clamp(+e.target.value / 1000, 0, 1); syncMain(); });
     $('hintsBtn').addEventListener('click', function (e) {
@@ -2436,12 +2461,74 @@
     $('loopBtn').addEventListener('click', function (e) {
       ui.loop = !ui.loop; e.currentTarget.setAttribute('aria-pressed', ui.loop);
     });
-    $('mode3dBtn').addEventListener('click', function () { ui.mode3d = !ui.mode3d; applyMode(); });
-    $('flySpeed').addEventListener('input', function (e) {
-      ui.fly = +e.target.value / 100;
-      setText($('flyText'), '×' + ui.fly.toFixed(1).replace('.', ','));
-    });
+    var toggle3d = function () { ui.mode3d = !ui.mode3d; applyMode(); };
+    $('mode3dBtn').addEventListener('click', toggle3d);
+    $('fs3d').addEventListener('click', toggle3d);
+    $('flySpeed').addEventListener('input', function (e) { setFly(+e.target.value / 100); });
+    $('fsFly').addEventListener('input', function (e) { setFly(+e.target.value / 100); });
+    var toggleHud = function () {
+      ui.hud = !ui.hud;
+      $('hudBtn').setAttribute('aria-pressed', ui.hud); $('fsHud').setAttribute('aria-pressed', ui.hud);
+    };
+    $('hudBtn').addEventListener('click', toggleHud);
+    $('fsHud').addEventListener('click', toggleHud);
+    $('fsBtn').addEventListener('click', enterFs);
+    $('fsExit').addEventListener('click', exitFs);
   }
+
+  function togglePlay() {
+    if (ui.playing) ui.playing = false;
+    else { if (ui.t >= 0.999) ui.t = 0; ui.playing = true; }
+    syncMain();
+  }
+  function setFly(v) {
+    ui.fly = v;
+    var t = '×' + v.toFixed(1).replace('.', ',');
+    setText($('flyText'), t); setText($('fsFlyText'), t);
+    var raw = String(Math.round(v * 100));
+    if ($('flySpeed').value !== raw) $('flySpeed').value = raw;
+    if ($('fsFly').value !== raw) $('fsFly').value = raw;
+  }
+
+  /* Fullscreen: native API where available, a fixed full-window overlay otherwise (e.g. iPhone) */
+  var fsIdle = 0;
+  function isFs() { return $('stageScroll').classList.contains('is-fs'); }
+  function fsWake() {
+    $('fsBar').classList.remove('idle');
+    clearTimeout(fsIdle);
+    fsIdle = setTimeout(function () { if (isFs()) $('fsBar').classList.add('idle'); }, 2600);
+  }
+  function enterFs() {
+    var el = $('stageScroll');
+    if (isFs()) return;
+    el.classList.add('is-fs'); document.body.style.overflow = 'hidden';
+    setHidden($('fsBar'), false); fsWake();
+    var rq = el.requestFullscreen || el.webkitRequestFullscreen;
+    if (rq) { try { var r = rq.call(el); if (r && r.catch) r.catch(function () {}); } catch (e) {} }
+    $('fsExit').focus();
+  }
+  function exitFs() {
+    if (!isFs()) return;
+    $('stageScroll').classList.remove('is-fs'); document.body.style.overflow = '';
+    setHidden($('fsBar'), true); clearTimeout(fsIdle);
+    var ex = document.exitFullscreen || document.webkitExitFullscreen;
+    if ((document.fullscreenElement || document.webkitFullscreenElement) && ex) { try { ex.call(document); } catch (e) {} }
+    $('fsBtn').focus();
+  }
+  ['fullscreenchange', 'webkitfullscreenchange'].forEach(function (n) {
+    document.addEventListener(n, function () {
+      if (!(document.fullscreenElement || document.webkitFullscreenElement)) exitFs();   /* left via Esc */
+    });
+  });
+  ['mousemove', 'pointerdown', 'touchstart'].forEach(function (n) {
+    $('stageScroll').addEventListener(n, function () { if (isFs()) fsWake(); }, { passive: true });
+  });
+  document.addEventListener('keydown', function (e) {
+    if (!isFs()) return;
+    if (e.key === 'Escape') { exitFs(); return; }
+    fsWake();
+    if (e.code === 'Space' && !/^(BUTTON|INPUT)$/.test(e.target.tagName)) { e.preventDefault(); togglePlay(); }
+  });
 
 
   /* ══════════════════════════════════════════════════════════════
