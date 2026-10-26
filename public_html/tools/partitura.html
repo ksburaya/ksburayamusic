@@ -210,7 +210,7 @@
         <div class="seg-clip lane"><div class="seg-track" id="segTrack"></div></div>
       </div>
     </div>
-    <p class="small muted" id="note3d" hidden>3D режим: вы летите по туннелю времени. Горизонт — будущее, экран — «сейчас». Каждое движение узнаётся по форме: прямая — ровный луч между рельсами; бисер — отдельные сферы; волна — круглые обручи на гребнях и впадинах (между двумя соседними — полпериода); зубцы — острые треугольники; рваная линия — неравные ромбы. Штриховая линия — ось, от неё отсчитывается размах. В углах — профиль того, что голос играет сейчас. Золотые столбики — схождения голосов: диапазоны обоих голосов и их общая зона. Перемотка и плеер работают как обычно; переход к отрезку по клику доступен только в плоском режиме.</p>
+    <p class="small muted" id="note3d" hidden>3D режим: ночной лес, вы летите навстречу кометам. Горизонт — будущее, экран — «сейчас». Узел — голова кометы, нити — её след. Каждое движение узнаётся по форме: прямая — ровный луч между рельсами; бисер — отдельные сферы; волна — круглые обручи на гребнях и впадинах (между двумя соседними — полпериода); зубцы — острые треугольники; рваная линия — неравные ромбы. Штриховая линия — ось, от неё отсчитывается размах. В углах — профиль того, что голос играет сейчас. Золотые столбики — схождения голосов: диапазоны обоих голосов и их общая зона. Перемотка и плеер работают как обычно; переход к отрезку по клику доступен только в плоском режиме.</p>
     <p class="small muted" id="note2d">Нажмите на любой отрезок, чтобы перейти к нему. Выше точка — выше звук; крупнее — больше звука; ярче сияние — больше высоких частот; форма линии между точками — ровность игры. В центре — общий регистр: точки показывают высоту каждого голоса; при схождении два столбика из точек — диапазоны голосов, золотые точки — где диапазоны пересекаются.</p>
   </section>
 
@@ -1702,21 +1702,48 @@
     });
   }
 
+  /* A node is a comet: a bright head with a coma, and a tail streaming back toward the horizon */
   function f3Node(T, n, time, hints) {
     if (n.z <= ZNEAR) return;
     var a = f3Fade(n.z);
     proj(n.x, n.y, n.z);
-    /* besides the z fade: a sphere that already fills the view dissolves, so it never blinds the screen */
+    /* besides the z fade: a head that already fills the view dissolves, so it never blinds the screen */
     var ext3 = (n.r * WK + 14 + n.g * 46) * P3.s;       /* body + aura, in screen px */
     if (ext3 > 120) a *= clamp(1 - (ext3 - 120) / 230, 0, 1);
     if (a < 0.02) return;
     var R = (n.r * WK + 70) * P3.s;
     if (P3.x + R < 0 || P3.x - R > K.W || P3.y + R < 0 || P3.y - R > K.H) return;
-    T.save(); T.translate(P3.x, P3.y); T.scale(P3.s, P3.s);
-    var ext = drawNode(T, 0, 0, n.r * WK, n.g, n.kind, n.col, time, { op: a, ph: n.ph });
+    var hx = P3.x, hy = P3.y, sc = P3.s, hr = n.r * WK * sc, col = n.col, pc = pal(col);
+
+    /* tail: from the head toward the vanishing point (a comet flying at you trails behind it, into the distance) */
+    var dx = K.W / 2 - hx, dy = K.H / 2 - hy, dist = Math.sqrt(dx * dx + dy * dy) || 1;
+    var ux = dx / dist, uy = dy / dist, vx = -uy, vy = ux;
+    var len = Math.min(hr * (5 + 6 * n.g) + 40, dist * 0.95);
+    var tx = hx + ux * len, ty = hy + uy * len, wd = hr * 1.0;
+    var tg = T.createLinearGradient(hx, hy, tx, ty);
+    tg.addColorStop(0, rgba(col, 0.5 * a)); tg.addColorStop(0.35, rgba(col, 0.14 * a)); tg.addColorStop(1, rgba(col, 0));
+    T.fillStyle = tg;
+    T.beginPath(); T.moveTo(hx + vx * wd, hy + vy * wd); T.lineTo(tx, ty); T.lineTo(hx - vx * wd, hy - vy * wd); T.closePath(); T.fill();
+    var cg = T.createLinearGradient(hx, hy, tx, ty);
+    cg.addColorStop(0, rgba(pc.core, 0.9 * a)); cg.addColorStop(1, rgba(pc.core, 0));
+    T.strokeStyle = cg; T.lineWidth = Math.max(1, hr * 0.28);
+    T.beginPath(); T.moveTo(hx, hy); T.lineTo(tx, ty); T.stroke();
+    /* sparks shed along the tail */
+    var sp = 5 + Math.round(n.g * 7);
+    for (var i = 0; i < sp; i++) {
+      var u = (time * (0.5 + 0.06 * i) + i * 0.37 + n.ph) % 1;
+      var off = Math.sin(i * 7.3 + n.ph + time * 2) * wd * (0.9 - u * 0.5);
+      var sx = hx + ux * len * u + vx * off, sy = hy + uy * len * u + vy * off;
+      T.fillStyle = rgba(pc.core, 0.85 * a * (1 - u));
+      T.beginPath(); T.arc(sx, sy, Math.max(0.8, hr * 0.07 * (1 - u * 0.6)), 0, TAU); T.fill();
+    }
+    /* coma + head */
+    aura(T, hx, hy, hr * 2.7, col, 0.85 * a * (0.85 + 0.15 * Math.sin(time * 3 + n.ph)));
+    T.save(); T.translate(hx, hy); T.scale(sc, sc);
+    drawNode(T, 0, 0, n.r * WK, n.g, n.kind, col, time, { op: a, ph: n.ph, plain: true });
     T.restore();
     if (hints) {
-      F3.labels.push({ text: n.id, x: P3.x, y: P3.y - (n.r * WK + 18 + ext) * P3.s, col: COL.muted, a: a, size: clamp(15 * P3.s, 10, 26), align: 'center' });
+      F3.labels.push({ text: n.id, x: hx, y: hy - hr - 14 - 6 * sc, col: COL.muted, a: a, size: clamp(15 * sc, 10, 26), align: 'center' });
     }
   }
 
@@ -1764,10 +1791,10 @@
     if (!F3.stars) {
       F3.stars = [];
     }
-    var want = Math.round(170 * Math.min(2.2, Math.sqrt(ZFAR / 1000)));
+    var want = Math.round(60 * Math.min(2.2, Math.sqrt(ZFAR / 1000)));
     while (F3.stars.length < want) F3.stars.push(f3Star(Math.random() * ZFAR));
     var v = F3.dz + (FX.motion ? 30 * dt : 0), bands = [new Path2D(), new Path2D(), new Path2D()];
-    var tail = Math.max(12, spd * 0.07) + (FX.motion ? 14 : 0);
+    var tail = Math.max(6, spd * 0.025) + (FX.motion ? 6 : 0);
     for (i = 0; i < F3.stars.length; i++) {
       st = F3.stars[i]; st.z -= v;
       if (st.z <= ZNEAR) { F3.stars[i] = st = f3Star(ZFAR * (0.92 + Math.random() * 0.08)); }
@@ -1777,11 +1804,75 @@
       var b = bands[st.z < 330 ? 0 : (st.z < 660 ? 1 : 2)];
       b.moveTo(x1, y1); b.lineTo(P3.x, P3.y);
     }
-    T.strokeStyle = rgba(COL.ice, 0.85); T.lineWidth = 1.3; T.stroke(bands[0]);
-    T.strokeStyle = rgba(COL.ice, 0.5); T.lineWidth = 1; T.stroke(bands[1]);
-    T.strokeStyle = rgba(COL.ice, 0.28); T.lineWidth = 0.8; T.stroke(bands[2]);
+    T.strokeStyle = rgba('#ffd89a', 0.85); T.lineWidth = 1.5; T.stroke(bands[0]);
+    T.strokeStyle = rgba('#ffc27a', 0.55); T.lineWidth = 1.2; T.stroke(bands[1]);
+    T.strokeStyle = rgba('#e8b080', 0.3); T.lineWidth = 1; T.stroke(bands[2]);
   }
   function f3Star(z) { return { x: (Math.random() - 0.5) * 3.6 * z, y: (Math.random() - 0.5) * 2.3 * z, z: z }; }
+
+  /* ── night forest: moonlit sky, far tree line, schematic firs and round trees flying past ── */
+  var GROUND = 330, HAZE = '#1d2f52', TREE_FAR = '#142140', NEAR = '#02040a', RIM = '#9bbcff';
+  var blendMemo = {};
+  function blend(h1, h2, t) {
+    var q = Math.round(clamp(t, 0, 1) * 24), key = h1 + h2 + q;
+    if (blendMemo[key]) return blendMemo[key];
+    var a = rgb(h1), b = rgb(h2), out = '#';
+    for (var i = 0; i < 3; i++) { var v = Math.round(a[i] + (b[i] - a[i]) * q / 24); out += (v < 16 ? '0' : '') + v.toString(16); }
+    return (blendMemo[key] = out);
+  }
+  function f3MkTree(z) {
+    var side = Math.random() < 0.5 ? -1 : 1, r = Math.random(), fir = Math.random() < 0.72;
+    var H = fir ? 300 + Math.random() * 380 : 240 + Math.random() * 200;
+    return { x: side * (390 + Math.pow(Math.random(), 1.5) * 1700), z: z, fir: fir, H: H, w: H * (fir ? 0.27 : 0.22), tilt: (r - 0.5) * 0.06 };
+  }
+  function f3Forest(c, dt) {
+    var want = Math.round(95 * Math.min(2.2, Math.sqrt(ZFAR / 1000))), i;
+    if (!F3.trees) F3.trees = [];
+    while (F3.trees.length < want) F3.trees.push(f3MkTree(ZNEAR + Math.random() * (ZFAR * 1.15)));
+    var far = ZFAR * 1.15;
+    for (i = 0; i < F3.trees.length; i++) {
+      var t = F3.trees[i];
+      t.z -= F3.dz;
+      var sc = PERSP / Math.max(t.z, 1);
+      if (t.z <= ZNEAR || (Math.abs(t.x) - t.w) * sc > 780) F3.trees[i] = f3MkTree(far * (0.93 + Math.random() * 0.07));
+    }
+    F3.trees.sort(function (p, q) { return q.z - p.z; });                       /* far first */
+    for (i = 0; i < F3.trees.length; i++) {
+      var tr = F3.trees[i];
+      proj(tr.x, GROUND, tr.z);
+      var s0 = P3.s, bx = P3.x, by = P3.y, Hs = tr.H * s0, w = tr.w * s0;
+      if (Hs < 2 || bx + w < -20 || bx - w > K.W + 20) continue;
+      var dep = Math.pow(clamp(tr.z / far, 0, 1), 0.7);
+      var fill = blend(NEAR, TREE_FAR, dep), rim = rgba(RIM, 0.17 * (1 - dep * 0.7));
+      c.fillStyle = fill;
+      c.fillRect(bx - Hs * 0.03, by - Hs * 0.14, Hs * 0.06, Hs * 0.14);          /* trunk */
+      if (tr.fir) {
+        var y0 = by - Hs * 0.12, hT = Hs * 0.46, step = (Hs * 0.88 - hT) / 2;
+        for (var j = 0; j < 3; j++) {
+          var yb = y0 - j * step, ya = yb - hT, hw = w * (1 - 0.24 * j), tx = bx + tr.tilt * (y0 - yb);
+          c.fillStyle = fill;
+          c.beginPath(); c.moveTo(tx, ya); c.lineTo(tx + hw, yb); c.lineTo(tx - hw, yb); c.closePath(); c.fill();
+          c.fillStyle = rim;                                                       /* moonlit facet */
+          c.beginPath(); c.moveTo(tx, ya); c.lineTo(tx + hw, yb); c.lineTo(tx, yb); c.closePath(); c.fill();
+        }
+      } else {
+        var cr = Hs * 0.3, cy = by - Hs * 0.7;
+        c.fillStyle = fill; c.fillRect(bx - Hs * 0.025, by - Hs * 0.5, Hs * 0.05, Hs * 0.5);
+        c.beginPath(); c.arc(bx, cy, cr, 0, TAU); c.fill();
+        c.fillStyle = rim; c.beginPath(); c.arc(bx, cy, cr, -Math.PI / 2, Math.PI / 2); c.closePath(); c.fill();
+      }
+    }
+    /* mist hugging the horizon blends the far trees into the sky */
+    var mg = c.createLinearGradient(0, 300, 0, 620);
+    mg.addColorStop(0, 'rgba(95,130,185,0)'); mg.addColorStop(0.45, 'rgba(95,130,185,0.14)'); mg.addColorStop(1, 'rgba(95,130,185,0)');
+    c.fillStyle = mg; c.fillRect(0, 300, K.W, 320);
+  }
+
+  var SKY_STARS = (function () {
+    var r = rng(77), out = [];
+    for (var i = 0; i < 150; i++) out.push({ x: r() * K.W, y: Math.pow(r(), 1.4) * 425, s: 0.5 + r() * 1.1, a: 0.25 + r() * 0.65, ph: r() * TAU });
+    return out;
+  })();
 
   var tunnelScene = {
     W: K.W, H: K.H, bloom: true, tau: 0.17,
@@ -1789,13 +1880,43 @@
     drawBg: function (c) {
       c.fillStyle = COL.surface; c.fillRect(0, 0, K.W, K.H);
       c.save(); rrect(c, 0, 0, K.W, K.H, 14); c.clip();
-      c.fillStyle = COL.sunken; c.fillRect(0, 0, K.W, K.H);
-      var g = c.createRadialGradient(700, 435, 0, 700, 435, 760);
-      g.addColorStop(0, 'rgba(129,184,219,0.20)'); g.addColorStop(0.22, 'rgba(90,110,170,0.08)'); g.addColorStop(1, 'rgba(0,0,0,0)');
-      c.fillStyle = g; c.fillRect(0, 0, K.W, K.H);
-      var v = c.createRadialGradient(700, 435, 380, 700, 435, 900);
-      v.addColorStop(0, 'rgba(0,0,0,0)'); v.addColorStop(1, 'rgba(0,0,0,0.6)');
+      var hz = K.H / 2;
+      var sky = c.createLinearGradient(0, 0, 0, hz);
+      sky.addColorStop(0, '#04070e'); sky.addColorStop(0.6, '#0b1428'); sky.addColorStop(1, HAZE);
+      c.fillStyle = sky; c.fillRect(0, 0, K.W, hz);
+      var gr = c.createLinearGradient(0, hz, 0, K.H);
+      gr.addColorStop(0, '#0d1a30'); gr.addColorStop(0.25, '#08111f'); gr.addColorStop(1, '#03050a');
+      c.fillStyle = gr; c.fillRect(0, hz, K.W, K.H - hz);
+      SKY_STARS.forEach(function (s) {
+        c.fillStyle = 'rgba(225,235,255,' + s.a + ')'; c.beginPath(); c.arc(s.x, s.y, s.s, 0, TAU); c.fill();
+      });
+      /* moon */
+      var mx = 1040, my = 150, halo = c.createRadialGradient(mx, my, 20, mx, my, 260);
+      halo.addColorStop(0, 'rgba(170,200,255,0.30)'); halo.addColorStop(1, 'rgba(170,200,255,0)');
+      c.fillStyle = halo; c.fillRect(mx - 260, my - 260, 520, 520);
+      var md = c.createRadialGradient(mx - 12, my - 12, 4, mx, my, 44);
+      md.addColorStop(0, '#fbfdff'); md.addColorStop(1, '#c4d2ee');
+      c.fillStyle = md; c.beginPath(); c.arc(mx, my, 44, 0, TAU); c.fill();
+      c.fillStyle = 'rgba(120,140,180,0.22)';
+      [[-14, 6, 9], [12, -12, 6], [10, 16, 7]].forEach(function (k) { c.beginPath(); c.arc(mx + k[0], my + k[1], k[2], 0, TAU); c.fill(); });
+      /* far tree line on the horizon */
+      var r = rng(5), x = -20;
+      c.fillStyle = '#0a1426';
+      while (x < K.W + 20) {
+        var h = 14 + r() * 30, w = 9 + r() * 14;
+        c.beginPath(); c.moveTo(x, hz + 2); c.lineTo(x + w / 2, hz - h); c.lineTo(x + w, hz + 2); c.closePath(); c.fill();
+        x += w * (0.55 + r() * 0.5);
+      }
+      c.fillRect(0, hz - 2, K.W, 6);
+      var v = c.createRadialGradient(700, 435, 420, 700, 435, 900);
+      v.addColorStop(0, 'rgba(0,0,0,0)'); v.addColorStop(1, 'rgba(0,0,0,0.55)');
       c.fillStyle = v; c.fillRect(0, 0, K.W, K.H);
+      c.restore();
+    },
+
+    drawMid: function (c, st, time, dt) {
+      c.save(); rrect(c, 0, 0, K.W, K.H, 14); c.clip();
+      f3Forest(c, dt);
       c.restore();
     },
 
@@ -1807,6 +1928,13 @@
       F3.cx = 36 * Math.sin(time * 0.37); F3.cy = 14 * Math.sin(time * 0.27 + 1);
       F3.labels.length = 0;
 
+      if (FX.motion) {                                           /* twinkling sky */
+        for (i = 0; i < SKY_STARS.length; i += 3) {
+          var ss = SKY_STARS[i], tw = 0.5 + 0.5 * Math.sin(time * 1.6 + ss.ph);
+          T.fillStyle = 'rgba(225,235,255,' + (0.35 * tw * ss.a) + ')';
+          T.beginPath(); T.arc(ss.x, ss.y, ss.s * 1.5, 0, TAU); T.fill();
+        }
+      }
       f3Stars(T, dt, spd);
 
       var items = [];
@@ -1833,7 +1961,7 @@
         var a = q * Math.PI / 2;
         rc.moveTo(K.W / 2 + 21 * Math.cos(a), K.H / 2 + 21 * Math.sin(a)); rc.lineTo(K.W / 2 + 30 * Math.cos(a), K.H / 2 + 30 * Math.sin(a));
       });
-      T.strokeStyle = rgba(COL.gold, 0.5); T.lineWidth = 1.4; T.stroke(rc);
+      T.strokeStyle = rgba(COL.gold, 0.28); T.lineWidth = 1.2; T.stroke(rc);
     },
 
     drawCrisp: function (c) {
@@ -1915,6 +2043,7 @@
     c.setTransform(1, 0, 0, 1, 0, 0);
     c.globalCompositeOperation = 'source-over';
     c.drawImage(this.bg, 0, 0);
+    if (sc.drawMid) { c.setTransform(k, 0, 0, k, 0, 0); sc.drawMid(c, this, time, dt); c.setTransform(1, 0, 0, 1, 0, 0); }
     c.globalCompositeOperation = 'lighter';
     c.drawImage(this.tb, 0, 0);
     if (sc.bloom) {
@@ -2425,7 +2554,7 @@
   }
 
   var LABEL_2D = $('score').getAttribute('aria-label');
-  var LABEL_3D = 'Партитура в 3D: вид от первого лица, полёт по туннелю времени. Сверху летят узлы и нити голоса A, снизу — голоса B; золотые столбики — моменты схождения голосов.';
+  var LABEL_3D = 'Партитура в 3D: вид от первого лица, ночной лес, полёт сквозь время. Кометы голоса A летят выше центра, голоса B — ниже; хвосты и нити — движения голосов; золотые столбики — моменты схождения.';
   function applyMode() {
     var on = ui.mode3d;
     $('mode3dBtn').setAttribute('aria-pressed', on);
