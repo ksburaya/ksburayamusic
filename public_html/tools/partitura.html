@@ -175,7 +175,7 @@
       <div class="row">
         <button class="btn btn-ghost" id="gen" type="button">Сгенерировать партитуру</button>
         <button class="btn btn-ghost" id="restore" type="button" hidden>Вернуть пример</button>
-        <p class="small muted grow">Задайте длительность и число остановок, затем сгенерируйте партитуру: соседние дороги получатся разными по форме, густоте и размаху, а остановки скачут по высоте, размеру и яркости. Длительность действует сразу. У голосов остановки не обязаны совпадать по времени, но каждые 3–5 минут голоса сходятся. На экране видны 5 минут: окно едет за линией.</p>
+        <p class="small muted grow">Задайте длительность и число остановок: партитура пересобирается сразу, соседние дороги получаются разными по форме, густоте и размаху, а остановки скачут по высоте, размеру и яркости. «Сгенерировать» даёт другой вариант с теми же настройками. У голосов остановки не обязаны совпадать по времени, но каждые 3–5 минут голоса сходятся. На экране видны 5 минут: окно едет за линией.</p>
       </div>
       <div class="row" style="gap:16px 24px">
         <span class="lbl muted">Цвет точек</span>
@@ -1064,7 +1064,7 @@
      ══════════════════════════════════════════════════════════════ */
 
   var ui = {
-    t: 0, playing: false, hi: null, score: null, loop: false, spread: 0,
+    t: 0, playing: false, hi: null, score: null, seed: Math.floor(Math.random() * 1000000) + 1, loop: false, spread: 0,
     colors: { A: '#e07f78', B: '#7fcfca' }, mode3d: false, fly: 1, hud: true,
     cfg: { minutes: 5, stops: 5 },
     tr: null, trSel: { kind: 'edge', i: 0 }, trT: 0, trPlaying: false
@@ -2568,6 +2568,14 @@
     el.max = mx;
     if (ui.cfg.stops > mx) { ui.cfg.stops = mx; el.value = mx; }
   }
+  /* settings changed: build the score for them again. The seed stays, so the character of the score
+     stays too and dragging a slider only stretches or thins it instead of throwing a new one. */
+  function rebuild() {
+    ui.score = generateScore(ui.cfg, ui.seed);
+    ui.hi = null;
+    $('restore').hidden = false;
+    scoreChanged();
+  }
   function scoreChanged() {
     rebuildSegButtons(); syncDict(); mainStage.dirtyBg = true; mainStage.hard = true; syncMain();
   }
@@ -2587,8 +2595,8 @@
   }
 
   function bindMain() {
-    $('minutes').addEventListener('input', function (e) { ui.cfg.minutes = +e.target.value; fitStops(); syncConfig(); scoreChanged(); });
-    $('nStops').addEventListener('input', function (e) { ui.cfg.stops = +e.target.value; syncConfig(); });
+    $('minutes').addEventListener('input', function (e) { ui.cfg.minutes = +e.target.value; fitStops(); syncConfig(); rebuild(); });
+    $('nStops').addEventListener('input', function (e) { ui.cfg.stops = +e.target.value; syncConfig(); rebuild(); });
     $('colA').addEventListener('input', function (e) { ui.colors.A = e.target.value; recolor(); });
     $('colB').addEventListener('input', function (e) { ui.colors.B = e.target.value; recolor(); });
     $('spread').addEventListener('input', function (e) { ui.spread = +e.target.value; syncConfig(); });
@@ -2597,13 +2605,15 @@
       $('colA').value = K.col.A; $('colB').value = K.col.B; $('spread').value = 0; syncConfig(); recolor();
     });
     $('gen').addEventListener('click', function () {
-      ui.score = generateScore(ui.cfg, Math.floor(Math.random() * 1000000) + 1);
-      ui.t = 0; ui.playing = false; ui.hi = null;
-      $('restore').hidden = false; scoreChanged();
+      ui.seed = Math.floor(Math.random() * 1000000) + 1;
+      ui.t = 0; ui.playing = false;
+      rebuild();
     });
     $('restore').addEventListener('click', function () {
+      /* the example is a 5-minute, 5-stop score */
+      ui.cfg.minutes = 5; ui.cfg.stops = 5; $('minutes').value = 5; fitStops(); $('nStops').value = 5;
       ui.score = null; ui.t = 0; ui.playing = false; ui.hi = null;
-      $('restore').hidden = true; scoreChanged();
+      $('restore').hidden = true; syncConfig(); scoreChanged();
     });
     $('play').addEventListener('click', togglePlay);
     $('fsPlay').addEventListener('click', togglePlay);
