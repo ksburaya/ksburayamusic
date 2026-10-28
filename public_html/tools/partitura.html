@@ -1431,7 +1431,13 @@
     P3.s = s; P3.x = K.W / 2 + (x - F3.cx) * s; P3.y = K.H / 2 + (y - F3.cy) * s;
   }
   function f3Speed() { return 1000 / LOOK_S * ui.fly; }           /* z units per second of score time */
-  function f3Fade(z) { return clamp(z / ZFADE, 0, 1) * clamp((ZFAR - z) / (ZFAR * 0.12), 0, 1); }
+  function f3Fade(z) { return clamp(z / ZFADE, 0, 1) * clamp((ZFAR - z) / (ZFAR * 0.12), 0, 1) * (1 - 0.5 * clamp(z / ZFAR, 0, 1)); }
+  /* Depth of an event that is d seconds away. Near the player it is plain speed * d, so the flight
+     feels true; further out it is squeezed logarithmically, so the whole coming stretch of the score
+     (comets included) stays inside the tunnel instead of hiding beyond the horizon. */
+  var ZTAU = 12;
+  function zmap(d) { return d >= 0 ? F3.spd * ZTAU * Math.log(1 + d / ZTAU) : F3.spd * d; }
+  function zinv(z) { return ZTAU * (Math.exp(z / (F3.spd * ZTAU)) - 1); }
   function nodeY(L, b) { return LANE_Y[L] - (b - 0.5) * PITCH; }
 
   /* the lanes wind around the axis as a helix and pinch to the centre at every meeting */
@@ -1462,14 +1468,14 @@
   function f3MkNode(n, secNow, spd, o) {
     return {
       id: n.id, lane: n.lane, idx: n.idx, sec: n.sec, x: sway(n.lane, n.sec, o), y: nodeY(n.lane, n.b), r: n.r, g: n.g,
-      kind: n.kind, col: n.col, ph: n.ph, z: Math.min(ZFAR, (n.sec - secNow) * spd)
+      kind: n.kind, col: n.col, ph: n.ph, z: zmap(n.sec - secNow)
     };
   }
   function f3MkSeg(s, secNow, spd) {
-    return Object.assign({}, s, { za: (s.secA - secNow) * spd, zb: (s.secB - secNow) * spd });
+    return Object.assign({}, s, { za: zmap(s.secA - secNow), zb: zmap(s.secB - secNow) });
   }
   function f3MkGate(g, secNow, spd) {
-    return Object.assign({}, g, { z: Math.min(ZFAR, (g.sec - secNow) * spd) });
+    return Object.assign({}, g, { z: zmap(g.sec - secNow) });
   }
 
   /* seek / regenerate / speed change: rebuild the arrays for the current moment */
@@ -1491,17 +1497,15 @@
   }
 
   function f3Update(secNow, o, S) {
-    /* the faster the flight, the deeper the tunnel, so a full wave still fits in view */
+    /* the faster the flight, the deeper the tunnel */
     ZFAR = 1000 * Math.sqrt(Math.max(1, ui.fly));
-    var spd = f3Speed(), look = ZFAR / spd, i;
-    if (F3.S !== S || F3.spd !== spd || F3.far !== ZFAR || secNow < F3.sec - 1e-6 || secNow - F3.sec > 0.5) {
+    var spd = f3Speed(), i, prevSpd = F3.spd, prevFar = F3.far;
+    F3.spd = spd; F3.far = ZFAR;
+    var look = zinv(ZFAR);                         /* how many seconds ahead reach the horizon */
+    if (F3.S !== S || prevSpd !== spd || prevFar !== ZFAR || secNow < F3.sec - 1e-6 || secNow - F3.sec > 0.5) {
       f3Rebuild(secNow, o, spd, look); F3.dz = 0;
     } else {
-      var dz = (secNow - F3.sec) * spd;            /* depth consumed since the last frame */
-      F3.dz = dz;
-      for (i = 0; i < F3.nodes.length; i++) F3.nodes[i].z -= dz;
-      for (i = 0; i < F3.segs.length; i++) { F3.segs[i].za -= dz; F3.segs[i].zb -= dz; }
-      for (i = 0; i < F3.gates.length; i++) F3.gates[i].z -= dz;
+      F3.dz = (secNow - F3.sec) * spd;             /* distance flown since the last frame (trees, sparks) */
       /* spawn at the horizon */
       while (F3.np < o.nodes.length && o.nodes[F3.np].sec - secNow <= look) {
         var n = o.nodes[F3.np++]; if (n.sec > secNow) F3.nodes.push(f3MkNode(n, secNow, spd, o));
@@ -1513,18 +1517,23 @@
         var gt = o.gates[F3.gp++]; if (gt.sec > secNow) F3.gates.push(f3MkGate(gt, secNow, spd));
       }
     }
+    /* every object's z shrinks as its moment approaches */
+    for (i = 0; i < F3.nodes.length; i++) F3.nodes[i].z = zmap(F3.nodes[i].sec - secNow);
+    for (i = 0; i < F3.segs.length; i++) { F3.segs[i].za = zmap(F3.segs[i].secA - secNow); F3.segs[i].zb = zmap(F3.segs[i].secB - secNow); }
+    for (i = 0; i < F3.gates.length; i++) F3.gates[i].z = zmap(F3.gates[i].sec - secNow);
     /* z <= 0: the object has flown past the player */
     F3.nodes = F3.nodes.filter(function (e) { return e.z > 0; });
     F3.segs = F3.segs.filter(function (e) { return e.zb > 0; });
     F3.gates = F3.gates.filter(function (e) { return e.z > 0; });
-    F3.sec = secNow; F3.S = S; F3.spd = spd; F3.far = ZFAR;
+    F3.sec = secNow; F3.S = S;
   }
 
   /* a point of the movement: lateral sway + baseline between the two nodes + the shape's own offset */
   function f3At(sg, s, o, val) {
-    W3.x = sway(sg.lane, lerp(sg.secA, sg.secB, s), o);
+    var sec = lerp(sg.secA, sg.secB, s);
+    W3.x = sway(sg.lane, sec, o);
     W3.y = lerp(sg.ya, sg.yb, s) + val * DK;
-    W3.z = sg.za + (sg.zb - sg.za) * s;
+    W3.z = zmap(sec - F3.sec);
   }
   function f3Pos(sg, s, o) { f3At(sg, s, o, sg.geom.fn(s)); }
 
@@ -1571,8 +1580,9 @@
   function f3Seg(T, sg, o, time, op, active) {
     var dz = sg.zb - sg.za;
     if (dz <= 0) return;
-    var sNear = sg.za < ZNEAR ? (ZNEAR - sg.za) / dz : 0;
-    var sFar = sg.zb > ZFAR ? (ZFAR - sg.za) / dz : 1;
+    var span = sg.secB - sg.secA;
+    var sNear = sg.za < ZNEAR ? clamp((F3.sec + zinv(ZNEAR) - sg.secA) / span, 0, 1) : 0;
+    var sFar = sg.zb > ZFAR ? clamp((F3.sec + zinv(ZFAR) - sg.secA) / span, 0, 1) : 1;
     if (sFar - sNear < 1e-3) return;
     var g = sg.geom, shape = g.shape, col = sg.col, base = g.ss || UNI, ss = [sNear], i, j;
     for (i = 0; i < base.length; i++) if (base[i] > sNear + 1e-4 && base[i] < sFar - 1e-4) ss.push(base[i]);
@@ -1760,7 +1770,7 @@
       T.beginPath(); T.arc(sx, sy, Math.max(0.8, hr * 0.07 * (1 - u * 0.6)), 0, TAU); T.fill();
     }
     /* coma + head */
-    aura(T, hx, hy, hr * 2.7, col, 0.85 * a * (0.85 + 0.15 * Math.sin(time * 3 + n.ph)));
+    aura(T, hx, hy, hr * 2.7, col, 0.6 * a * (0.85 + 0.15 * Math.sin(time * 3 + n.ph)));
     T.save(); T.translate(hx, hy); T.scale(sc, sc);
     drawNode(T, 0, 0, n.r * WK, n.g, n.kind, col, time, { op: a, ph: n.ph, plain: true });
     T.restore();
@@ -1968,14 +1978,6 @@
       }
 
       if (ui.hud) f3Hud(T, o, secNow);
-
-      /* cockpit reticle */
-      var rc = new Path2D(); rc.arc(K.W / 2, K.H / 2, 15, 0, TAU);
-      [0, 1, 2, 3].forEach(function (q) {
-        var a = q * Math.PI / 2;
-        rc.moveTo(K.W / 2 + 21 * Math.cos(a), K.H / 2 + 21 * Math.sin(a)); rc.lineTo(K.W / 2 + 30 * Math.cos(a), K.H / 2 + 30 * Math.sin(a));
-      });
-      T.strokeStyle = rgba(COL.gold, 0.28); T.lineWidth = 1.2; T.stroke(rc);
     },
 
     drawCrisp: function () {}
