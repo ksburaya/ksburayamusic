@@ -89,6 +89,8 @@
     /* fields */
     .fld { flex: 1 1 200px; min-width: 0; display: flex; flex-direction: column; gap: 4px; }
     .fld.s { flex-basis: 160px; }
+    .color-fld { display: flex; align-items: center; gap: 10px; font-size: 14px; line-height: 21px; color: var(--muted); }
+    input[type=color] { width: 56px; height: 44px; padding: 2px; border: 1px solid var(--stitch); border-radius: 4px; background: transparent; cursor: pointer; }
     .stack > .fld, .card > .fld { flex: none; }
     .fld-h { display: flex; justify-content: space-between; gap: 12px; font-size: 14px; line-height: 21px; color: var(--muted); }
     input[type=range] { width: 100%; height: 44px; margin: 0; accent-color: var(--gold); }
@@ -168,13 +170,19 @@
     <div class="card" style="flex:none">
       <div class="row" style="align-items:flex-end;gap:16px 32px">
         <label class="fld"><span class="fld-h"><span>Время практики</span><span id="minutesText"></span></span><input type="range" id="minutes" min="1" max="60" step="1" value="5"></label>
-        <label class="fld s"><span class="fld-h"><span>Точек за 5 минут, от</span><span id="nMinText"></span></span><input type="range" id="nMin" min="2" max="8" step="1" value="3"></label>
-        <label class="fld s"><span class="fld-h"><span>Точек за 5 минут, до</span><span id="nMaxText"></span></span><input type="range" id="nMax" min="2" max="8" step="1" value="6"></label>
+        <label class="fld"><span class="fld-h"><span>Остановок у каждого голоса</span><span id="nStopsText"></span></span><input type="range" id="nStops" min="2" max="49" step="1" value="5"></label>
       </div>
       <div class="row">
         <button class="btn btn-ghost" id="gen" type="button">Сгенерировать партитуру</button>
         <button class="btn btn-ghost" id="restore" type="button" hidden>Вернуть пример</button>
-        <p class="small muted grow">Время действует сразу. Число точек применяется при генерации; точки у голосов не обязаны совпадать по времени. Каждые 3–5 минут голоса сходятся, и вид схождения каждый раз новый. На экране видны 5 минут: окно едет за линией.</p>
+        <p class="small muted grow">Задайте длительность и число остановок, затем сгенерируйте партитуру: соседние дороги получатся разными по форме, густоте и размаху, а остановки скачут по высоте, размеру и яркости. Длительность действует сразу. У голосов остановки не обязаны совпадать по времени, но каждые 3–5 минут голоса сходятся. На экране видны 5 минут: окно едет за линией.</p>
+      </div>
+      <div class="row" style="gap:16px 24px">
+        <span class="lbl muted">Цвет точек</span>
+        <label class="color-fld"><input type="color" id="colA" value="#e07f78"><span>Голос A</span></label>
+        <label class="color-fld"><input type="color" id="colB" value="#7fcfca"><span>Голос B</span></label>
+        <label class="fld s"><span class="fld-h"><span>Разброс оттенков</span><span id="spreadText">0°</span></span><input type="range" id="spread" min="0" max="120" step="5" value="0"></label>
+        <button class="btn btn-ghost btn-sm" id="colReset" type="button">Сбросить цвета</button>
       </div>
     </div>
 
@@ -189,7 +197,6 @@
         <input type="range" id="scrub" min="0" max="1000" step="1" value="0" aria-label="Положение в партитуре">
         <span class="lbl time" id="timeText">0:00 / 5:00</span>
       </div>
-      <button class="btn btn-ghost btn-sm" id="hintsBtn" type="button" aria-pressed="true">Подписи</button>
       <button class="btn btn-ghost btn-sm" id="loopBtn" type="button" aria-pressed="false">Повтор</button>
       <button class="btn btn-ghost btn-sm" id="mode3dBtn" type="button" aria-pressed="false">3D режим</button>
       <button class="btn btn-ghost btn-sm" id="hudBtn" type="button" aria-pressed="true" hidden>Профили</button>
@@ -210,7 +217,7 @@
         <div class="seg-clip lane"><div class="seg-track" id="segTrack"></div></div>
       </div>
     </div>
-    <p class="small muted" id="note3d" hidden>3D режим: ночной лес, вы летите навстречу кометам. Горизонт — будущее, экран — «сейчас». Узел — голова кометы, нити — её след. Каждое движение узнаётся по форме: прямая — ровный луч между рельсами; бисер — отдельные сферы; волна — круглые обручи на гребнях и впадинах (между двумя соседними — полпериода); зубцы — острые треугольники; рваная линия — неравные ромбы. Штриховая линия — ось, от неё отсчитывается размах. В углах — профиль того, что голос играет сейчас. Золотые столбики — схождения голосов: диапазоны обоих голосов и их общая зона. Перемотка и плеер работают как обычно; переход к отрезку по клику доступен только в плоском режиме.</p>
+    <p class="small muted" id="note3d" hidden>3D режим: ночной лес, вы летите навстречу кометам. Горизонт — будущее, экран — «сейчас». Узел — голова кометы, нити — её след. Каждая дорога узнаётся по форме: прямая — ровный луч между рельсами; бисер — отдельные сферы; волна — круглые обручи на гребнях и впадинах (между двумя соседними — полпериода); зубцы — острые треугольники; рваная линия — неравные ромбы. Штриховая линия — ось, от неё отсчитывается размах. В углах — профиль того, что голос играет сейчас. Золотые столбики — схождения голосов: диапазоны обоих голосов и их общая зона. Перемотка и плеер работают как обычно; переход к отрезку по клику доступен только в плоском режиме.</p>
     <p class="small muted" id="note2d">Нажмите на любой отрезок, чтобы перейти к нему. Выше точка — выше звук; крупнее — больше звука; ярче сияние — больше высоких частот; форма линии между точками — ровность игры. В центре — общий регистр: точки показывают высоту каждого голоса; при схождении два столбика из точек — диапазоны голосов, золотые точки — где диапазоны пересекаются.</p>
   </section>
 
@@ -315,7 +322,6 @@
     ink: '#e9ecef', muted: '#a7b0bf', line: '#333f52', stitch: '#6d7b91',
     gold: '#c9b46a', train: '#8e88c4', ice: '#81b8db'
   };
-  var FONT_L = "600 17px 'Fira Sans Extra Condensed','Arial Narrow',sans-serif";
   var FONT_S = "400 17px 'Alegreya',Georgia,serif";
   var TR = { top: 20, h: 260, pad: 50, VH: 300 };
 
@@ -366,6 +372,31 @@
   }
   function lite(h, k) { return toward(h, 'w', k); }
   function dark(h, k) { return toward(h, 'b', k); }
+  /* point colours: one base colour per voice, optionally spread around the hue wheel point by point */
+  function hueShift(hex, deg) {
+    var c = rgb(hex), r = c[0] / 255, g = c[1] / 255, b = c[2] / 255;
+    var mx = Math.max(r, g, b), mn = Math.min(r, g, b), l = (mx + mn) / 2, h = 0, s = 0, d = mx - mn;
+    if (d > 1e-6) {
+      s = l > 0.5 ? d / (2 - mx - mn) : d / (mx + mn);
+      h = mx === r ? (g - b) / d + (g < b ? 6 : 0) : (mx === g ? (b - r) / d + 2 : (r - g) / d + 4);
+      h *= 60;
+    }
+    h = (h + deg + 360) % 360;
+    var a = s * Math.min(l, 1 - l), out = '#';
+    [0, 8, 4].forEach(function (n) {
+      var k = (n + h / 30) % 12, v = Math.round(255 * (l - a * Math.max(-1, Math.min(k - 3, 9 - k, 1))));
+      out += (v < 16 ? '0' : '') + v.toString(16);
+    });
+    return out;
+  }
+  var ptMemo = {};
+  function ptCol(L, idx) {
+    var base = ui.colors[L];
+    if (!ui.spread) return base;
+    var off = Math.round(ui.spread * ((((idx * 0.618 + (L === 'B' ? 0.3 : 0)) % 1) * 2) - 1)), key = base + '|' + off;
+    return ptMemo[key] || (ptMemo[key] = hueShift(base, off));
+  }
+
   function pal(h) { return { hot: lite(h, 0.55), core: lite(h, 0.86), deep: dark(h, 0.5) }; }
 
 
@@ -840,13 +871,38 @@
     ]
   };
 
+  /* The most stops that still leave every road at least MIN_ROAD seconds long */
+  var MIN_ROAD = 6, SHAPE_IDS = ['hold', 'beads', 'ripple', 'zigzag', 'irregular'];
+  function maxStops(minutes) {
+    var dur = Math.max(10, minutes * 60), pad = Math.min(8, dur * 0.04);
+    return clamp(Math.floor((dur - 2 * pad) / MIN_ROAD) + 1, 2, 60);
+  }
+
+  /* One road (movement between two stops). dense / wide are the two contrast switches. */
+  function makeRoad(shape, sec, dense, wide, rnd) {
+    var cyc = dense ? 2.2 + rnd() * 1.6 : 10 + rnd() * 8;          /* seconds per wave, tooth or pearl */
+    var amp = wide ? 0.72 + rnd() * 0.28 : 0.16 + rnd() * 0.2;
+    var grow = rnd() < 0.4 ? (rnd() < 0.5 ? -1 : 1) * (0.3 + rnd() * 0.3) : 0;
+    var e = { shape: shape };
+    if (shape === 'beads') e.n = clamp(Math.round(sec / (dense ? 1.5 + rnd() : 8 + rnd() * 5)), dense ? 6 : 3, dense ? 16 : 6);
+    if (shape === 'ripple') { e.n = clamp(Math.round(sec / cyc), 2, 16); e.amp = amp; e.grow = grow; }
+    if (shape === 'zigzag') { e.n = clamp(Math.round(sec / (cyc * 1.2)), 2, 9); e.amp = amp; e.grow = grow; }
+    if (shape === 'irregular') { e.n = clamp(Math.round(sec / (cyc * 1.1)), 2, 10); e.amp = amp; e.seed = 1 + Math.floor(rnd() * 98); }
+    return e;
+  }
+
+  /* cfg: { minutes, stops }. stops = how many stops each voice makes. The score is built so that
+     neighbouring roads differ as much as possible: a different shape every time (the least recently
+     used one wins), density and amplitude flipping in a four-step cycle, and stops that jump
+     between high and low, big and small, bright and dull. */
   function generateScore(cfg, seed) {
     var rnd = rng(seed);
     var pick = function (arr) { return arr[Math.floor(rnd() * arr.length)]; };
     var dur = Math.max(10, cfg.minutes * 60);
     var pad = Math.min(8, dur * 0.04);
-    var nMin = Math.max(2, cfg.nMin);
-    var nMax = Math.max(nMin, cfg.nMax);
+    var N = clamp(Math.round(cfg.stops), 2, maxStops(cfg.minutes));
+
+    /* moments when the voices meet: every 3-5 minutes, but never more than there are stops */
     var times = [pad];
     for (;;) {
       var next = times[times.length - 1] + 180 + rnd() * 120;
@@ -856,6 +912,11 @@
     var endT = dur - pad;
     if (times.length > 1 && endT - times[times.length - 1] < 120) times[times.length - 1] = endT;
     else times.push(endT);
+    if (times.length > N) {
+      var keep = [];
+      for (var q = 0; q < N; q++) keep.push(times[Math.round(q * (times.length - 1) / (N - 1))]);
+      times = keep;
+    }
 
     var rels = ['around', 'overlap', 'touch', 'apart'];
     var cl = function (r) { return [Math.round(clamp(r[0], 0.03, 0.97) * 100) / 100, Math.round(clamp(r[1], 0.03, 0.97) * 100) / 100]; };
@@ -870,57 +931,75 @@
       else if (rel === 'touch') { first = [c, c + 0.30]; second = [c - 0.30, c]; }
       else { first = [c + 0.10, c + 0.35]; second = [c - 0.35, c - 0.10]; }
       var firstIsA = rnd() < 0.5;
-      var rA = cl(firstIsA ? first : second);
-      var rB = cl(firstIsA ? second : first);
+      var rA = cl(firstIsA ? first : second), rB = cl(firstIsA ? second : first);
       var qA = 0.4 + rnd() * 0.5, qB = 0.4 + rnd() * 0.5;
-      if (rel === 'around') {
-        if (firstIsA) { qA = 0.85; qB = 0.4; } else { qA = 0.4; qB = 0.85; }
-      }
+      if (rel === 'around') { if (firstIsA) { qA = 0.85; qB = 0.4; } else { qA = 0.4; qB = 0.85; } }
       return { sec: ts, rel: rel, rA: rA, rB: rB, qA: qA, qB: qB };
     });
 
+    /* stop times of one voice: the meetings plus the free stops spread over the gaps by length */
+    var stopTimes = function () {
+      var out = times.map(function (t, k) { return { sec: t, meet: k }; });
+      var free = N - times.length;
+      if (free > 0) {
+        var gaps = [], total = 0, k;
+        for (k = 0; k < times.length - 1; k++) { gaps.push(times[k + 1] - times[k]); total += gaps[k]; }
+        var alloc = gaps.map(function (g) { return g / total * free; });
+        var cnt = alloc.map(Math.floor);
+        var left = free - cnt.reduce(function (x, y) { return x + y; }, 0);
+        alloc.map(function (v, i) { return { i: i, r: v - Math.floor(v) }; })
+          .sort(function (x, y) { return y.r - x.r; })
+          .slice(0, left).forEach(function (o) { cnt[o.i]++; });
+        gaps.forEach(function (g, i) {
+          var c = Math.min(cnt[i], Math.max(0, Math.floor(g / MIN_ROAD) - 1));
+          for (var j = 1; j <= c; j++) out.push({ sec: times[i] + g * (j + (rnd() - 0.5) * 0.5) / (c + 1) });
+        });
+      }
+      return out.sort(function (x, y) { return x.sec - y.sec; });
+    };
+
+    var r2 = function (v) { return Math.round(v * 100) / 100; };
     var nodes = {}, edges = {};
     ['A', 'B'].forEach(function (L) {
       var arr = [];
-      var bPrev = 0.3 + rnd() * 0.4;
-      var free = function (s) {
-        bPrev = clamp(bPrev + (rnd() - 0.5) * 0.6, 0.06, 0.94);
-        return {
-          sec: s, b: Math.round(bPrev * 100) / 100, q: Math.round((0.25 + rnd() * 0.75) * 100) / 100,
-          g: Math.round(rnd() * 100) / 100, kind: rnd() < 0.45 ? 'spiral' : 'solid'
-        };
-      };
-      for (var k = 0; k < times.length; k++) {
-        var m = meets[k];
-        var r = L === 'A' ? m.rA : m.rB;
-        var q = L === 'A' ? m.qA : m.qB;
-        bPrev = (r[0] + r[1]) / 2;
-        arr.push({
-          sec: times[k], b: Math.round(bPrev * 100) / 100, q: Math.round(q * 100) / 100,
-          g: Math.round(rnd() * 100) / 100,
-          kind: m.rel === 'around' ? 'rings' : (rnd() < 0.45 ? 'spiral' : 'solid'), meet: k
-        });
-        if (k < times.length - 1) {
-          var gap = times[k + 1] - times[k];
-          var target = (nMin + rnd() * (nMax - nMin)) * gap / 300;
-          var cnt = clamp(Math.round(target) - 1, 1, Math.max(1, Math.floor(gap / 15) - 1));
-          for (var j = 1; j <= cnt; j++) {
-            arr.push(free(times[k] + gap * (j + (rnd() - 0.5) * 0.5) / (cnt + 1)));
-          }
+      stopTimes().forEach(function (st) {
+        var n = { sec: st.sec }, p = arr[arr.length - 1];
+        if (st.meet != null) {
+          var m = meets[st.meet], r = L === 'A' ? m.rA : m.rB;
+          n.b = r2((r[0] + r[1]) / 2); n.q = r2(L === 'A' ? m.qA : m.qB); n.g = r2(rnd());
+          n.kind = m.rel === 'around' ? 'rings' : (rnd() < 0.5 ? 'spiral' : 'solid'); n.meet = st.meet;
+        } else {
+          var pb = p.b, pq = p.q, pg = p.g;
+          /* jump to the other side of the register, the other size, the other brightness */
+          n.b = r2(clamp(pb > 0.5 ? 0.08 + rnd() * Math.max(0.05, pb - 0.4) : pb + 0.32 + rnd() * Math.max(0.05, 0.6 - pb), 0.06, 0.94));
+          n.q = r2(pq > 0.55 ? 0.2 + rnd() * 0.2 : 0.75 + rnd() * 0.25);
+          n.g = r2(pg > 0.5 ? rnd() * 0.2 : 0.7 + rnd() * 0.3);
+          n.kind = p.kind === 'solid' ? 'spiral' : (p.kind === 'spiral' ? 'solid' : pick(['solid', 'spiral']));
         }
-      }
+        arr.push(n);
+      });
       arr.forEach(function (n, i) { n.id = L + (i + 1); n.t = Math.round(n.sec / dur * 10000) / 10000; });
       nodes[L] = arr;
-      var es = [];
+
+      var lastUse = {}, es = [], bit0 = rnd() < 0.5 ? 1 : 0, bit1 = rnd() < 0.5 ? 1 : 0;
+      SHAPE_IDS.forEach(function (id) { lastUse[id] = -10 - rnd(); });
       for (var i = 0; i < arr.length - 1; i++) {
-        var sec = arr[i + 1].sec - arr[i].sec;
-        var shape = pick(['hold', 'beads', 'ripple', 'zigzag', 'irregular']);
-        var e = { shape: shape };
-        if (shape === 'beads') { e.n = clamp(Math.round(sec / (6 + rnd() * 4)), 3, 14); }
-        if (shape === 'ripple') { e.n = clamp(Math.round(sec / (6 + rnd() * 6)), 2, 12); e.amp = 0.2 + rnd() * 0.5; }
-        if (shape === 'zigzag') { e.n = clamp(Math.round(sec / (10 + rnd() * 10)), 2, 6); e.amp = 0.3 + rnd() * 0.6; e.grow = (rnd() - 0.5) * 0.8; }
-        if (shape === 'irregular') { e.n = clamp(Math.round(sec / (8 + rnd() * 8)), 2, 8); e.amp = 0.3 + rnd() * 0.6; e.seed = 1 + Math.floor(rnd() * 98); }
-        es.push(e);
+        var sec = arr[i + 1].sec - arr[i].sec, mid = (arr[i].sec + arr[i + 1].sec) / 2;
+        var forbid = {};
+        if (i > 0) forbid[es[i - 1].shape] = 1;
+        if (L === 'B') {                                            /* also differ from what A plays at the same time */
+          var an = nodes.A;
+          for (var j = 0; j < an.length - 1; j++) if (an[j].sec <= mid && mid < an[j + 1].sec) { forbid[edges.A[j].shape] = 1; break; }
+        }
+        var best = null, bestScore = 0;
+        SHAPE_IDS.forEach(function (id) {
+          if (forbid[id]) return;
+          var sc = lastUse[id] + rnd() * 0.3;
+          if (best === null || sc < bestScore) { best = id; bestScore = sc; }
+        });
+        if (best === null) best = pick(SHAPE_IDS);
+        lastUse[best] = i;
+        es.push(makeRoad(best, sec, ((i & 1) ^ bit0) === 1, (((i >> 1) & 1) ^ bit1) === 1, rnd));
       }
       edges[L] = es;
     });
@@ -978,8 +1057,9 @@
      ══════════════════════════════════════════════════════════════ */
 
   var ui = {
-    t: 0, playing: false, hi: null, score: null, hints: true, loop: false, mode3d: false, fly: 1, hud: true,
-    cfg: { minutes: 5, nMin: 3, nMax: 6 },
+    t: 0, playing: false, hi: null, score: null, loop: false, spread: 0,
+    colors: { A: '#e07f78', B: '#7fcfca' }, mode3d: false, fly: 1, hud: true,
+    cfg: { minutes: 5, stops: 5 },
     tr: null, trSel: { kind: 'edge', i: 0 }, trT: 0, trPlaying: false
   };
 
@@ -995,16 +1075,14 @@
     var pps = K.XW / Math.min(300, dur);
     var xa = function (t) { return K.X0 + t * dur * pps; };
     var N = sc.nodes, Ed = sc.edges, M = sc.meets;
-    var pos = {}, nodes = [], segs = [], labels = [], dots = [], flines = [], bands = [];
+    var pos = {}, nodes = [], segs = [], dots = [], flines = [], bands = [];
 
     ['A', 'B'].forEach(function (L) {
       var col = K.col[L], top = K.laneTop[L];
       N[L].forEach(function (n, i) {
         var x = xa(n.t), y = top + K.PAD + (1 - n.b) * (K.laneH - 2 * K.PAD), r = rad(n.q), g = n.g || 0;
-        var cnt = Math.round(g * 12), ext = (g > 0.05 && cnt >= 2) ? 6 + g * 20 + 6 : 0;
         pos[n.id] = { x: x, y: y, r: r, q: n.q, b: n.b, g: g, t: n.t };
-        nodes.push({ id: n.id, lane: L, b: n.b, x: x, y: y, r: r, g: g, kind: n.kind, col: col, sec: n.t * dur, ph: i * 1.7 + (L === 'B' ? 2.1 : 0) });
-        labels.push({ x: x, y: y - r - 18 - ext, text: n.id, color: COL.muted, glow: false });
+        nodes.push({ id: n.id, lane: L, idx: i, b: n.b, x: x, y: y, r: r, g: g, kind: n.kind, col: col, sec: n.t * dur, ph: i * 1.7 + (L === 'B' ? 2.1 : 0) });
       });
       for (var i = 0; i < N[L].length - 1; i++) {
         var na = N[L][i], nb = N[L][i + 1], a = pos[na.id], b = pos[nb.id];
@@ -1017,10 +1095,6 @@
             left: r1(a.x / K.W * 1000) / 10, top: r1(top / K.H * 1000) / 10,
             width: r1((b.x - a.x) / K.W * 1000) / 10, height: r1(K.laneH / K.H * 1000) / 10
           }
-        });
-        labels.push({
-          x: (a.x + b.x) / 2, y: L === 'A' ? top + K.laneH + 22 : top - 12,
-          text: SHAPE[e.shape].name.toUpperCase(), color: col, glow: true
         });
       }
     });
@@ -1045,15 +1119,14 @@
         flines.push({ x: x, x1: x, y1: fy(lo), y2: fy(hi), col: COL.stitch, dash: [1, 9], w: 2 });
       }
       bands.push({ x: x, bx: x - 64 });
-      labels.push({ x: x, y: 572, text: relName(m.rel).toUpperCase(), color: COL.muted, glow: false });
       return { t: m.t, rel: m.rel, x: x, qa: pa.q, qb: pb.q, ba: pa.b, bb: pb.b, rA: rA, rB: rB };
     });
     var gridY = [0.25, 0.5, 0.75].map(fy);
     ['A', 'B'].forEach(function (L) {
-      N[L].forEach(function (n) { dots.push({ x: xa(n.t), y: fy(n.b), r: 3 + n.q * 6, col: K.col[L], reg: true }); });
+      N[L].forEach(function (n, i) { dots.push({ x: xa(n.t), y: fy(n.b), r: 3 + n.q * 6, lane: L, idx: i, reg: true }); });
     });
 
-    cacheS = { pos: pos, nodes: nodes, segs: segs, labels: labels, dots: dots, flines: flines, bands: bands, meets: meets, gridY: gridY, pps: pps };
+    cacheS = { pos: pos, nodes: nodes, segs: segs, dots: dots, flines: flines, bands: bands, meets: meets, gridY: gridY, pps: pps };
     return cacheS;
   }
 
@@ -1109,14 +1182,6 @@
     c.stroke(); c.lineCap = 'round';
   }
 
-  function glowText(c, s, x, y, col, size, align, glow) {
-    c.font = size;
-    c.textAlign = align; c.fillStyle = col;
-    if (glow) { c.shadowColor = rgba(col, 0.9); c.shadowBlur = glow; }
-    c.fillText(s, x, y);
-    c.shadowBlur = 0; c.shadowColor = 'transparent';
-  }
-
   var mainScene = {
     W: K.W, H: K.H,
 
@@ -1129,13 +1194,6 @@
       c.strokeStyle = COL.line; c.lineWidth = 1.5; c.setLineDash([2, 7]); c.beginPath();
       S.gridY.forEach(function (y) { c.moveTo(0, y); c.lineTo(1400, y); });
       c.stroke(); c.setLineDash([]);
-      var k = st ? st.k : 1;
-      var glow = 10 * k;
-      glowText(c, 'ОБЩИЙ РЕГИСТР · ВЫШЕ', 22, 322, COL.muted, FONT_L, 'left', 0);
-      glowText(c, 'НИЖЕ', 22, 574, COL.muted, FONT_L, 'left', 0);
-      glowText(c, 'ТОЧКИ — ГОЛОСА · ЗОЛОТЫЕ — ОБЩИЙ РЕГИСТР', 1378, 322, '#d6c68e', FONT_L, 'right', 0);
-      glowText(c, 'A', 22, 76, K.col.A, "700 46px 'Fira Sans Extra Condensed','Arial Narrow',sans-serif", 'left', glow);
-      glowText(c, 'B', 22, 666, K.col.B, "700 46px 'Fira Sans Extra Condensed','Arial Narrow',sans-serif", 'left', glow);
     },
 
     drawLight: function (T, st, time, dt) {
@@ -1177,12 +1235,12 @@
       S.nodes.forEach(function (n) {
         if (n.x < v.vx0 || n.x > v.vx1) return;
         var since = v.secNow - n.sec, ping = (since >= 0 && since < 1.4) ? 1 - since / 1.4 : 0;
-        drawNode(T, n.x, n.y, n.r, n.g, n.kind, n.col, time, { ph: n.ph, ping: ping });
+        drawNode(T, n.x, n.y, n.r, n.g, n.kind, ptCol(n.lane, n.idx), time, { ph: n.ph, ping: ping });
       });
 
       S.dots.forEach(function (d) {
         if (d.x < v.vx0 || d.x > v.vx1) return;
-        pearl(T, d.x, d.y, d.r, d.col, d.reg ? 0.95 : 1);
+        pearl(T, d.x, d.y, d.r, d.reg ? ptCol(d.lane, d.idx) : d.col, d.reg ? 0.95 : 1);
       });
       T.restore();
 
@@ -1218,31 +1276,7 @@
       playhead(T, v.px, 20, 856, 7, time);
     },
 
-    drawCrisp: function (c, st, time) {
-      var S = buildScore(), v = mainView();
-      c.save();
-      c.beginPath(); c.rect(70, 0, 1330, K.H); c.clip();
-      c.translate(v.tx, 0);
-      var step = [5, 10, 15, 30, 60].filter(function (q) { return v.winLen / q <= 10; })[0] || 60;
-      c.strokeStyle = COL.stitch; c.lineWidth = 1.5; c.beginPath();
-      var ticks = [];
-      for (var sec = Math.floor(v.winStart / step) * step; sec <= v.winStart + v.winLen + step; sec += step) {
-        if (sec > v.dur + 0.001) break;
-        var x = K.X0 + sec * v.pps;
-        c.moveTo(x, 20); c.lineTo(x, 28);
-        ticks.push([x, fmt(sec)]);
-      }
-      c.stroke();
-      c.font = FONT_L; c.fillStyle = COL.muted; c.textAlign = 'center';
-      ticks.forEach(function (t) { c.fillText(t[1], t[0], 14); });
-      if (ui.hints) {
-        S.labels.forEach(function (l) {
-          if (l.x < v.vx0 || l.x > v.vx1) return;
-          glowText(c, l.text, l.x, l.y, l.color, FONT_L, 'center', l.glow ? 7 * st.k : 0);
-        });
-      }
-      c.restore();
-    }
+    drawCrisp: function () {}      /* nothing is written on the visualisation */
   };
 
   function playhead(T, x, y0, y1, r, time) {
@@ -1373,11 +1407,7 @@
       playhead(T, K.X0 + (0.04 + 0.92 * trT) * K.XW, 10, 290, 6, time);
     },
 
-    drawCrisp: function (c) {
-      var G = trGeom(curTr());
-      c.font = FONT_L; c.fillStyle = COL.muted; c.textAlign = 'center';
-      G.labels.forEach(function (l) { c.fillText(l.text, l.x, l.y); });
-    }
+    drawCrisp: function () {}
   };
 
 
@@ -1393,7 +1423,7 @@
   var PERSP = 420, ZFAR = 1000, ZFADE = 50, ZNEAR = 10, LOOK_S = 45;
   var LANE_Y = { A: -150, B: 150 }, PITCH = 240, WK = 1.6, DK = 3;
   var P3 = { x: 0, y: 0, s: 1 }, W3 = { x: 0, y: 0, z: 1 };
-  var F3 = { sec: -1, S: null, spd: 0, dz: 0, nodes: [], segs: [], gates: [], np: 0, sp: 0, gp: 0, labels: [], stars: null, cx: 0, cy: 0 };
+  var F3 = { sec: -1, S: null, spd: 0, dz: 0, nodes: [], segs: [], gates: [], np: 0, sp: 0, gp: 0, stars: null, cx: 0, cy: 0 };
   var UNI = (function () { var a = []; for (var i = 0; i <= 48; i++) a.push(i / 48); return a; })();
 
   function proj(x, y, z) {
@@ -1431,7 +1461,7 @@
 
   function f3MkNode(n, secNow, spd, o) {
     return {
-      id: n.id, lane: n.lane, sec: n.sec, x: sway(n.lane, n.sec, o), y: nodeY(n.lane, n.b), r: n.r, g: n.g,
+      id: n.id, lane: n.lane, idx: n.idx, sec: n.sec, x: sway(n.lane, n.sec, o), y: nodeY(n.lane, n.b), r: n.r, g: n.g,
       kind: n.kind, col: n.col, ph: n.ph, z: Math.min(ZFAR, (n.sec - secNow) * spd)
     };
   }
@@ -1538,7 +1568,7 @@
     aura(T, cx, cy, r * 1.6, col, 0.28 * a);
   }
 
-  function f3Seg(T, sg, o, time, op, active, hints) {
+  function f3Seg(T, sg, o, time, op, active) {
     var dz = sg.zb - sg.za;
     if (dz <= 0) return;
     var sNear = sg.za < ZNEAR ? (ZNEAR - sg.za) / dz : 0;
@@ -1654,13 +1684,6 @@
       }
     }
 
-    if (hints) {
-      f3At(sg, (sNear + sFar) / 2, o, 0);
-      if (W3.z > ZNEAR * 2) {
-        proj(W3.x, W3.y, W3.z);
-        F3.labels.push({ text: sg.name, x: P3.x, y: P3.y - 16 - 12 * P3.s, col: col, a: op * f3Fade(W3.z), size: clamp(15 * P3.s, 10, 26), align: 'center' });
-      }
-    }
   }
 
   /* HUD: side profile of the movement each voice is playing right now, with a running cursor */
@@ -1674,7 +1697,6 @@
       }
       rrect(T, x0, y0, w, h, 10); T.fillStyle = rgba(COL.sunken, 0.55); T.fill();
       T.strokeStyle = rgba(col, 0.45); T.lineWidth = 1.2; T.stroke();
-      F3.labels.push({ text: 'Голос ' + L + ' · ' + (cur ? cur.name : '—'), x: x0 + 14, y: y0 + 22, col: col, a: 1, size: 17, align: 'left' });
       if (!cur) return;
       var g = cur.geom, base = g.ss || UNI, lx = x0 + 14, lw = w - 28, cy = y0 + h / 2 + 12;
       var mid = (cur.ya + cur.yb) / 2, path = new Path2D();
@@ -1703,7 +1725,7 @@
   }
 
   /* A node is a comet: a bright head with a coma, and a tail streaming back toward the horizon */
-  function f3Node(T, n, time, hints) {
+  function f3Node(T, n, time) {
     if (n.z <= ZNEAR) return;
     var a = f3Fade(n.z);
     proj(n.x, n.y, n.z);
@@ -1713,7 +1735,7 @@
     if (a < 0.02) return;
     var R = (n.r * WK + 70) * P3.s;
     if (P3.x + R < 0 || P3.x - R > K.W || P3.y + R < 0 || P3.y - R > K.H) return;
-    var hx = P3.x, hy = P3.y, sc = P3.s, hr = n.r * WK * sc, col = n.col, pc = pal(col);
+    var hx = P3.x, hy = P3.y, sc = P3.s, hr = n.r * WK * sc, col = ptCol(n.lane, n.idx), pc = pal(col);
 
     /* tail: from the head toward the vanishing point (a comet flying at you trails behind it, into the distance) */
     var dx = K.W / 2 - hx, dy = K.H / 2 - hy, dist = Math.sqrt(dx * dx + dy * dy) || 1;
@@ -1742,9 +1764,6 @@
     T.save(); T.translate(hx, hy); T.scale(sc, sc);
     drawNode(T, 0, 0, n.r * WK, n.g, n.kind, col, time, { op: a, ph: n.ph, plain: true });
     T.restore();
-    if (hints) {
-      F3.labels.push({ text: n.id, x: hx, y: hy - hr - 14 - 6 * sc, col: COL.muted, a: a, size: clamp(15 * sc, 10, 26), align: 'center' });
-    }
   }
 
   function dotted3(T, x1, y1, x2, y2, z, col, w, a) {
@@ -1761,7 +1780,7 @@
   }
 
   /* a meeting: a golden gate across the tunnel with both voices' registers inside */
-  function f3Gate(T, gt, time, hints) {
+  function f3Gate(T, gt, time) {
     if (gt.z <= ZNEAR) return;
     var a = f3Fade(gt.z);
     if (a < 0.02) return;
@@ -1779,10 +1798,6 @@
       pearl3(T, 0, yv(hi), gt.z, 4, COL.gold, a); pearl3(T, 0, yv(lo), gt.z, 4, COL.gold, a);
     } else if (Math.abs(hi - lo) <= 0.005) {
       pearl3(T, 0, yv((hi + lo) / 2), gt.z, 5, COL.gold, a);
-    }
-    if (hints) {
-      proj(0, -hh, gt.z);
-      F3.labels.push({ text: gt.name, x: P3.x, y: P3.y - 8, col: '#d6c68e', a: a, size: clamp(18 * P3.s, 11, 30), align: 'center' });
     }
   }
 
@@ -1921,12 +1936,11 @@
     },
 
     drawLight: function (T, st, time, dt) {
-      var S = buildScore(), o = f3Prep(S), secNow = ui.t * o.dur, hints = ui.hints, i;
+      var S = buildScore(), o = f3Prep(S), secNow = ui.t * o.dur, i;
       f3Update(secNow, o, S);
       var spd = F3.spd;
       /* a little handheld sway so the flight feels piloted */
       F3.cx = 36 * Math.sin(time * 0.37); F3.cy = 14 * Math.sin(time * 0.27 + 1);
-      F3.labels.length = 0;
 
       if (FX.motion) {                                           /* twinkling sky */
         for (i = 0; i < SKY_STARS.length; i += 3) {
@@ -1948,9 +1962,9 @@
           var s = it.seg, active = s.za <= 0 && s.zb > 0, op;
           if (ui.hi) op = s.shape === ui.hi ? 1 : 0.18;
           else op = active ? 1 : 0.85;
-          f3Seg(T, s, o, time, op, active, hints);
-        } else if (it.node) f3Node(T, it.node, time, hints);
-        else f3Gate(T, it.gate, time, hints);
+          f3Seg(T, s, o, time, op, active);
+        } else if (it.node) f3Node(T, it.node, time);
+        else f3Gate(T, it.gate, time);
       }
 
       if (ui.hud) f3Hud(T, o, secNow);
@@ -1964,19 +1978,7 @@
       T.strokeStyle = rgba(COL.gold, 0.28); T.lineWidth = 1.2; T.stroke(rc);
     },
 
-    drawCrisp: function (c) {
-      var l, i;
-      c.textBaseline = 'alphabetic';
-      for (i = 0; i < F3.labels.length; i++) {
-        l = F3.labels[i];
-        if (l.a < 0.03) continue;
-        c.globalAlpha = clamp(l.a, 0, 1);
-        c.font = "600 " + Math.round(l.size) + "px 'Fira Sans Extra Condensed','Arial Narrow',sans-serif";
-        c.textAlign = l.align; c.fillStyle = l.col;
-        c.fillText(l.text, l.x, l.y);
-      }
-      c.globalAlpha = 1;
-    }
+    drawCrisp: function () {}
   };
 
   /* ══════════════════════════════════════════════════════════════
@@ -2290,7 +2292,7 @@
 
   function laneLive(L, t, dur) {
     var N = curScore().nodes[L], Ed = curScore().edges[L];
-    var base = { name: 'Голос ' + L, color: K.col[L] };
+    var base = { name: 'Голос ' + L, color: ui.colors[L] };
     if (t < N[0].t) {
       return Object.assign({}, EMPTY, base, { title: 'Тишина', text: 'Первая точка ' + N[0].id + ' — через ' + Math.ceil((N[0].t - t) * dur) + ' с. Приготовьтесь и слушайте.' });
     }
@@ -2547,7 +2549,14 @@
   function syncConfig() {
     var c = ui.cfg;
     setText($('minutesText'), c.minutes >= 60 ? '1 ч' : c.minutes + ' мин');
-    setText($('nMinText'), String(c.nMin)); setText($('nMaxText'), String(c.nMax));
+    setText($('nStopsText'), String(c.stops));
+    setText($('spreadText'), ui.spread + '°');
+  }
+  /* the stops slider never offers more than fits into the chosen duration */
+  function fitStops() {
+    var mx = maxStops(ui.cfg.minutes), el = $('nStops');
+    el.max = mx;
+    if (ui.cfg.stops > mx) { ui.cfg.stops = mx; el.value = mx; }
   }
   function scoreChanged() {
     rebuildSegButtons(); syncDict(); mainStage.dirtyBg = true; mainStage.hard = true; syncMain();
@@ -2568,9 +2577,15 @@
   }
 
   function bindMain() {
-    $('minutes').addEventListener('input', function (e) { ui.cfg.minutes = +e.target.value; syncConfig(); scoreChanged(); });
-    $('nMin').addEventListener('input', function (e) { ui.cfg.nMin = +e.target.value; syncConfig(); });
-    $('nMax').addEventListener('input', function (e) { ui.cfg.nMax = +e.target.value; syncConfig(); });
+    $('minutes').addEventListener('input', function (e) { ui.cfg.minutes = +e.target.value; fitStops(); syncConfig(); scoreChanged(); });
+    $('nStops').addEventListener('input', function (e) { ui.cfg.stops = +e.target.value; syncConfig(); });
+    $('colA').addEventListener('input', function (e) { ui.colors.A = e.target.value; syncMain(); });
+    $('colB').addEventListener('input', function (e) { ui.colors.B = e.target.value; syncMain(); });
+    $('spread').addEventListener('input', function (e) { ui.spread = +e.target.value; syncConfig(); });
+    $('colReset').addEventListener('click', function () {
+      ui.colors.A = K.col.A; ui.colors.B = K.col.B; ui.spread = 0;
+      $('colA').value = K.col.A; $('colB').value = K.col.B; $('spread').value = 0; syncConfig(); syncMain();
+    });
     $('gen').addEventListener('click', function () {
       ui.score = generateScore(ui.cfg, Math.floor(Math.random() * 1000000) + 1);
       ui.t = 0; ui.playing = false; ui.hi = null;
@@ -2584,9 +2599,6 @@
     $('fsPlay').addEventListener('click', togglePlay);
     $('reset').addEventListener('click', function () { ui.t = 0; ui.playing = false; syncMain(); });
     $('scrub').addEventListener('input', function (e) { ui.t = clamp(+e.target.value / 1000, 0, 1); syncMain(); });
-    $('hintsBtn').addEventListener('click', function (e) {
-      ui.hints = !ui.hints; e.currentTarget.setAttribute('aria-pressed', ui.hints);
-    });
     $('loopBtn').addEventListener('click', function (e) {
       ui.loop = !ui.loop; e.currentTarget.setAttribute('aria-pressed', ui.loop);
     });
@@ -2713,6 +2725,7 @@
   buildRels();
   buildTrainerControls();
   bindMain();
+  fitStops();
   syncConfig();
   rebuildSegButtons();
   syncDict();
